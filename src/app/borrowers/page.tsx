@@ -5,6 +5,9 @@ import Header from "@/components/layout/Header";
 import { Download, Upload, Plus, MoreVertical, MapPin, CheckCircle, XCircle } from "lucide-react";
 import { useBorrowerStore } from "@/store/borrowers.store";
 
+import AddBorrowerModal from "@/components/borrowers/AddBorrowerModal";
+import { useState } from "react";
+
 // Status Badge Component
 function StatusBadge({ status }: { status: string }) {
     const colors: Record<string, string> = {
@@ -56,6 +59,7 @@ function VerificationStatus({ verified }: { verified: boolean }) {
 export default function BorrowersPage() {
     // Using modular Zustand store
     const { borrowers, updateBorrower, deleteBorrower } = useBorrowerStore();
+    const [isModalOpen, setIsModalOpen] = useState(false);
 
     const handleStatusChange = (id: number, newStatus: string) => {
         updateBorrower(id, {
@@ -71,10 +75,10 @@ export default function BorrowersPage() {
     };
 
     return (
-        <div className="flex h-screen bg-slate-50">
+        <div className="flex min-h-screen bg-slate-50">
             <Sidebar />
 
-            <div className="flex-1 ml-64 flex flex-col overflow-hidden">
+            <div className="flex-1 md:ml-64 flex flex-col overflow-hidden">
                 <Header />
 
                 <main className="flex-1 overflow-y-auto p-6">
@@ -96,7 +100,10 @@ export default function BorrowersPage() {
                                     <Upload className="h-4 w-4" />
                                     <span className="text-sm font-medium">Export</span>
                                 </button>
-                                <button className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
+                                <button
+                                    onClick={() => setIsModalOpen(true)}
+                                    className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors cursor-pointer"
+                                >
                                     <Plus className="h-4 w-4" />
                                     <span className="text-sm font-medium">Add Borrower</span>
                                 </button>
@@ -104,23 +111,28 @@ export default function BorrowersPage() {
                         </div>
                     </div>
 
+                    <AddBorrowerModal
+                        isOpen={isModalOpen}
+                        onClose={() => setIsModalOpen(false)}
+                    />
+
                     {/* Filters */}
                     <div className="bg-white p-4 rounded-xl border border-slate-200 mb-6">
-                        <div className="flex items-center gap-4">
-                            <div className="flex-1">
+                        <div className="flex flex-col md:flex-row items-center gap-4">
+                            <div className="flex-1 w-full">
                                 <input
                                     type="text"
                                     placeholder="Search by name, phone, or loan ID..."
                                     className="w-full px-4 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none text-sm"
                                 />
                             </div>
-                            <select className="px-4 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none text-sm">
+                            <select className="w-full md:w-auto px-4 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none text-sm">
                                 <option>All Status</option>
                                 <option>In Recovery</option>
                                 <option>Active</option>
                                 <option>Legal</option>
                             </select>
-                            <select className="px-4 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none text-sm">
+                            <select className="w-full md:w-auto px-4 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none text-sm">
                                 <option>All Risk Levels</option>
                                 <option>Critical</option>
                                 <option>High</option>

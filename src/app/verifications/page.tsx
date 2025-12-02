@@ -1,7 +1,9 @@
 "use client";
 
+import { useState } from "react";
 import Sidebar from "@/components/layout/Sidebar";
 import Header from "@/components/layout/Header";
+import VerificationModal from "@/components/verifications/VerificationModal";
 import {
     CreditCard,
     Smartphone,
@@ -37,9 +39,12 @@ function StatsCard({ icon: Icon, label, value, color }: any) {
 }
 
 // Service Card Component
-function ServiceCard({ icon: Icon, title, description, color }: any) {
+function ServiceCard({ icon: Icon, title, description, color, onClick }: any) {
     return (
-        <button className="bg-white p-6 rounded-xl border border-slate-200 hover:shadow-md transition-all text-left group">
+        <button
+            onClick={onClick}
+            className="bg-white p-6 rounded-xl border border-slate-200 hover:shadow-md transition-all text-left group"
+        >
             <div className="flex items-start justify-between mb-4">
                 <div className={`h-12 w-12 rounded-xl flex items-center justify-center ${color}`}>
                     <Icon className="h-6 w-6 text-white" />
@@ -53,6 +58,8 @@ function ServiceCard({ icon: Icon, title, description, color }: any) {
 }
 
 export default function VerificationsPage() {
+    const [selectedService, setSelectedService] = useState<any>(null);
+
     const stats = [
         { icon: FileText, label: "Total", value: "8", color: "bg-blue-500" },
         { icon: CheckCircle, label: "Verified", value: "6", color: "bg-green-500" },
@@ -74,7 +81,7 @@ export default function VerificationsPage() {
         { icon: Car, title: "RC/DL Verification", description: "Verify RC/DL driving license", color: "bg-blue-500" },
     ];
 
-    const recentVerifications = [
+    const recentVerifications: { name: string; type: string; date: string; confidence: string; status: string }[] = [
         { name: "Amit Kumar", type: "mobile", date: "12/26/2025", confidence: "94%", status: "verified" },
         { name: "Priya Sharma", type: "aadhaar", date: "12/25/2025", confidence: "98%", status: "verified" },
         { name: "Rahul Patel", type: "pan", date: "12/24/2025", confidence: "92%", status: "verified" },
@@ -84,11 +91,16 @@ export default function VerificationsPage() {
 
     const tabs = ["All", "Verified", "Pending", "Failed", "Manual Review"];
 
+    const handleVerificationSubmit = (data: any) => {
+        console.log("Verification submitted:", data);
+        // Here you would typically call an API or update a store
+    };
+
     return (
         <div className="flex h-screen bg-slate-50">
             <Sidebar />
 
-            <div className="flex-1 ml-64 flex flex-col overflow-hidden">
+            <div className="flex-1 md:ml-64 flex flex-col overflow-hidden">
                 <Header />
 
                 <main className="flex-1 overflow-y-auto p-6">
@@ -111,7 +123,11 @@ export default function VerificationsPage() {
                         <p className="text-sm text-slate-600 mb-4">Select a verification type to run</p>
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
                             {services.map((service, i) => (
-                                <ServiceCard key={i} {...service} />
+                                <ServiceCard
+                                    key={i}
+                                    {...service}
+                                    onClick={() => setSelectedService(service)}
+                                />
                             ))}
                         </div>
                     </div>
@@ -119,23 +135,23 @@ export default function VerificationsPage() {
                     {/* Recent Verifications */}
                     <div className="bg-white rounded-xl border border-slate-200">
                         <div className="p-6 border-b border-slate-200">
-                            <div className="flex items-center justify-between mb-4">
-                                <h2 className="text-lg font-bold text-slate-900">Recent Verifications</h2>
-                                <div className="relative">
+                            <div className="flex flex-col md:flex-row items-center justify-between mb-4 gap-4">
+                                <h2 className="text-lg font-bold text-slate-900 w-full md:w-auto">Recent Verifications</h2>
+                                <div className="relative w-full md:w-auto">
                                     <input
                                         type="text"
                                         placeholder="Search..."
-                                        className="px-4 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none text-sm"
+                                        className="w-full px-4 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none text-sm"
                                     />
                                 </div>
                             </div>
-                            <div className="flex items-center gap-2">
+                            <div className="flex items-center gap-2 overflow-x-auto pb-2 md:pb-0">
                                 {tabs.map((tab, i) => (
                                     <button
                                         key={i}
-                                        className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${i === 0
-                                                ? "bg-blue-50 text-blue-600"
-                                                : "text-slate-600 hover:bg-slate-50"
+                                        className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors whitespace-nowrap ${i === 0
+                                            ? "bg-blue-50 text-blue-600"
+                                            : "text-slate-600 hover:bg-slate-50"
                                             }`}
                                     >
                                         {tab}
@@ -178,10 +194,10 @@ export default function VerificationsPage() {
                                                     <div className="flex-1 h-2 bg-slate-100 rounded-full overflow-hidden max-w-[100px]">
                                                         <div
                                                             className={`h-full ${verification.status === "verified"
-                                                                    ? "bg-green-500"
-                                                                    : verification.status === "pending"
-                                                                        ? "bg-orange-500"
-                                                                        : "bg-red-500"
+                                                                ? "bg-green-500"
+                                                                : verification.status === "pending"
+                                                                    ? "bg-orange-500"
+                                                                    : "bg-red-500"
                                                                 }`}
                                                             style={{ width: verification.confidence }}
                                                         ></div>
@@ -219,6 +235,13 @@ export default function VerificationsPage() {
                         </div>
                     </div>
                 </main>
+
+                <VerificationModal
+                    isOpen={!!selectedService}
+                    onClose={() => setSelectedService(null)}
+                    service={selectedService}
+                    onSubmit={handleVerificationSubmit}
+                />
             </div>
         </div>
     );
