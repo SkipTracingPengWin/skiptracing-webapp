@@ -2,6 +2,7 @@ import { create } from 'zustand';
 import { devtools } from 'zustand/middleware';
 import type { Agent } from '@/types';
 
+
 const agentsData: Agent[] = [
     {
         id: 1,
@@ -43,19 +44,24 @@ const agentsData: Agent[] = [
 
 interface AgentState {
     agents: Agent[];
+    isAddAgentModalOpen: boolean;
     addAgent: (agent: Agent) => void;
     updateAgent: (id: number, updates: Partial<Agent>) => void;
     deleteAgent: (id: number) => void;
+    toggleAddAgentModal: () => void;
 }
 
 export const useAgentStore = create<AgentState>()(
     devtools(
         (set) => ({
             agents: agentsData,
+            isAddAgentModalOpen: false,
             addAgent: (agent) =>
                 set((state) => ({
                     agents: [...state.agents, agent],
                 })),
+            toggleAddAgentModal: () =>
+                set((state) => ({ isAddAgentModalOpen: !state.isAddAgentModalOpen })),
             updateAgent: (id, updates) =>
                 set((state) => ({
                     agents: state.agents.map((a) =>

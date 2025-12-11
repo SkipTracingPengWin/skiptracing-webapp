@@ -4,6 +4,7 @@ import Sidebar from "@/components/layout/Sidebar";
 import Header from "@/components/layout/Header";
 import { Users, UserCheck, Clock, UserX, Phone, Mail, MapPin, Star, MoreVertical } from "lucide-react";
 import { useAgentStore } from "@/store/agents.store"; // Import Zustand store hook
+import Addnewagent from "@/components/agents/addnewagent.modal"
 
 
 // Agent Card Component
@@ -104,6 +105,9 @@ export default function AgentsPage() {
 
   // Get agents from Zustand store
   const agents = useAgentStore(state => state.agents);
+  const isAddAgentModalOpen = useAgentStore(state => state.isAddAgentModalOpen);
+  const toggleAddAgentModal = useAgentStore(state => state.toggleAddAgentModal);
+  const addAgent = useAgentStore(state => state.addAgent);
 
   return (
     <div className="flex h-screen bg-slate-50">
@@ -120,12 +124,38 @@ export default function AgentsPage() {
                 <h1 className="text-2xl font-bold text-slate-900">Field Agents</h1>
                 <p className="text-sm text-slate-600 mt-1">Manage and track field collection agents</p>
               </div>
-              <button className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
+              <button
+                onClick={() => toggleAddAgentModal()}
+                className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+              >
                 <Users className="h-4 w-4" />
                 <span className="text-sm font-medium">Add Agent</span>
               </button>
             </div>
           </div>
+
+          {/* Add Agent Modal */}
+          {isAddAgentModalOpen && (
+            <Addnewagent
+              onClose={() => toggleAddAgentModal()}
+              onSubmit={(data) => {
+                // Build a minimal Agent object from submitted form data
+                const nextId = agents && agents.length ? Math.max(...agents.map(a => a.id)) + 1 : 1;
+                addAgent({
+                  id: nextId,
+                  name: data.fullName,
+                  email: data.email,
+                  phone: data.phone,
+                  location: "",
+                  cases: 0,
+                  status: "Active",
+                  joinedDate: new Date().toISOString().split('T')[0],
+                  successRate: 0,
+                  totalRecovered: "₹0",
+                });
+              }}
+            />
+          )}
 
           {/* Stats Cards */}
           <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
@@ -188,3 +218,6 @@ export default function AgentsPage() {
     </div>
   );
 }
+
+
+
