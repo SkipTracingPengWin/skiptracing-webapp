@@ -142,8 +142,8 @@ export default function ActionModal({
     else if (actionId === 'whatsapp') headerColor = "bg-teal-600"; // Changed green shade for distinction
     
     return (
-        // Enhanced backdrop and modal animation styling
-        <div className="fixed inset-0 bg-slate-900 bg-opacity-70 backdrop-blur-sm flex items-center justify-center z-50">
+        /* Backdrop with blur and semi-transparent black background */
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50">
             <div className="bg-white rounded-2xl shadow-2xl w-full max-w-lg mx-auto transform transition-all duration-300 scale-100 opacity-100">
                 
                 {/* Modal Header (More Attractive UI) */}
