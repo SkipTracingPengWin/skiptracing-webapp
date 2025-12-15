@@ -36,7 +36,9 @@ export default function SettingsPage() {
     <div className="flex min-h-screen bg-gray-50 font-sans text-gray-900">
       <Sidebar />
       <div className="flex-1 md:ml-64 flex flex-col overflow-hidden">
-        <Header />
+        <div className="sticky top-0 z-40">
+          <Header />
+        </div>
         <main className="flex-1 overflow-y-auto px-6 md:px-12 py-8">
           <div className="max-w-7xl mx-auto space-y-8">
 
@@ -70,7 +72,7 @@ export default function SettingsPage() {
                   <tab.icon className="w-5 h-5" />
                   {tab.name}
                 </button>
-              ))}
+              ))} 
             </div>
 
             {/* Roles Tab */}
@@ -145,7 +147,7 @@ export default function SettingsPage() {
                   </button>
                 </div>
 
-                {apiKeys.map((k, i) => (
+                {apiKeys.map((k, i) => ( 
                   <div key={i} className="flex items-center justify-between p-5 bg-gray-50 rounded-xl shadow-sm">
                     <div className="flex items-center gap-5">
                       <div className="p-3 bg-blue-100 rounded-lg">
@@ -236,7 +238,7 @@ export default function SettingsPage() {
             {/* Notifications Tab */}
             {activeTab === "notifications" && (
               <section className="p-6 bg-white border border-gray-200 rounded-2xl shadow-sm space-y-8">
-                <div className="flex items-center justify-between">
+                <div   className="flex items-center justify-between">
                   <div>
                     <h3 className="text-2xl font-semibold">Notification Templates</h3>
                     <p className="text-gray-500">Email / SMS messages</p>

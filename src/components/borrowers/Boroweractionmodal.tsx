@@ -13,7 +13,7 @@ interface Props {
     position: { top: number; left: number };
 }
 
-export default function ActionMenu({
+export default function BorrowerActionModal({
     isOpen,
     onClose,
     onView,

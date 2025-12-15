@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useRef } from "react";
+import { useRouter } from "next/navigation";
 import Sidebar from "@/components/layout/Sidebar";
 import Header from "@/components/layout/Header";
 
@@ -19,6 +20,7 @@ import { RiskBadge, StatusBadge, VerificationStatus } from "@/components/borrowe
 
 export default function BorrowersPage() {
     const { borrowers, deleteBorrower } = useBorrowerStore();
+    const router = useRouter();
     const [isModalOpen, setIsModalOpen] = useState(false);
 
     // ----------------------
@@ -51,10 +53,12 @@ export default function BorrowersPage() {
 
     // Handle View action with selected borrower ID
     const handleView = (id?: string) => {
-        if (id) {
-            console.log("Viewing borrower:", id);
-            // Navigation handled inside ActionMenu component
+        // Prefer explicit id if provided by caller, otherwise use currently selectedBorrower
+        const viewId = id ?? (selectedBorrower ? String(selectedBorrower) : undefined);
+        if (viewId) {
+            router.push(`/borrowerprofile?id=${viewId}`);
         }
+        closeMenu();
     };
 
     // Handle Edit action

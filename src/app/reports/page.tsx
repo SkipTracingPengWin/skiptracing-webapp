@@ -1,251 +1,6 @@
-// "use client";
-
-// import React, { useState } from "react";
-// import Sidebar from "@/components/layout/Sidebar";
-// import Header from "@/components/layout/Header";
-// import { useDashboardStore } from "@/store/reoport.store";
-
-// import {
-//   TrendingUp,
-//   FileText,
-//   Users,
-//   BarChart2,
-//   Calendar,
-//   RefreshCcw,
-//   Download,
-//   ChevronDown,
-// } from "lucide-react";
-
-// const Page = () => {
-//   const { period, months } = useDashboardStore();
-//   const [activeTab, setActiveTab] = useState("Recovery Summary");
-
-//   const tabs = [
-//     {
-//       title: "Verification Report",
-//       desc: "KYC completion rates",
-//       icon: <FileText />,
-//     },
-//     {
-//       title: "Agent Performance",
-//       desc: "Field agent metrics",
-//       icon: <Users />,
-//     },
-//     {
-//       title: "Compliance Report",
-//       desc: "Audit trail summary",
-//       icon: <BarChart2 />,
-//     },
-//   ];
-
-//   return (
-//     <div className="flex min-h-screen bg-[#f5f7fa]">
-//       <Sidebar />
-//       <div className="flex-1 md:ml-64 flex flex-col overflow-hidden">
-//         <Header />
-
-//         <main className="flex-1 overflow-y-auto p-6 text-slate-900">
-//           {/* Page Header */}
-//           <div className="mb-6">
-//             <div className="flex flex-col md:flex-row items-start md:items-center justify-between mb-2 gap-4">
-//               <div>
-//                 <h1 className="text-3xl font-semibold tracking-tight">
-//                   Reports & Analytics
-//                 </h1>
-//                 <p className="text-sm text-slate-500 mt-1">
-//                   Comprehensive performance insights
-//                 </p>
-//               </div>
-
-//               {/* Buttons */}
-//               <div className="flex flex-wrap items-center gap-3">
-//                 <button className="flex items-center gap-2 rounded-lg border border-slate-300 bg-white px-4 py-2 text-sm shadow-sm hover:bg-slate-50 transition">
-//                   <Calendar className="h-4 w-4 text-slate-600" />
-//                   <span>{period}</span>
-//                   <ChevronDown className="h-4 w-4" />
-//                 </button>
-
-//                 <button className="flex items-center gap-2 rounded-lg border border-slate-300 bg-white px-4 py-2 text-sm shadow-sm hover:bg-slate-50 transition">
-//                   <RefreshCcw className="h-4 w-4" />
-//                   Refresh
-//                 </button>
-
-//                 <button className="flex items-center gap-2 rounded-lg bg-sky-600 px-5 py-2 text-sm font-semibold text-white shadow hover:bg-sky-700 transition">
-//                   <Download className="h-4 w-4" />
-//                   Export All
-//                 </button>
-//               </div>
-//             </div>
-//           </div>
-
-//           {/* Tabs */}
-//           <section className="grid grid-cols-1 sm:grid-cols-4 gap-4 mb-6">
-//             {/* Recovery Summary Tab */}
-//             <div
-//               onClick={() => setActiveTab("Recovery Summary")}
-//               className={`cursor-pointer rounded-2xl border px-5 py-6 flex items-center gap-4 shadow-sm transition ${
-//                 activeTab === "Recovery Summary"
-//                   ? "border-sky-500 bg-sky-600 text-white"
-//                   : "border-slate-200 bg-white text-slate-700 hover:shadow-md"
-//               }`}
-//             >
-//               <div
-//                 className={`rounded-lg flex items-center justify-center shadow transition ${
-//                   activeTab === "Recovery Summary"
-//                     ? "bg-white text-sky-600"
-//                     : "bg-sky-600 text-white"
-//                 }`}
-//                 style={{ height: 48, width: 48 }}
-//               >
-//                 <TrendingUp className="h-6 w-6" />
-//               </div>
-//               <div>
-//                 <p className="text-sm font-semibold">Recovery Summary</p>
-//                 <p className="text-xs">
-//                   {activeTab === "Recovery Summary"
-//                     ? "Monthly recovery statistics"
-//                     : ""}
-//                 </p>
-//               </div>
-//             </div>
-
-//             {/* Other Tabs */}
-//             {tabs.map((tab) => (
-//               <div
-//                 key={tab.title}
-//                 onClick={() => setActiveTab(tab.title)}
-//                 className={`cursor-pointer rounded-2xl border px-5 py-6 flex items-center gap-4 shadow-sm transition ${
-//                   activeTab === tab.title
-//                     ? "border-sky-500 bg-sky-600 text-white"
-//                     : "border-slate-200 bg-white text-slate-700 hover:shadow-md"
-//                 }`}
-//               >
-//                 <div
-//                   className={`rounded-lg flex items-center justify-center shadow transition ${
-//                     activeTab === tab.title
-//                       ? "bg-white text-sky-600"
-//                       : "bg-slate-100 text-slate-600"
-//                   }`}
-//                   style={{ height: 48, width: 48 }}
-//                 >
-//                   {React.cloneElement(tab.icon, { className: "h-6 w-6" })}
-//                 </div>
-//                 <div>
-//                   <p className="text-sm font-semibold">{tab.title}</p>
-//                   <p className="text-xs">
-//                     {activeTab === tab.title ? tab.desc : ""}
-//                   </p>
-//                 </div>
-//               </div>
-//             ))}
-//           </section>
-
-//           {/* Charts */}
-//           <section className="grid grid-cols-1 md:grid-cols-2 gap-6">
-//             {/* Recovery Trend */}
-//             <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
-//               <div className="mb-4 flex items-center justify-between">
-//                 <div>
-//                   <p className="text-sm font-semibold">Recovery Trend</p>
-//                   <p className="text-xs text-slate-500">
-//                     Monthly recovery vs target (₹ Lakhs)
-//                   </p>
-//                 </div>
-//                 <button className="flex items-center gap-2 rounded-md border border-slate-300 px-3 py-1.5 text-xs hover:bg-slate-50 transition">
-//                   <Download className="h-4 w-4" />
-//                   Export
-//                 </button>
-//               </div>
-
-//               {/* Bar Chart */}
-//               <div className="mt-4 flex h-60 items-end gap-5 border-t border-slate-100 pt-4">
-//                 {months.map((m) => {
-//                   const max = 35;
-//                   const recHeight = (m.recovered / max) * 100;
-//                   const tgtHeight = (m.target / max) * 100;
-
-//                   return (
-//                     <div
-//                       key={m.month}
-//                       className="flex flex-1 flex-col items-center gap-2 text-xs"
-//                     >
-//                       <div className="flex w-full items-end justify-center gap-2">
-//                         <div
-//                           className="w-4 rounded-md bg-sky-600 shadow"
-//                           style={{ height: `${recHeight}%` }}
-//                         />
-//                         <div
-//                           className="w-4 rounded-md bg-orange-500 shadow"
-//                           style={{ height: `${tgtHeight}%` }}
-//                         />
-//                       </div>
-//                       <span className="text-[11px] text-slate-500 font-medium">
-//                         {m.month}
-//                       </span>
-//                     </div>
-//                   );
-//                 })}
-//               </div>
-
-//               {/* Legend */}
-//               <div className="mt-4 flex justify-center gap-6 text-sm">
-//                 <div className="flex items-center gap-2">
-//                   <span className="h-3 w-3 rounded-sm bg-sky-600"></span>
-//                   <span className="text-slate-700">Recovered</span>
-//                 </div>
-//                 <div className="flex items-center gap-2">
-//                   <span className="h-3 w-3 rounded-sm bg-orange-500"></span>
-//                   <span className="text-slate-700">Target</span>
-//                 </div>
-//               </div>
-//             </div>
-
-//             {/* Donut Chart */}
-//             <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
-//               <div className="mb-4 flex items-center justify-between">
-//                 <div>
-//                   <p className="text-sm font-semibold">Verification Breakdown</p>
-//                   <p className="text-xs text-slate-500">By verification type</p>
-//                 </div>
-//                 <button className="flex items-center gap-2 rounded-md border border-slate-300 px-3 py-1.5 text-xs hover:bg-slate-50 transition">
-//                   <Download className="h-4 w-4" />
-//                   Export
-//                 </button>
-//               </div>
-
-//               <div className="flex flex-col items-center">
-//                 {/* Donut Placeholder */}
-//                 <div className="h-44 w-44 rounded-full border-[14px] border-transparent border-t-sky-600 border-r-green-600 border-b-orange-500 border-l-purple-500"></div>
-
-//                 {/* Legend */}
-//                 <div className="mt-6 flex flex-wrap justify-center gap-5 text-sm">
-//                   {[
-//                     { color: "bg-sky-600", label: "Aadhaar" },
-//                     { color: "bg-green-600", label: "PAN" },
-//                     { color: "bg-orange-500", label: "Mobile" },
-//                     { color: "bg-purple-600", label: "Bank" },
-//                     { color: "bg-pink-500", label: "Employment" },
-//                   ].map((item) => (
-//                     <div key={item.label} className="flex items-center gap-2">
-//                       <span className={`h-3 w-3 rounded-sm ${item.color}`}></span>
-//                       <span className="text-slate-700">{item.label}</span>
-//                     </div>
-//                   ))}
-//                 </div>
-//               </div>
-//             </div>
-//           </section>
-//         </main>
-//       </div>
-//     </div>
-//   );
-// };
-
-// export default Page;
 
 
-
-// ReportsPage.tsx
+// // ReportsPage.tsx
 "use client";
 
 import React from 'react';
@@ -299,9 +54,12 @@ const ReportsPage = () => {
     <div className="flex min-h-screen bg-gray-50 font-sans">
       <Sidebar />
       <div className="flex-1 md:ml-64 flex flex-col overflow-hidden">
-        <Header />
+        
+          <Header />
+      
 
         <main className="flex-1 overflow-y-auto px-4 md:px-8 py-8 text-slate-900">
+      
           {/* ----------------- PAGE HEADER ----------------- */}
           <div className="mb-10">
             <div className="flex flex-col md:flex-row items-start md:items-center justify-between">
@@ -543,7 +301,7 @@ const ReportsPage = () => {
                 <div className="space-y-4">
                   {agentPerformance.map((agent, i) => (
                     <div key={i} className="flex items-center gap-4 p-4 bg-slate-50 rounded-xl hover:bg-slate-100 transition">
-                      <div className="w-10 h-10 rounded-full bg-gradient-to-br from-[#1A73E8] to-[#0D47A1] flex items-center justify-center">
+                      <div className="w-10 h-10 rounded-full bg- from-[#1A73E8] to-[#0D47A1] flex items-center justify-center">
                         <span className="text-white font-medium text-sm">
                           {agent.name.split(' ')[0][0]}{agent.name.split(' ')[1]?.[0] || ''}
                         </span>
@@ -620,3 +378,10 @@ const ReportsPage = () => {
 
 // Export the main component
 export default ReportsPage;
+
+
+
+
+
+
+

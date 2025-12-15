@@ -376,6 +376,241 @@
 
 
 
+// "use client";
+
+// import { useState } from "react";
+// import Sidebar from "@/components/layout/Sidebar";
+// import Header from "@/components/layout/Header";
+// import { UserCircle, MapPin } from "lucide-react";
+
+// import { useAssignmentStore } from "@/store/assignments.store";
+// import AssignCaseModal from "@/components/assignments/assigncaseform.modal";
+
+// // Agent Workload Component
+// function AgentWorkload({ name, location, cases }: any) {
+//   const maxCases = 10;
+//   const percentage = (cases / maxCases) * 100;
+
+//   return (
+//     <div className="flex items-center justify-between p-4 hover:bg-slate-50 rounded-lg transition-colors">
+//       <div className="flex items-center gap-3">
+//         <div className="h-12 w-12 bg-blue-600 rounded-full flex items-center justify-center">
+//           <span className="text-white font-semibold text-sm">
+//             {name.split(" ").map((n: string) => n[0]).join("")}
+//           </span>
+//         </div>
+
+//         <div>
+//           <div className="font-semibold text-sm text-slate-900">{name}</div>
+//           <div className="text-xs text-slate-500">{location}</div>
+//         </div>
+//       </div>
+
+//       <div className="text-right">
+//         <div className="text-sm font-semibold text-slate-900">{cases} cases</div>
+
+//         <div className="w-32 h-2 bg-slate-100 rounded-full overflow-hidden mt-1">
+//           <div
+//             className="h-full bg-blue-600 rounded-full"
+//             style={{ width: `${percentage}%` }}
+//           />
+//         </div>
+//       </div>
+//     </div>
+//   );
+// }
+
+// // Case Item Component
+// function CaseItem({ borrower, loanId, amount, location, risk, assignedTo, status }: any) {
+//   const riskColors: Record<string, string> = {
+//     high: "bg-red-100 text-red-700",
+//     medium: "bg-orange-100 text-orange-700",
+//     low: "bg-green-100 text-green-700",
+//     critical: "bg-red-600 text-white",
+//   };
+
+//   return (
+//     <div className="bg-white p-4 rounded-lg border border-slate-200 hover:shadow-md transition-shadow">
+//       <div className="flex items-start justify-between mb-3">
+//         <div>
+//           <h3 className="font-semibold text-slate-900">{borrower}</h3>
+
+//           <div className="text-sm text-slate-600 mt-1">
+//             {loanId} • {amount}
+//           </div>
+
+//           <div className="flex items-center gap-1 text-xs text-slate-500 mt-1">
+//             <MapPin className="h-3 w-3" />
+//             {location}
+//           </div>
+//         </div>
+
+//         <span className={`px-2 py-1 rounded-full text-xs font-medium ${riskColors[risk]}`}>
+//           {risk}
+//         </span>
+//       </div>
+
+//       <div className="flex items-center justify-between pt-3 border-t border-slate-100">
+//         {assignedTo ? (
+//           <div className="flex items-center gap-2">
+//             <div className="h-6 w-6 bg-green-100 rounded-full flex items-center justify-center">
+//               <UserCircle className="h-4 w-4 text-green-600" />
+//             </div>
+//             <span className="text-xs text-green-600 font-medium">{assignedTo}</span>
+//           </div>
+//         ) : (
+//           <span className="px-2 py-1 bg-orange-100 text-orange-700 rounded-full text-xs font-medium">
+//             Unassigned
+//           </span>
+//         )}
+
+//         <button className="text-blue-600 text-xs font-medium hover:underline">
+//           {assignedTo ? "Reassign" : "Assign"}
+//         </button>
+//       </div>
+//     </div>
+//   );
+// }
+
+// export default function AssignmentsPage() {
+//   const [openModal, setOpenModal] = useState(false);
+
+//   const assignments = useAssignmentStore((state) => state.assignments);
+
+//   // Borrowers list for modal
+//   const borrowers = assignments.map((a) => ({
+//     id: String(a.id),
+//     name: a.borrowerName,
+//   }));
+
+//   // Agents collected from assignments
+//   const agentMap: Record<string, { id: string; name: string }> = {};
+//   assignments.forEach((a) => {
+//     if (a.agentName) {
+//       agentMap[a.agentName] = { id: a.agentName, name: a.agentName };
+//     }
+//   });
+//   const agents = Object.values(agentMap);
+
+//   // Stats
+//   const totalCases = assignments.length;
+//   const assigned = assignments.filter((a) => a.assignedAt).length;
+//   const unassigned = totalCases - assigned;
+//   const activeAgents = agents.length;
+
+//   // Form Submit Action
+//   const handleAssign = (data: { borrowerId: string; agentId: string }) => {
+//     console.log("Assigned Data:", data);
+//     // You can call Zustand store action here
+//   };
+
+//   return (
+//     <div className="flex h-screen bg-slate-50">
+//       <Sidebar />
+
+//       <div className="flex-1 ml-64 flex flex-col overflow-hidden">
+//         <Header />
+
+//         <main className="flex-1 overflow-y-auto p-6">
+//           {/* Header */}
+//           <div className="mb-6 flex items-center justify-between">
+//             <div>
+//               <h1 className="text-2xl font-bold text-slate-900">Agent Assignments</h1>
+//               <p className="text-sm text-slate-600 mt-1">Assign borrowers to field agents</p>
+//             </div>
+
+//             {/* Open Modal Button */}
+//             <button
+//               onClick={() => setOpenModal(true)}
+//               className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+//             >
+//               <UserCircle className="h-4 w-4" />
+//               Assign Cases
+//             </button>
+//           </div>
+
+//           {/* Stats */}
+//           <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+//             <div className="bg-white p-6 rounded-xl border border-slate-200">
+//               <div className="text-sm text-slate-600">Total Cases</div>
+//               <div className="text-3xl font-bold">{totalCases}</div>
+//             </div>
+
+//             <div className="bg-white p-6 rounded-xl border border-slate-200">
+//               <div className="text-sm text-slate-600">Assigned</div>
+//               <div className="text-3xl font-bold text-green-600">{assigned}</div>
+//             </div>
+
+//             <div className="bg-white p-6 rounded-xl border border-slate-200">
+//               <div className="text-sm text-slate-600">Unassigned</div>
+//               <div className="text-3xl font-bold text-orange-600">{unassigned}</div>
+//             </div>
+
+//             <div className="bg-white p-6 rounded-xl border border-slate-200">
+//               <div className="text-sm text-slate-600">Active Agents</div>
+//               <div className="text-3xl font-bold text-blue-600">{activeAgents}</div>
+//             </div>
+//           </div>
+
+//           {/* Content Grid */}
+//           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+//             {/* Agent Workload */}
+//             <div className="bg-white p-6 rounded-xl border border-slate-200">
+//               <h2 className="text-lg font-bold mb-4">Agent Workload</h2>
+
+//               <div className="space-y-2">
+//                 {Object.values(agentMap).map((agent: any, idx) => {
+//                   const count = assignments.filter((a) => a.agentName === agent.name).length;
+
+//                   return (
+//                     <AgentWorkload
+//                       key={idx}
+//                       name={agent.name}
+//                       location={"Unknown"}
+//                       cases={count}
+//                     />
+//                   );
+//                 })}
+//               </div>
+//             </div>
+
+//             {/* Cases */}
+//             <div className="lg:col-span-2">
+//               <h2 className="text-lg font-bold mb-4">Cases</h2>
+
+//               <div className="space-y-4">
+//                 {assignments.map((assign, i) => (
+//                   <CaseItem
+//                     key={i}
+//                     borrower={assign.borrowerName}
+//                     loanId={`Loan: ${assign.loanId}`}
+//                     amount={assign.amount}
+//                     location="Unknown"
+//                     risk={assign.priority.toLowerCase()}
+//                     assignedTo={assign.agentName}
+//                     status={assign.status}
+//                   />
+//                 ))}
+//               </div>
+//             </div>
+//           </div>
+//         </main>
+//       </div>
+
+//       {/* Modal Here */}
+//       <AssignCaseModal
+//         open={openModal}
+//         onClose={() => setOpenModal(false)}
+//         borrowers={borrowers}
+//         agents={agents}
+//         onSubmit={handleAssign}
+//       />
+//     </div>
+//   );
+// }
+
+
+
 "use client";
 
 import { useState } from "react";
@@ -420,8 +655,8 @@ function AgentWorkload({ name, location, cases }: any) {
   );
 }
 
-// Case Item Component
-function CaseItem({ borrower, loanId, amount, location, risk, assignedTo, status }: any) {
+// Case Item Component - FIXED TO SHOW ASSIGNED DETAILS
+function CaseItem({ assignment }: any) {
   const riskColors: Record<string, string> = {
     high: "bg-red-100 text-red-700",
     medium: "bg-orange-100 text-orange-700",
@@ -433,30 +668,35 @@ function CaseItem({ borrower, loanId, amount, location, risk, assignedTo, status
     <div className="bg-white p-4 rounded-lg border border-slate-200 hover:shadow-md transition-shadow">
       <div className="flex items-start justify-between mb-3">
         <div>
-          <h3 className="font-semibold text-slate-900">{borrower}</h3>
+          <h3 className="font-semibold text-slate-900">{assignment.borrowerName}</h3>
 
           <div className="text-sm text-slate-600 mt-1">
-            {loanId} • {amount}
+            Loan: {assignment.loanId} • {assignment.amount}
           </div>
 
           <div className="flex items-center gap-1 text-xs text-slate-500 mt-1">
             <MapPin className="h-3 w-3" />
-            {location}
+            {assignment.location || "Unknown"}
           </div>
         </div>
 
-        <span className={`px-2 py-1 rounded-full text-xs font-medium ${riskColors[risk]}`}>
-          {risk}
+        <span className={`px-2 py-1 rounded-full text-xs font-medium ${riskColors[assignment.priority?.toLowerCase()] || 'bg-gray-100 text-gray-700'}`}>
+          {assignment.priority || 'Unknown'}
         </span>
       </div>
 
       <div className="flex items-center justify-between pt-3 border-t border-slate-100">
-        {assignedTo ? (
+        {assignment.agentName && assignment.assignedAt ? (
           <div className="flex items-center gap-2">
             <div className="h-6 w-6 bg-green-100 rounded-full flex items-center justify-center">
               <UserCircle className="h-4 w-4 text-green-600" />
             </div>
-            <span className="text-xs text-green-600 font-medium">{assignedTo}</span>
+            <div>
+              <span className="text-xs text-green-600 font-medium">{assignment.agentName}</span>
+              <div className="text-xs text-slate-500 block">
+                {new Date(assignment.assignedAt).toLocaleDateString()}
+              </div>
+            </div>
           </div>
         ) : (
           <span className="px-2 py-1 bg-orange-100 text-orange-700 rounded-full text-xs font-medium">
@@ -465,7 +705,7 @@ function CaseItem({ borrower, loanId, amount, location, risk, assignedTo, status
         )}
 
         <button className="text-blue-600 text-xs font-medium hover:underline">
-          {assignedTo ? "Reassign" : "Assign"}
+          {assignment.agentName ? "Reassign" : "Assign"}
         </button>
       </div>
     </div>
@@ -475,17 +715,18 @@ function CaseItem({ borrower, loanId, amount, location, risk, assignedTo, status
 export default function AssignmentsPage() {
   const [openModal, setOpenModal] = useState(false);
 
+  // ✅ FIXED: Get assignments from store + force re-render
   const assignments = useAssignmentStore((state) => state.assignments);
 
   // Borrowers list for modal
-  const borrowers = assignments.map((a) => ({
+  const borrowers = assignments.map((a: any) => ({
     id: String(a.id),
     name: a.borrowerName,
   }));
 
   // Agents collected from assignments
   const agentMap: Record<string, { id: string; name: string }> = {};
-  assignments.forEach((a) => {
+  assignments.forEach((a: any) => {
     if (a.agentName) {
       agentMap[a.agentName] = { id: a.agentName, name: a.agentName };
     }
@@ -494,14 +735,31 @@ export default function AssignmentsPage() {
 
   // Stats
   const totalCases = assignments.length;
-  const assigned = assignments.filter((a) => a.assignedAt).length;
+  const assigned = assignments.filter((a: any) => a.agentName && a.assignedAt).length;
   const unassigned = totalCases - assigned;
   const activeAgents = agents.length;
 
-  // Form Submit Action
+  // ✅ FIXED: Proper handleAssign with store update
   const handleAssign = (data: { borrowerId: string; agentId: string }) => {
-    console.log("Assigned Data:", data);
-    // You can call Zustand store action here
+    console.log("Assigning:", data);
+    
+    // Call store action to add assignment
+    useAssignmentStore.getState().addAssignment({
+      id: Date.now(), // Generate unique ID
+      borrowerId: parseInt(data.borrowerId),
+      borrowerName: borrowers.find((b: any) => b.id === data.borrowerId)?.name || '',
+      agentId: parseInt(data.agentId),
+      loanId: 'LOAN-' + Date.now(),
+      amount: '₹50,000',
+      priority: 'Medium',
+      agentName: agents.find((a: any) => a.id === data.agentId)?.name || '',
+      assignedAt: new Date().toISOString(),
+      dueDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
+      status: 'Pending',
+      progress: 0
+    });
+
+    setOpenModal(false);
   };
 
   return (
@@ -519,7 +777,6 @@ export default function AssignmentsPage() {
               <p className="text-sm text-slate-600 mt-1">Assign borrowers to field agents</p>
             </div>
 
-            {/* Open Modal Button */}
             <button
               onClick={() => setOpenModal(true)}
               className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
@@ -558,15 +815,15 @@ export default function AssignmentsPage() {
             <div className="bg-white p-6 rounded-xl border border-slate-200">
               <h2 className="text-lg font-bold mb-4">Agent Workload</h2>
 
-              <div className="space-y-2">
+              <div className="space-y-2 max-h-96 overflow-y-auto">
                 {Object.values(agentMap).map((agent: any, idx) => {
-                  const count = assignments.filter((a) => a.agentName === agent.name).length;
+                  const count = assignments.filter((a: any) => a.agentName === agent.name).length;
 
                   return (
                     <AgentWorkload
                       key={idx}
                       name={agent.name}
-                      location={"Unknown"}
+                      location={"East Godavari"}
                       cases={count}
                     />
                   );
@@ -574,30 +831,27 @@ export default function AssignmentsPage() {
               </div>
             </div>
 
-            {/* Cases */}
+            {/* Cases - ✅ NOW SHOWS ASSIGNED DETAILS */}
             <div className="lg:col-span-2">
-              <h2 className="text-lg font-bold mb-4">Cases</h2>
+              <h2 className="text-lg font-bold mb-4">Recent Assignments</h2>
 
               <div className="space-y-4">
-                {assignments.map((assign, i) => (
-                  <CaseItem
-                    key={i}
-                    borrower={assign.borrowerName}
-                    loanId={`Loan: ${assign.loanId}`}
-                    amount={assign.amount}
-                    location="Unknown"
-                    risk={assign.priority.toLowerCase()}
-                    assignedTo={assign.agentName}
-                    status={assign.status}
-                  />
-                ))}
+                {assignments.length === 0 ? (
+                  <div className="text-center py-12 text-slate-500">
+                    No assignments yet. Assign cases to see them here.
+                  </div>
+                ) : (
+                  assignments.map((assign: any, i) => (
+                    <CaseItem key={assign.id || i} assignment={assign} />
+                  ))
+                )}
               </div>
             </div>
           </div>
         </main>
       </div>
 
-      {/* Modal Here */}
+      {/* Modal */}
       <AssignCaseModal
         open={openModal}
         onClose={() => setOpenModal(false)}
