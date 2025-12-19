@@ -26,7 +26,7 @@ const assignmentsData: Assignment[] = [
         loanId: "LN-2024-002",
         amount: "₹78,000",
         assignedAt: "2025-11-05",
-        dueDate: "2025-12-05",
+        dueDate: "2025-12-05", 
         status: "Pending",
         priority: "Medium",
         progress: 0

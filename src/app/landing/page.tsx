@@ -19,8 +19,8 @@ export default function LandingPage() {
 
                     </nav>
                     <div className="flex items-center gap-4">
-                        <Link href="/login" className="text-slate-600 hover:text-slate-900 font-medium transition-colors">Sign In</Link>
-                        <Link href="/register" className="bg-blue-600 hover:bg-blue-700 text-white px-5 py-2.5 rounded-lg font-medium transition-colors shadow-sm hover:shadow-md">
+                        <Link href="/auth/login" className="text-slate-600 hover:text-slate-900 font-medium transition-colors">Sign In</Link>
+                        <Link href="/auth/register" className="bg-blue-600 hover:bg-blue-700 text-white px-5 py-2.5 rounded-lg font-medium transition-colors shadow-sm hover:shadow-md">
                             Get Started
                         </Link>
                     </div>
@@ -28,7 +28,7 @@ export default function LandingPage() {
             </header>
 
             {/* Hero Section */}
-            <section className="pt-20 pb-32 bg-gradient-to-b from-blue-50/50 to-white overflow-hidden">
+            <section className="pt-20 pb-32 bg- from-blue-50/50 to-white overflow-hidden">
                 <div className="container mx-auto px-4">
                     <div className="flex flex-col lg:flex-row items-center gap-16">
                         <div className="flex-1 space-y-8">
@@ -124,7 +124,7 @@ export default function LandingPage() {
                 </div>
             </section>
 
-            <section className="py-16 bg-gradient-to-br from-white via-white to-orange-50/60 relative">
+            <section className="py-16 bg- from-white via-white to-orange-50/60 relative">
                 {/* soft top-right bubble */}
                 <div className="pointer-events-none absolute -top-32 right-0 h-64 w-64 rounded-full bg-orange-100/70 blur-3xl opacity-70" />
                 <div className="container mx-auto px-4 relative z-10">
@@ -234,13 +234,13 @@ export default function LandingPage() {
                                 {/* bubble background in top-right */}
                                 <div className="pointer-events-none absolute -top-10 -right-10 h-40 w-40">
                                     <div
-                                        className={`h-full w-full rounded-full bg-gradient-to-bl ${feature.bubble}`}
+                                        className={`h-full w-full rounded-full bg- ${feature.bubble}`}
                                     />
                                 </div>
 
                                 {/* icon with solid rounded square */}
                                 <div
-                                    className={`relative mb-6 flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-to-br ${feature.iconBg} shadow-lg`}
+                                    className={`relative mb-6 flex h-14 w-14 items-center justify-center rounded-2xl bg- ${feature.iconBg} shadow-lg`}
                                 >
                                     <feature.icon className="h-7 w-7 text-white" />
                                 </div>
@@ -302,7 +302,7 @@ export default function LandingPage() {
                         Join 50+ NBFCs and banks already using SkipTrace
                     </p>
                     <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-                        <Link href="/register" className="bg-orange-500 hover:bg-orange-600 text-white px-8 py-4 rounded-lg font-bold text-lg transition-colors shadow-lg hover:shadow-orange-500/25 flex items-center gap-2">
+                        <Link href="/auth/register" className="bg-orange-500 hover:bg-orange-600 text-white px-8 py-4 rounded-lg font-bold text-lg transition-colors shadow-lg hover:shadow-orange-500/25 flex items-center gap-2">
                             Start <ArrowRight className="h-5 w-5" />
                         </Link>
                         <button className="bg-white border border-slate-200 hover:border-slate-300 hover:bg-slate-50 text-slate-700 px-8 py-4 rounded-lg font-bold text-lg transition-all shadow-sm">

@@ -1,21 +1,26 @@
 "use client";
 
 import { useEffect } from "react";
-
 import {
     Users,
     CheckCircle,
     TrendingUp,
-    UserCheck,
     Clock,
-    AlertTriangle,
-    ArrowRight,
     MapPin
 } from "lucide-react";
 import { useDashboardStatsStore } from "@/store/dashboardStats.store";
-import { useAlertStore } from "@/store/alerts.store"; // Assuming this is used elsewhere or will be
-import { useAgentStore } from "@/store/agents.store"; // Assuming this is used elsewhere or will be
-import { useRecoveryTrendStore } from "@/store/recoveryTrend.store"; // Assuming this is used elsewhere or will be
+import { useAlertStore } from "@/store/alerts.store";
+import { useRecoveryTrendStore } from "@/store/recoveryTrend.store";
+import {
+    Area,
+    XAxis,
+    YAxis,
+    CartesianGrid,
+    Tooltip,
+    ResponsiveContainer,
+    Line,
+    ComposedChart
+} from 'recharts';
 
 // Stats Card Component
 function StatsCard({ icon: Icon, label, value, trend, color }: any) {
@@ -58,71 +63,36 @@ function AlertItem({ title, description, type, action }: any) {
     );
 }
 
-// Agent Item Component
-function AgentItem({ name, location, cases, status }: any) {
-    return (
-        <div className="flex items-center justify-between p-3 hover:bg-slate-50 rounded-lg transition-colors">
-            <div className="flex items-center gap-3">
-                <div className="h-10 w-10 bg-blue-600 rounded-full flex items-center justify-center">
-                    <span className="text-white font-semibold text-sm">{name.split(' ').map((n: string) => n[0]).join('')}</span>
-                </div>
-                <div>
-                    <div className="font-semibold text-sm text-slate-900">{name}</div>
-                    <div className="text-xs text-slate-500 flex items-center gap-1">
-                        <MapPin className="h-3 w-3" />
-                        {location}
-                    </div>
-                </div>
-            </div>
-            <div className="text-right">
-                <div className="text-sm font-semibold text-slate-900">{cases} cases</div>
-                <div className={`text-xs ${status === 'Active' ? 'text-green-600' : 'text-orange-600'}`}>
-                    <span className="inline-block h-1.5 w-1.5 rounded-full mr-1 ${status === 'Active' ? 'bg-green-600' : 'bg-orange-600'}"></span>
-                    {status}
-                </div>
-            </div>
-        </div>
-    );
-}
-
-export default function DashboardPage() {
-    // Using modular Zustand stores
+export default function AgentDashboard() {
     const { dashboardStats, fetchStats } = useDashboardStatsStore();
     const { alerts, fetchAlerts } = useAlertStore();
-    const { agents, fetchAgents } = useAgentStore();
     const { recoveryTrend, fetchTrends } = useRecoveryTrendStore();
 
     useEffect(() => {
         fetchStats();
         fetchAlerts();
-        fetchAgents();
         fetchTrends();
-    }, [fetchStats, fetchAlerts, fetchAgents, fetchTrends]);
+    }, [fetchStats, fetchAlerts, fetchTrends]);
 
-    // Render a loading state if the primary data isn't available yet.
+    // Add loading check
     if (!dashboardStats) {
-        return <div>Loading dashboard...</div>; // Or a more sophisticated skeleton loader
+        return <div>Loading dashboard...</div>;
     }
 
+    // Agent-specific stats (removed: Active Agents, SLA Alerts)
     const stats = [
-        { icon: Users, label: "Total Borrowers", value: String(dashboardStats?.totalBorrowers ?? 0), trend: "+12% this month", color: "bg-blue-600" },
-        { icon: CheckCircle, label: "Verified", value: String(dashboardStats?.verified ?? 0), trend: "+8%", color: "bg-green-600" },
-        { icon: TrendingUp, label: "In Recovery", value: String(dashboardStats?.inRecovery ?? 0), trend: null, color: "bg-orange-500" },
-        { icon: UserCheck, label: "Active Agents", value: String(dashboardStats?.activeAgents ?? 0), trend: null, color: "bg-blue-500" },
-        { icon: Clock, label: "Pending Verifications", value: String(dashboardStats?.pendingVerifications ?? 0), trend: null, color: "bg-purple-600" },
-        { icon: AlertTriangle, label: "SLA Alerts", value: String(dashboardStats?.slaAlerts ?? 0), trend: null, color: "bg-red-500" },
+        { icon: Users, label: "Total Borrowers", value: (dashboardStats.totalBorrowers || 0).toString(), trend: "+12% this month", color: "bg-blue-600" },
+        { icon: CheckCircle, label: "Verified", value: (dashboardStats.verified || 0).toString(), trend: "+8%", color: "bg-green-600" },
+        { icon: TrendingUp, label: "In Recovery", value: (dashboardStats.inRecovery || 0).toString(), trend: null, color: "bg-orange-500" },
+        { icon: Clock, label: "Pending Verifications", value: (dashboardStats.pendingVerifications || 0).toString(), trend: null, color: "bg-purple-600" },
     ];
 
-    // Get only the first 3 alerts for display
     const displayAlerts = alerts.slice(0, 3);
 
-    // Get only active agents for display
-    const activeAgents = agents.filter(agent => agent.status === "Active" || agent.status === "Busy").slice(0, 3);
-
     return (
-        <>
+        <div>
             {/* Stats Grid */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4 mb-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
                 {stats.map((stat, i) => (
                     <StatsCard key={i} {...stat} />
                 ))}
@@ -145,23 +115,74 @@ export default function DashboardPage() {
                             </div>
                         </div>
                     </div>
-                    <div className="h-64 flex items-end justify-between gap-2">
-                        {recoveryTrend.map((data, i) => (
-                            <div key={i} className="flex-1 flex flex-col items-center gap-2">
-                                <div className="w-full bg-gradient-to-t from-blue-500 to-blue-300 rounded-t-lg relative" style={{ height: `${(data.recovered / 35) * 100}%` }}>
-                                    <div className="absolute -top-6 left-1/2 -translate-x-1/2 text-xs font-semibold text-slate-700">{data.recovered}</div>
-                                </div>
-                                <div className="text-xs text-slate-500">{data.month}</div>
-                            </div>
-                        ))}
+                    <div className="h-64 w-full">
+                        <ResponsiveContainer width="100%" height="100%">
+                            <ComposedChart
+                                data={recoveryTrend}
+                                margin={{
+                                    top: 10,
+                                    right: 30,
+                                    left: 0,
+                                    bottom: 0,
+                                }}
+                            >
+                                <defs>
+                                    <linearGradient id="colorRecovered" x1="0" y1="0" x2="0" y2="1">
+                                        <stop offset="5%" stopColor="#3b82f6" stopOpacity={0.3} />
+                                        <stop offset="95%" stopColor="#3b82f6" stopOpacity={0} />
+                                    </linearGradient>
+                                </defs>
+                                <CartesianGrid strokeDasharray="3 3" vertical={true} horizontal={true} stroke="#e2e8f0" />
+                                <XAxis
+                                    dataKey="month"
+                                    axisLine={false}
+                                    tickLine={false}
+                                    tick={{ fill: '#64748b', fontSize: 12 }}
+                                    dy={10}
+                                />
+                                <YAxis
+                                    axisLine={false}
+                                    tickLine={false}
+                                    tick={{ fill: '#64748b', fontSize: 12 }}
+                                />
+                                <Tooltip
+                                    contentStyle={{
+                                        backgroundColor: '#fff',
+                                        borderRadius: '12px',
+                                        border: 'none',
+                                        boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1)'
+                                    }}
+                                    itemStyle={{ fontSize: '14px', fontWeight: 600 }}
+                                    labelStyle={{ color: '#64748b', marginBottom: '8px' }}
+                                />
+                                <Area
+                                    type="monotone"
+                                    dataKey="recovered"
+                                    stroke="#3b82f6"
+                                    strokeWidth={3}
+                                    fillOpacity={1}
+                                    fill="url(#colorRecovered)"
+                                    name="Recovered"
+                                />
+                                <Line
+                                    type="monotone"
+                                    dataKey="target"
+                                    stroke="#f97316"
+                                    strokeWidth={3}
+                                    strokeDasharray="5 5"
+                                    dot={{ stroke: '#f97316', strokeWidth: 2, r: 4, fill: '#fff' }}
+                                    name="Target"
+                                />
+                            </ComposedChart>
+                        </ResponsiveContainer>
                     </div>
                 </div>
 
                 {/* Active Alerts */}
                 <div className="bg-white p-6 rounded-xl border border-slate-200">
                     <div className="flex items-center justify-between mb-4">
-                        <h3 className="text-lg font-bold text-slate-900">Active Alerts</h3>
-                        <span className="text-xs bg-red-100 text-red-600 px-2 py-1 rounded-full font-semibold">3 Alerts</span>
+                        <h3 className="text-lg font-bold text-slate-900">My Alerts</h3>
+                        <span className="text-xs bg-red-100 text-red-600 px-2 py-1 rounded-full font-semibold">{displayAlerts.length} Alerts</span>
                     </div>
                     <div>
                         {displayAlerts.map((alert, i) => (
@@ -172,10 +193,10 @@ export default function DashboardPage() {
             </div>
 
             {/* Bottom Grid */}
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                 {/* Verification Status */}
                 <div className="bg-white p-6 rounded-xl border border-slate-200">
-                    <h3 className="text-lg font-bold text-slate-900 mb-6">Verification Status</h3>
+                    <h3 className="text-lg font-bold text-slate-900 mb-6">My Verification Status</h3>
                     <div className="flex items-center justify-center mb-6">
                         <div className="relative h-40 w-40">
                             <svg className="transform -rotate-90" viewBox="0 0 100 100">
@@ -217,43 +238,34 @@ export default function DashboardPage() {
                     </div>
                 </div>
 
-                {/* Skip Trace Hotspots */}
+                {/* My Assignments */}
                 <div className="bg-white p-6 rounded-xl border border-slate-200">
-                    <div className="flex items-center justify-between mb-4">
-                        <h3 className="text-lg font-bold text-slate-900">Skip Trace Hotspots</h3>
-                        <button className="text-blue-600 text-sm font-medium hover:underline flex items-center gap-1">
-                            View Map <ArrowRight className="h-4 w-4" />
-                        </button>
-                    </div>
-                    <div className="h-48 bg-slate-100 rounded-lg relative overflow-hidden mb-4">
-                        <div className="absolute inset-0 flex items-center justify-center">
-                            <MapPin className="h-12 w-12 text-orange-500 animate-bounce" />
+                    <h3 className="text-lg font-bold text-slate-900 mb-4">My Assignments</h3>
+                    <div className="space-y-3">
+                        <div className="p-4 bg-blue-50 rounded-lg border border-blue-100">
+                            <div className="flex items-center justify-between mb-2">
+                                <span className="font-semibold text-slate-900">Active Cases</span>
+                                <span className="text-2xl font-bold text-blue-600">12</span>
+                            </div>
+                            <p className="text-xs text-slate-600">Currently assigned to you</p>
                         </div>
-                        <div className="absolute top-4 right-4 bg-white px-3 py-1 rounded-full shadow-md">
-                            <span className="text-xs font-semibold text-slate-700">Mumbai</span>
+                        <div className="p-4 bg-green-50 rounded-lg border border-green-100">
+                            <div className="flex items-center justify-between mb-2">
+                                <span className="font-semibold text-slate-900">Completed Today</span>
+                                <span className="text-2xl font-bold text-green-600">3</span>
+                            </div>
+                            <p className="text-xs text-slate-600">Cases resolved today</p>
                         </div>
-                    </div>
-                    <div className="flex items-center justify-between text-sm">
-                        <span className="text-slate-600">Total Signals</span>
-                        <span className="font-semibold text-slate-900">254 cases</span>
-                    </div>
-                </div>
-
-                {/* Field Agents */}
-                <div className="bg-white p-6 rounded-xl border border-slate-200">
-                    <div className="flex items-center justify-between mb-4">
-                        <h3 className="text-lg font-bold text-slate-900">Field Agents</h3>
-                        <button className="text-blue-600 text-sm font-medium hover:underline flex items-center gap-1">
-                            View All <ArrowRight className="h-4 w-4" />
-                        </button>
-                    </div>
-                    <div>
-                        {activeAgents.map((agent, i) => (
-                            <AgentItem key={i} {...agent} />
-                        ))}
+                        <div className="p-4 bg-orange-50 rounded-lg border border-orange-100">
+                            <div className="flex items-center justify-between mb-2">
+                                <span className="font-semibold text-slate-900">Pending Review</span>
+                                <span className="text-2xl font-bold text-orange-600">5</span>
+                            </div>
+                            <p className="text-xs text-slate-600">Awaiting manager approval</p>
+                        </div>
                     </div>
                 </div>
             </div>
-        </>
+        </div>
     );
 }

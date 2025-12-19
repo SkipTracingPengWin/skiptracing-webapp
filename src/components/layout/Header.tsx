@@ -189,6 +189,8 @@ const routeTitleMap: Record<string, string> = {
   "/settings": "Settings",
 };
 
+import { useAuthStore } from "@/store/auth.store";
+
 export default function Header({ title }: HeaderProps) {
   const [openUser, setOpenUser] = useState(false);
   const [openNotif, setOpenNotif] = useState(false);
@@ -196,6 +198,7 @@ export default function Header({ title }: HeaderProps) {
   const notifDropdownRef = useRef<HTMLDivElement | null>(null);
   const router = useRouter();
   const pathname = usePathname();
+  const { user, logout } = useAuthStore();
 
   const currentTitle = title || routeTitleMap[pathname] || "SkipTraceAI";
 
@@ -227,7 +230,18 @@ export default function Header({ title }: HeaderProps) {
 
   const handleLogout = () => {
     setOpenUser(false);
-    router.push("/login");
+    logout(); // Clear store state
+    router.push("/auth/login");
+  };
+
+  // Helper to get initials
+  const getInitials = (name: string) => {
+    return name
+      .split(" ")
+      .map((n) => n[0])
+      .join("")
+      .toUpperCase()
+      .slice(0, 2);
   };
 
   return (
@@ -259,7 +273,7 @@ export default function Header({ title }: HeaderProps) {
             <span className="absolute top-1 right-1 h-2 w-2 bg-red-500 rounded-full"></span>
           </button>
 
-          {/* Notification Popup (like image) */}
+          {/* ... keeping notification content the same ... */}
           {openNotif && (
             <div className="absolute right-0 mt-2 w-80 bg-white border border-slate-200 rounded-xl shadow-lg z-50">
               <div className="px-4 py-3 border-b border-slate-200 flex items-center justify-between">
@@ -322,14 +336,18 @@ export default function Header({ title }: HeaderProps) {
             className="flex items-center gap-3 pl-4 border-l border-slate-200 hover:bg-slate-50 rounded-lg py-1"
           >
             <div className="h-10 w-10 bg-blue-600 rounded-full flex items-center justify-center">
-              <span className="text-white font-semibold text-sm">TK</span>
+              <span className="text-white font-semibold text-sm">
+                {user ? getInitials(user.name) : "G"}
+              </span>
             </div>
 
             <div className="hidden md:block text-left">
               <div className="text-sm font-semibold text-slate-900">
-                Thathaji Kotari
+                {user ? user.name : "Guest User"}
               </div>
-              <div className="text-xs text-slate-500">User</div>
+              <div className="text-xs text-slate-500">
+                {user ? user.role : "Guest"}
+              </div>
             </div>
 
             <ChevronDown className="h-4 w-4 text-slate-400" />

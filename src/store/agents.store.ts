@@ -45,6 +45,7 @@ const agentsData: Agent[] = [
 interface AgentState {
     agents: Agent[];
     isAddAgentModalOpen: boolean;
+    fetchAgents: () => Promise<void>;
     addAgent: (agent: Agent) => void;
     updateAgent: (id: number, updates: Partial<Agent>) => void;
     deleteAgent: (id: number) => void;
@@ -56,6 +57,10 @@ export const useAgentStore = create<AgentState>()(
         (set) => ({
             agents: agentsData,
             isAddAgentModalOpen: false,
+            fetchAgents: async () => {
+                // Simulating API call since we are using static data for now
+                set({ agents: agentsData });
+            },
             addAgent: (agent) =>
                 set((state) => ({
                     agents: [...state.agents, agent],

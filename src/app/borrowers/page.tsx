@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Sidebar from "@/components/layout/Sidebar";
 import Header from "@/components/layout/Header";
@@ -19,9 +19,13 @@ import ActionMenu from "@/components/borrowers/Boroweractionmodal";
 import { RiskBadge, StatusBadge, VerificationStatus } from "@/components/borrowers/badges";
 
 export default function BorrowersPage() {
-    const { borrowers, deleteBorrower } = useBorrowerStore();
+    const { borrowers, deleteBorrower, fetchBorrowers } = useBorrowerStore();
     const router = useRouter();
     const [isModalOpen, setIsModalOpen] = useState(false);
+
+    useEffect(() => {
+        fetchBorrowers();
+    }, [fetchBorrowers]);
 
     // ----------------------
     // ACTION MENU STATE
@@ -162,7 +166,7 @@ export default function BorrowersPage() {
                                         </td>
 
                                         <td className="px-6 py-4">
-                                            <div className="font-semibold">{borrower.amount}</div>
+                                            <div className="font-semibold">₹{borrower.amount}</div>
                                             <div className="text-xs text-red-600">{borrower.overdue}</div>
                                         </td>
 
@@ -207,7 +211,7 @@ export default function BorrowersPage() {
                         onEdit={handleEdit}
                         onDelete={handleDelete}
                         position={menuPosition}
-                       
+
                     />
                 </main>
             </div>

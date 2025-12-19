@@ -1,7 +1,7 @@
 "use client";
 
-import { useEffect } from "react";
-
+import { useEffect, useState } from "react";
+import { authService } from "@/services/auth";
 import {
     Users,
     CheckCircle,
@@ -13,9 +13,22 @@ import {
     MapPin
 } from "lucide-react";
 import { useDashboardStatsStore } from "@/store/dashboardStats.store";
-import { useAlertStore } from "@/store/alerts.store"; // Assuming this is used elsewhere or will be
-import { useAgentStore } from "@/store/agents.store"; // Assuming this is used elsewhere or will be
-import { useRecoveryTrendStore } from "@/store/recoveryTrend.store"; // Assuming this is used elsewhere or will be
+import { useAlertStore } from "@/store/alerts.store";
+import { useAgentStore } from "@/store/agents.store";
+import { useRecoveryTrendStore } from "@/store/recoveryTrend.store";
+import { useAuthStore } from "@/store/auth.store";
+import {
+    AreaChart,
+    Area,
+    XAxis,
+    YAxis,
+    CartesianGrid,
+    Tooltip,
+    ResponsiveContainer,
+    Line,
+    LineChart,
+    ComposedChart
+} from 'recharts';
 
 // Stats Card Component
 function StatsCard({ icon: Icon, label, value, trend, color }: any) {
@@ -76,8 +89,8 @@ function AgentItem({ name, location, cases, status }: any) {
             </div>
             <div className="text-right">
                 <div className="text-sm font-semibold text-slate-900">{cases} cases</div>
-                <div className={`text-xs ${status === 'Active' ? 'text-green-600' : 'text-orange-600'}`}>
-                    <span className="inline-block h-1.5 w-1.5 rounded-full mr-1 ${status === 'Active' ? 'bg-green-600' : 'bg-orange-600'}"></span>
+                <div className={`text-xs ${status === 'ONLINE' ? 'text-green-600' : 'text-orange-600'}`}>
+                    <span className={`inline-block h-1.5 w-1.5 rounded-full mr-1 ${status === 'ONLINE' ? 'bg-green-600' : 'bg-orange-600'}`}></span>
                     {status}
                 </div>
             </div>
@@ -85,19 +98,27 @@ function AgentItem({ name, location, cases, status }: any) {
     );
 }
 
-export default function DashboardPage() {
+export default function OperationalDashboard() {
     // Using modular Zustand stores
     const { dashboardStats, fetchStats } = useDashboardStatsStore();
-    const { alerts, fetchAlerts } = useAlertStore();
+    const { alerts, fetchAlerts, markAlertAsRead } = useAlertStore();
     const { agents, fetchAgents } = useAgentStore();
     const { recoveryTrend, fetchTrends } = useRecoveryTrendStore();
 
+    // Use the auth store instead of local state
+    const { user } = useAuthStore();
+
     useEffect(() => {
+        // Always fetch general stats and alerts
         fetchStats();
         fetchAlerts();
-        fetchAgents();
         fetchTrends();
-    }, [fetchStats, fetchAlerts, fetchAgents, fetchTrends]);
+
+        // Only fetch agents if user has permission
+        if (user?.role === "ADMIN" || user?.role === "MANAGER") {
+            fetchAgents();
+        }
+    }, [fetchStats, fetchAlerts, fetchTrends, fetchAgents, user]);
 
     // Render a loading state if the primary data isn't available yet.
     if (!dashboardStats) {
@@ -105,13 +126,49 @@ export default function DashboardPage() {
     }
 
     const stats = [
-        { icon: Users, label: "Total Borrowers", value: String(dashboardStats?.totalBorrowers ?? 0), trend: "+12% this month", color: "bg-blue-600" },
-        { icon: CheckCircle, label: "Verified", value: String(dashboardStats?.verified ?? 0), trend: "+8%", color: "bg-green-600" },
-        { icon: TrendingUp, label: "In Recovery", value: String(dashboardStats?.inRecovery ?? 0), trend: null, color: "bg-orange-500" },
-        { icon: UserCheck, label: "Active Agents", value: String(dashboardStats?.activeAgents ?? 0), trend: null, color: "bg-blue-500" },
-        { icon: Clock, label: "Pending Verifications", value: String(dashboardStats?.pendingVerifications ?? 0), trend: null, color: "bg-purple-600" },
-        { icon: AlertTriangle, label: "SLA Alerts", value: String(dashboardStats?.slaAlerts ?? 0), trend: null, color: "bg-red-500" },
-    ];
+        {
+            icon: Users,
+            label: "Total Borrowers",
+            value: String(dashboardStats?.totalBorrowers ?? 0),
+            trend: "+12% this month",
+            color: "bg-blue-600",
+        },
+        {
+            icon: CheckCircle,
+            label: "Verified",
+            value: String(dashboardStats?.verified ?? 0),
+            trend: "+8%",
+            color: "bg-green-600",
+        },
+        {
+            icon: TrendingUp,
+            label: "In Recovery",
+            value: String(dashboardStats?.inRecovery ?? 0),
+            trend: null,
+            color: "bg-orange-500",
+        },
+        {
+            icon: UserCheck,
+            label: "Active Agents",
+            value: String(dashboardStats?.activeAgents ?? 0),
+            trend: null,
+            color: "bg-blue-500",
+        },
+        {
+            icon: Clock,
+            label: "Pending Verifications",
+            value: String(dashboardStats?.pendingVerifications ?? 0),
+            trend: null,
+            color: "bg-purple-600",
+        },
+        {
+            icon: AlertTriangle,
+            label: "SLA Alerts",
+            value: String(dashboardStats?.slaAlerts ?? 0),
+            trend: null,
+            color: "bg-red-500",
+        },
+    ]
 
     // Get only the first 3 alerts for display
     const displayAlerts = alerts.slice(0, 3);
@@ -120,7 +177,7 @@ export default function DashboardPage() {
     const activeAgents = agents.filter(agent => agent.status === "Active" || agent.status === "Busy").slice(0, 3);
 
     return (
-        <>
+        <div>
             {/* Stats Grid */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4 mb-6">
                 {stats.map((stat, i) => (
@@ -145,15 +202,66 @@ export default function DashboardPage() {
                             </div>
                         </div>
                     </div>
-                    <div className="h-64 flex items-end justify-between gap-2">
-                        {recoveryTrend.map((data, i) => (
-                            <div key={i} className="flex-1 flex flex-col items-center gap-2">
-                                <div className="w-full bg-gradient-to-t from-blue-500 to-blue-300 rounded-t-lg relative" style={{ height: `${(data.recovered / 35) * 100}%` }}>
-                                    <div className="absolute -top-6 left-1/2 -translate-x-1/2 text-xs font-semibold text-slate-700">{data.recovered}</div>
-                                </div>
-                                <div className="text-xs text-slate-500">{data.month}</div>
-                            </div>
-                        ))}
+                    <div className="h-64 w-full">
+                        <ResponsiveContainer width="100%" height="100%">
+                            <ComposedChart
+                                data={recoveryTrend}
+                                margin={{
+                                    top: 10,
+                                    right: 30,
+                                    left: 0,
+                                    bottom: 0,
+                                }}
+                            >
+                                <defs>
+                                    <linearGradient id="colorRecovered" x1="0" y1="0" x2="0" y2="1">
+                                        <stop offset="5%" stopColor="#3b82f6" stopOpacity={0.3} />
+                                        <stop offset="95%" stopColor="#3b82f6" stopOpacity={0} />
+                                    </linearGradient>
+                                </defs>
+                                <CartesianGrid strokeDasharray="3 3" vertical={true} horizontal={true} stroke="#e2e8f0" />
+                                <XAxis
+                                    dataKey="month"
+                                    axisLine={false}
+                                    tickLine={false}
+                                    tick={{ fill: '#64748b', fontSize: 12 }}
+                                    dy={10}
+                                />
+                                <YAxis
+                                    axisLine={false}
+                                    tickLine={false}
+                                    tick={{ fill: '#64748b', fontSize: 12 }}
+                                />
+                                <Tooltip
+                                    contentStyle={{
+                                        backgroundColor: '#fff',
+                                        borderRadius: '12px',
+                                        border: 'none',
+                                        boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1)'
+                                    }}
+                                    itemStyle={{ fontSize: '14px', fontWeight: 600 }}
+                                    labelStyle={{ color: '#64748b', marginBottom: '8px' }}
+                                />
+                                <Area
+                                    type="monotone"
+                                    dataKey="recovered"
+                                    stroke="#3b82f6"
+                                    strokeWidth={3}
+                                    fillOpacity={1}
+                                    fill="url(#colorRecovered)"
+                                    name="Recovered"
+                                />
+                                <Line
+                                    type="monotone"
+                                    dataKey="target"
+                                    stroke="#f97316"
+                                    strokeWidth={3}
+                                    strokeDasharray="5 5"
+                                    dot={{ stroke: '#f97316', strokeWidth: 2, r: 4, fill: '#fff' }}
+                                    name="Target"
+                                />
+                            </ComposedChart>
+                        </ResponsiveContainer>
                     </div>
                 </div>
 
@@ -239,21 +347,23 @@ export default function DashboardPage() {
                     </div>
                 </div>
 
-                {/* Field Agents */}
-                <div className="bg-white p-6 rounded-xl border border-slate-200">
-                    <div className="flex items-center justify-between mb-4">
-                        <h3 className="text-lg font-bold text-slate-900">Field Agents</h3>
-                        <button className="text-blue-600 text-sm font-medium hover:underline flex items-center gap-1">
-                            View All <ArrowRight className="h-4 w-4" />
-                        </button>
+                {/* Field Agents - Only visible to ADMIN and MANAGER */}
+                {(user?.role === "ADMIN" || user?.role === "MANAGER") && (
+                    <div className="bg-white p-6 rounded-xl border border-slate-200">
+                        <div className="flex items-center justify-between mb-4">
+                            <h3 className="text-lg font-bold text-slate-900">Field Agents</h3>
+                            <button className="text-blue-600 text-sm font-medium hover:underline flex items-center gap-1">
+                                View All <ArrowRight className="h-4 w-4" />
+                            </button>
+                        </div>
+                        <div>
+                            {activeAgents.map((agent, i) => (
+                                <AgentItem key={i} {...agent} />
+                            ))}
+                        </div>
                     </div>
-                    <div>
-                        {activeAgents.map((agent, i) => (
-                            <AgentItem key={i} {...agent} />
-                        ))}
-                    </div>
-                </div>
+                )}
             </div>
-        </>
+        </div>
     );
 }

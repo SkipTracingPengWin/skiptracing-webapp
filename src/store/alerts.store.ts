@@ -1,53 +1,60 @@
 import { create } from 'zustand';
 import { devtools } from 'zustand/middleware';
 import type { Alert } from '@/types';
-
-const alertsData: Alert[] = [
-    {
-        id: 1,
-        title: "High Risk Borrower Detected",
-        description: "Borrower Amit Kumar has missed 3 consecutive payments.",
-        type: "danger",
-        action: "View Case",
-        timestamp: "2 hours ago",
-        read: false
-    },
-    {
-        id: 2,
-        title: "New Assignment",
-        description: "You have been assigned a new case: Priya Patel",
-        type: "info",
-        action: "View Assignment",
-        timestamp: "5 hours ago",
-        read: true
-    }
-];
+import { alertService } from '@/services/alert.services';
 
 interface AlertState {
     alerts: Alert[];
-    markAlertAsRead: (id: number) => void;
-    addAlert: (alert: Alert) => void;
-    deleteAlert: (id: number) => void;
+    fetchAlerts: () => Promise<void>;
+    markAlertAsRead: (id: number) => Promise<void>;
+    addAlert: (alert: Partial<Alert>) => Promise<void>;
+    deleteAlert: (id: number) => Promise<void>;
 }
 
 export const useAlertStore = create<AlertState>()(
     devtools(
-        (set) => ({
-            alerts: alertsData,
-            markAlertAsRead: (id) =>
-                set((state) => ({
-                    alerts: state.alerts.map((a) =>
-                        a.id === id ? { ...a, read: true } : a
-                    ),
-                })),
-            addAlert: (alert) =>
-                set((state) => ({
-                    alerts: [...state.alerts, alert],
-                })),
-            deleteAlert: (id) =>
-                set((state) => ({
-                    alerts: state.alerts.filter((a) => a.id !== id),
-                })),
+        (set, get) => ({
+            alerts: [],
+            fetchAlerts: async () => {
+                try {
+                    const data = await alertService.getAll();
+                    set({ alerts: data });
+                } catch (error) {
+                    console.error('Failed to fetch alerts:', error);
+                }
+            },
+            markAlertAsRead: async (id) => {
+                try {
+                    await alertService.update(id, { read: true });
+                    set((state) => ({
+                        alerts: state.alerts.map((a) =>
+                            a.id === id ? { ...a, read: true } : a
+                        ),
+                    }));
+                } catch (error) {
+                    console.error('Failed to mark alert as read:', error);
+                }
+            },
+            addAlert: async (alert) => {
+                try {
+                    const newAlert = await alertService.create(alert);
+                    set((state) => ({
+                        alerts: [...state.alerts, newAlert],
+                    }));
+                } catch (error) {
+                    console.error('Failed to add alert:', error);
+                }
+            },
+            deleteAlert: async (id) => {
+                try {
+                    await alertService.delete(id);
+                    set((state) => ({
+                        alerts: state.alerts.filter((a) => a.id !== id),
+                    }));
+                } catch (error) {
+                    console.error('Failed to delete alert:', error);
+                }
+            },
         }),
         { name: 'AlertStore' }
     )

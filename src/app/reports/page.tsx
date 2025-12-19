@@ -51,15 +51,15 @@ const ReportsPage = () => {
 
   return (
     // Changed overall background color slightly
-    <div className="flex min-h-screen bg-gray-50 font-sans">
+    <div className="flex h-screen bg-gray-50 font-sans">
       <Sidebar />
       <div className="flex-1 md:ml-64 flex flex-col overflow-hidden">
-        
-          <Header />
-      
+
+        <Header />
+
 
         <main className="flex-1 overflow-y-auto px-4 md:px-8 py-8 text-slate-900">
-      
+
           {/* ----------------- PAGE HEADER ----------------- */}
           <div className="mb-10">
             <div className="flex flex-col md:flex-row items-start md:items-center justify-between">
@@ -104,11 +104,10 @@ const ReportsPage = () => {
               return (
                 <div
                   key={tab.id}
-                  className={`rounded-xl border p-5 flex items-center gap-4 shadow-md transition cursor-pointer hover:shadow-lg ${
-                    isActive
+                  className={`rounded-xl border p-5 flex items-center gap-4 shadow-md transition cursor-pointer hover:shadow-lg ${isActive
                       ? "border-sky-500 bg-sky-50"
                       : "border-slate-200 bg-white hover:border-sky-300"
-                  }`}
+                    }`}
                 >
                   <div className="h-11 w-11 rounded-xl bg-sky-100 flex items-center justify-center shadow-inner">
                     {IconComponent && <IconComponent className="h-6 w-6 text-sky-600" />}
@@ -153,29 +152,29 @@ const ReportsPage = () => {
 
                   // Y-axis labels for Recovery Trend chart (Jan, Feb, etc.)
                   // These labels are hardcoded in the original code's store, but we add simulated y-axis marks for better visualization
-                  const yAxisMarks = [9, 18, 27, 36]; 
+                  const yAxisMarks = [9, 18, 27, 36];
 
                   return (
                     <div
                       key={m.month}
                       className="flex flex-1 h-full flex-col items-center justify-end gap-2 text-xs group relative"
                     >
-                        {/* Simulated Y-Axis Marks (Only showing the marks on the first bar container for alignment) */}
-                        {m.month === 'Jan' && (
-                            <div className="absolute inset-y-0 left-[-30px] w-[30px] text-[10px] text-slate-500/70">
-                                {yAxisMarks.map((mark, index) => (
-                                    <div 
-                                        key={index}
-                                        className="absolute right-0 w-full text-right"
-                                        style={{ bottom: `${(mark / max) * 100}%`, transform: 'translateY(50%)' }}
-                                    >
-                                        {mark}
-                                    </div>
-                                ))}
-                                {/* 0 mark */}
-                                <div className="absolute right-0 w-full text-right bottom-0">0</div>
+                      {/* Simulated Y-Axis Marks (Only showing the marks on the first bar container for alignment) */}
+                      {m.month === 'Jan' && (
+                        <div className="absolute inset-y-0 left-[-30px] w-[30px] text-[10px] text-slate-500/70">
+                          {yAxisMarks.map((mark, index) => (
+                            <div
+                              key={index}
+                              className="absolute right-0 w-full text-right"
+                              style={{ bottom: `${(mark / max) * 100}%`, transform: 'translateY(50%)' }}
+                            >
+                              {mark}
                             </div>
-                        )}
+                          ))}
+                          {/* 0 mark */}
+                          <div className="absolute right-0 w-full text-right bottom-0">0</div>
+                        </div>
+                      )}
 
                       {/* Tooltips */}
                       <div className="absolute bottom-full mb-2 flex flex-col items-center opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none z-10">
@@ -240,25 +239,25 @@ const ReportsPage = () => {
               <div className="flex flex-col items-center justify-center">
                 {/* Visual Donut Chart using a container and an inner cutout (for a cleaner look than just borders) */}
                 <div className="h-64 w-64 flex items-center justify-center">
-                    {/* Placeholder for Donut Chart (Simulating the visual from the image) */}
-                    <svg viewBox="0 0 100 100" className="w-full h-full">
-                        {/* The total circumference is 2 * pi * radius. For simplicity in SVG, we use a fixed size circle. 
+                  {/* Placeholder for Donut Chart (Simulating the visual from the image) */}
+                  <svg viewBox="0 0 100 100" className="w-full h-full">
+                    {/* The total circumference is 2 * pi * radius. For simplicity in SVG, we use a fixed size circle. 
                             The percentages are simulated to match the visual breakdown in the image. 
                             Aadhaar (30%), PAN (25%), Mobile (20%), Employment (15%), Bank (10%)
                         */}
-                        <circle cx="50" cy="50" r="35" fill="none" stroke="#E2E8F0" strokeWidth="30" />
-                        
-                        {/* Segments - Simplified simulation with actual colors from the image */}
-                        <circle cx="50" cy="50" r="35" fill="none" stroke="#06B6D4" strokeWidth="15" strokeDasharray="90 10" transform="rotate(-90 50 50)" /> {/* Blue/Sky-600 (Aadhaar 30%) */}
-                        <circle cx="50" cy="50" r="35" fill="none" stroke="#22C55E" strokeWidth="15" strokeDasharray="90 100 10" transform="rotate(-90 50 50)" /> {/* Green/Emerald-500 (PAN 25%) */}
-                        <circle cx="50" cy="50" r="35" fill="none" stroke="#F97316" strokeWidth="15" strokeDasharray="90 100 70 10" transform="rotate(-90 50 50)" /> {/* Orange/Orange-500 (Mobile 20%) */}
-                        <circle cx="50" cy="50" r="35" fill="none" stroke="#EC4899" strokeWidth="15" strokeDasharray="90 100 70 45 10" transform="rotate(-90 50 50)" /> {/* Pink/Pink-500 (Employment 15%) */}
-                        <circle cx="50" cy="50" r="35" fill="none" stroke="#8B5CF6" strokeWidth="15" strokeDasharray="90 100 70 45 30 10" transform="rotate(-90 50 50)" /> {/* Purple/Violet-600 (Bank 10%) */}
-                        
-                        <text x="50" y="50" textAnchor="middle" dominantBaseline="middle" className="text-xl font-bold fill-slate-800">1,259</text>
-                        <text x="50" y="60" textAnchor="middle" dominantBaseline="middle" className="text-xs fill-slate-500">Total</text>
+                    <circle cx="50" cy="50" r="35" fill="none" stroke="#E2E8F0" strokeWidth="30" />
 
-                    </svg>
+                    {/* Segments - Simplified simulation with actual colors from the image */}
+                    <circle cx="50" cy="50" r="35" fill="none" stroke="#06B6D4" strokeWidth="15" strokeDasharray="90 10" transform="rotate(-90 50 50)" /> {/* Blue/Sky-600 (Aadhaar 30%) */}
+                    <circle cx="50" cy="50" r="35" fill="none" stroke="#22C55E" strokeWidth="15" strokeDasharray="90 100 10" transform="rotate(-90 50 50)" /> {/* Green/Emerald-500 (PAN 25%) */}
+                    <circle cx="50" cy="50" r="35" fill="none" stroke="#F97316" strokeWidth="15" strokeDasharray="90 100 70 10" transform="rotate(-90 50 50)" /> {/* Orange/Orange-500 (Mobile 20%) */}
+                    <circle cx="50" cy="50" r="35" fill="none" stroke="#EC4899" strokeWidth="15" strokeDasharray="90 100 70 45 10" transform="rotate(-90 50 50)" /> {/* Pink/Pink-500 (Employment 15%) */}
+                    <circle cx="50" cy="50" r="35" fill="none" stroke="#8B5CF6" strokeWidth="15" strokeDasharray="90 100 70 45 30 10" transform="rotate(-90 50 50)" /> {/* Purple/Violet-600 (Bank 10%) */}
+
+                    <text x="50" y="50" textAnchor="middle" dominantBaseline="middle" className="text-xl font-bold fill-slate-800">1,259</text>
+                    <text x="50" y="60" textAnchor="middle" dominantBaseline="middle" className="text-xs fill-slate-500">Total</text>
+
+                  </svg>
                 </div>
 
                 <div className="mt-6 flex flex-wrap justify-center gap-x-6 gap-y-3 text-sm font-medium">
@@ -282,7 +281,7 @@ const ReportsPage = () => {
           {/* ----------------- AGENT PERFORMANCE & SUMMARY STATS ----------------- */}
           {/* This section follows the Charts (Top Row) */}
           <div className="grid grid-cols-1 gap-6 pb-8">
-            
+
             {/* Agent Performance Card (Full width) */}
             <Card className="col-span-1">
               <CardHeader>
@@ -316,23 +315,21 @@ const ReportsPage = () => {
                       <div className="text-right flex items-center gap-6">
                         <div className="w-32 h-2 bg-slate-200 rounded-full overflow-hidden">
                           <div
-                            className={`h-full rounded-full ${
-                              agent.rate >= 85 ? 'bg-[#0F9D58]' :
-                              agent.rate >= 75 ? 'bg-[#F57C00]' :
-                              'bg-red-500'
-                            }`}
+                            className={`h-full rounded-full ${agent.rate >= 85 ? 'bg-[#0F9D58]' :
+                                agent.rate >= 75 ? 'bg-[#F57C00]' :
+                                  'bg-red-500'
+                              }`}
                             style={{ width: `${agent.rate}%` }}
                           />
                         </div>
                         <div className="w-16 text-right">
-                            <p className={`text-xl font-bold ${
-                              agent.rate >= 85 ? 'text-[#0F9D58]' :
+                          <p className={`text-xl font-bold ${agent.rate >= 85 ? 'text-[#0F9D58]' :
                               agent.rate >= 75 ? 'text-[#F57C00]' :
-                              'text-red-500'
+                                'text-red-500'
                             }`}>
-                              {agent.rate}%
-                            </p>
-                            <p className="text-xs text-slate-500">Success Rate</p>
+                            {agent.rate}%
+                          </p>
+                          <p className="text-xs text-slate-500">Success Rate</p>
                         </div>
                       </div>
                     </div>
@@ -343,31 +340,31 @@ const ReportsPage = () => {
 
             {/* Summary Stats (Below Agent Card, aligned in 4 columns) */}
             <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
-                <Card className="shadow-lg hover:shadow-xl transition col-span-1">
-                  <CardContent className="p-6 text-center">
-                    {/* Changed font size and color to match the image precisely */}
-                    <p className="text-3xl font-extrabold text-slate-800">₹1.2Cr</p>
-                    <p className="text-sm text-slate-500 mt-1">Total Recovered</p>
-                  </CardContent>
-                </Card>
-                <Card className="shadow-lg hover:shadow-xl transition col-span-1">
-                  <CardContent className="p-6 text-center">
-                    <p className="text-3xl font-extrabold text-slate-800">{totalVerifications.toLocaleString()}</p>
-                    <p className="text-sm text-slate-500 mt-1">Verifications</p>
-                  </CardContent>
-                </Card>
-                <Card className="shadow-lg hover:shadow-xl transition col-span-1">
-                  <CardContent className="p-6 text-center">
-                    <p className="text-3xl font-extrabold text-slate-800">{casesClosed}</p>
-                    <p className="text-sm text-slate-500 mt-1">Cases Closed</p>
-                  </CardContent>
-                </Card>
-                <Card className="shadow-lg hover:shadow-xl transition col-span-1">
-                  <CardContent className="p-6 text-center">
-                    <p className="text-3xl font-extrabold text-slate-800">{avgSuccessRate}%</p>
-                    <p className="text-sm text-slate-500 mt-1">Avg Success Rate</p>
-                  </CardContent>
-                </Card>
+              <Card className="shadow-lg hover:shadow-xl transition col-span-1">
+                <CardContent className="p-6 text-center">
+                  {/* Changed font size and color to match the image precisely */}
+                  <p className="text-3xl font-extrabold text-slate-800">₹1.2Cr</p>
+                  <p className="text-sm text-slate-500 mt-1">Total Recovered</p>
+                </CardContent>
+              </Card>
+              <Card className="shadow-lg hover:shadow-xl transition col-span-1">
+                <CardContent className="p-6 text-center">
+                  <p className="text-3xl font-extrabold text-slate-800">{totalVerifications.toLocaleString()}</p>
+                  <p className="text-sm text-slate-500 mt-1">Verifications</p>
+                </CardContent>
+              </Card>
+              <Card className="shadow-lg hover:shadow-xl transition col-span-1">
+                <CardContent className="p-6 text-center">
+                  <p className="text-3xl font-extrabold text-slate-800">{casesClosed}</p>
+                  <p className="text-sm text-slate-500 mt-1">Cases Closed</p>
+                </CardContent>
+              </Card>
+              <Card className="shadow-lg hover:shadow-xl transition col-span-1">
+                <CardContent className="p-6 text-center">
+                  <p className="text-3xl font-extrabold text-slate-800">{avgSuccessRate}%</p>
+                  <p className="text-sm text-slate-500 mt-1">Avg Success Rate</p>
+                </CardContent>
+              </Card>
             </div>
           </div>
         </main>
