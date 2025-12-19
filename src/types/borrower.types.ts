@@ -1,16 +1,16 @@
 export interface Borrower {
-    id: number;
+    id: number | string;
     name: string;
     phone: string;
     email?: string;
     loanId: string;
-    loanType: "Personal" | "Vehicle" | "Home" | "Gold" | "Business";
-    amount: string;
+    loanType: "Personal Loan" | "Vehicle Loan" | "Home Loan" | "Gold Loan" | "Business Loan";
+    amount: number;
     amountNumeric: number;
     overdue: string;
     overdueDays: number;
-    status: "in recovery" | "active" | "legal" | "settled" | "written off";
-    risk: "low" | "medium" | "high" | "critical";
+    status: BorrowerStatus;
+    risk: "Low" | "Medium" | "High" | "Critical";
     verified: boolean;
     location: string;
     address?: string;
@@ -21,6 +21,6 @@ export interface Borrower {
     updatedAt: string;
 }
 
-export type LoanType = "Personal" | "Vehicle" | "Home" | "Gold" | "Business";
-export type BorrowerStatus = "in recovery" | "active" | "legal" | "settled" | "written off";
-export type RiskLevel = "low" | "medium" | "high" | "critical";
+export type LoanType = "Personal Loan" | "Vehicle Loan" | "Home Loan" | "Gold Loan" | "Business Loan";
+export type BorrowerStatus = "ACTIVE" | "CLOSED" | "SKIPPED" | "VERIFIED" | "HIGH_RISK" | "CRITICAL" | "IN_RECOVERY" | "LEGAL" | "SETTLED";
+export type RiskLevel = "Low" | "Medium" | "High" | "Critical";

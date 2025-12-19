@@ -35,21 +35,25 @@ api.interceptors.request.use(
         return config;
     },
     (error) => {
-        return Promise.reject(error);
-    }
-);
-
-
-api.interceptors.response.use(
-    (response) => {
-        return response;
-    },
-    (error) => {
-        if (error.response?.status === 403) {
-            console.error("🚫 403 Forbidden - Token might be invalid or missing");
+        if (error.response && error.response.status === 401) {
+            console.error("🔒 Unauthorized access - redirecting to login");
+            // Clear headers to prevent loops
+            delete api.defaults.headers.common["Authorization"];
+            // Optional: Clear storage
+            localStorage.removeItem("token");
+            localStorage.removeItem("user");
+            localStorage.removeItem("auth-store");
+            // Redirect using window.location to ensure full refresh
+            if (typeof window !== "undefined" && !window.location.pathname.includes("/auth/login")) {
+                window.location.href = "/auth/login";
+            }
         }
         return Promise.reject(error);
     }
 );
-
 export default api;
+
+
+
+
+

@@ -12,17 +12,15 @@ export const Button: React.FC<
 > = ({ children, className = "", variant = "default", size = "md" }) => (
   <button
     className={`inline-flex items-center gap-2 px-3 py-2 rounded-lg font-medium transition-colors
-      ${
-        variant === "ghost"
-          ? "bg-transparent hover:bg-slate-100"
-          : variant === "outline"
+      ${variant === "ghost"
+        ? "bg-transparent hover:bg-slate-100"
+        : variant === "outline"
           ? "border border-slate-300 hover:bg-slate-50"
           : "bg-blue-600 hover:bg-blue-700 text-white"
       }
-      ${
-        size === "icon"
-          ? "p-2"
-          : size === "sm"
+      ${size === "icon"
+        ? "p-2"
+        : size === "sm"
           ? "px-2 py-1 text-sm"
           : ""
       }
