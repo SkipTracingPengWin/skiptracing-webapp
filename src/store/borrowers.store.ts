@@ -9,9 +9,14 @@ interface BorrowerState {
     error: string | null;
     fetchBorrowers: () => Promise<void>;
     addBorrower: (borrower: Partial<Borrower>) => Promise<void>;
-    updateBorrower: (id: number, updates: Partial<Borrower>) => Promise<void>;
-    deleteBorrower: (id: number) => Promise<void>;
+    updateBorrower: (id: string | number, updates: Partial<Borrower>) => Promise<void>;
+    deleteBorrower: (id: string | number) => Promise<void>;
 }
+
+const normalizeBorrower = (b: any): Borrower => ({
+    ...b,
+    id: b.id !== undefined ? b.id : b._id
+});
 
 export const useBorrowerStore = create<BorrowerState>()(
     devtools(
@@ -24,7 +29,8 @@ export const useBorrowerStore = create<BorrowerState>()(
                 set({ loading: true, error: null });
                 try {
                     const data = await borrowerService.getAll();
-                    set({ borrowers: data, loading: false });
+                    const normalizedData = (data || []).map(normalizeBorrower);
+                    set({ borrowers: normalizedData, loading: false });
                 } catch (error: any) {
                     console.warn('Backend API not available, using empty dataset');
                     set({
@@ -39,8 +45,9 @@ export const useBorrowerStore = create<BorrowerState>()(
                 set({ loading: true, error: null });
                 try {
                     const newBorrower = await borrowerService.create(borrower);
+                    const normalized = normalizeBorrower(newBorrower);
                     set((state) => ({
-                        borrowers: [...state.borrowers, newBorrower],
+                        borrowers: [...state.borrowers, normalized],
                         loading: false
                     }));
                 } catch (error: any) {
@@ -54,27 +61,48 @@ export const useBorrowerStore = create<BorrowerState>()(
                 set({ loading: true, error: null });
                 try {
                     const updatedBorrower = await borrowerService.update(id, updates);
-                    set((state) => ({
-                        borrowers: state.borrowers.map((b) =>
-                            b.id === id ? updatedBorrower : b
-                        ),
-                        loading: false
-                    }));
+
+                    set((state) => {
+                        const existing = state.borrowers.find(b => String(b.id) === String(id));
+                        if (!existing) return state;
+
+                        // Create the updated version, ensuring we don't lose the ID
+                        // if the API returns a partial object or success message
+                        const normalized = normalizeBorrower({
+                            ...existing,
+                            ...updatedBorrower
+                        });
+
+                        return {
+                            borrowers: state.borrowers.map((b) =>
+                                String(b.id) === String(id) ? normalized : b
+                            ),
+                            loading: false
+                        };
+                    });
                 } catch (error: any) {
                     set({ error: error.message || 'Failed to update borrower', loading: false });
+                    throw error;
                 }
             },
 
             deleteBorrower: async (id) => {
+                if (!id) {
+                    console.error("❌ Cannot delete: ID is missing in store action");
+                    return;
+                }
+
+                console.log(`📦 Store: Attempting to delete borrower with ID:`, id, `(Type: ${typeof id})`);
                 set({ loading: true, error: null });
                 try {
                     await borrowerService.delete(id);
                     set((state) => ({
-                        borrowers: state.borrowers.filter((b) => b.id !== id),
+                        borrowers: state.borrowers.filter((b) => String(b.id) !== String(id)),
                         loading: false
                     }));
                 } catch (error: any) {
                     set({ error: error.message || 'Failed to delete borrower', loading: false });
+                    throw error;
                 }
             },
         }),

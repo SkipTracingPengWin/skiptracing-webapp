@@ -8,9 +8,10 @@ export type UIProps = { children?: React.ReactNode; className?: string };
 
 /* ------------------ BUTTON ------------------ */
 export const Button: React.FC<
-  UIProps & { variant?: "ghost" | "outline" | "default"; size?: "icon" | "sm" | "md" }
-> = ({ children, className = "", variant = "default", size = "md" }) => (
+  UIProps & { variant?: "ghost" | "outline" | "default"; size?: "icon" | "sm" | "md" } & React.ButtonHTMLAttributes<HTMLButtonElement>
+> = ({ children, className = "", variant = "default", size = "md", ...props }) => (
   <button
+    {...props}
     className={`inline-flex items-center gap-2 px-3 py-2 rounded-lg font-medium transition-colors
       ${variant === "ghost"
         ? "bg-transparent hover:bg-slate-100"

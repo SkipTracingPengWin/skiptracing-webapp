@@ -5,10 +5,9 @@ export const borrowerService = {
     getAll: async () => {
         try {
             const response = await api.get("/borrowers");
-            console.log(response.data);
             return response.data;
         } catch (error: any) {
-            console.error("Error in getAll:", error.response?.data || error.message || error);
+            console.error("❌ Error in getAll:", error.message);
             throw error;
         }
     },
@@ -18,87 +17,99 @@ export const borrowerService = {
             const response = await api.get(`/borrowers/${id}`);
             return response.data;
         } catch (error: any) {
-            console.error("Error in getById:", error.response?.data || error.message);
+            console.error(`❌ Error in getById for ID ${id}:`, error.message);
             throw error;
         }
     },
 
+    _sanitizeData: (data: any) => {
+        const sanitized = { ...data };
+        Object.keys(sanitized).forEach(key => {
+            if (sanitized[key] === undefined || sanitized[key] === null || sanitized[key] === '') {
+                delete sanitized[key];
+            }
+        });
+
+        if (sanitized.lastContact) {
+            try {
+                if (!sanitized.lastContact.includes('T') || !sanitized.lastContact.endsWith('Z')) {
+                    const dateObj = new Date(sanitized.lastContact);
+                    if (isNaN(dateObj.getTime())) {
+                        delete sanitized.lastContact;
+                    } else {
+                        sanitized.lastContact = dateObj.toISOString();
+                    }
+                }
+            } catch (dateError) {
+                delete sanitized.lastContact;
+            }
+        }
+        return sanitized;
+    },
+
     create: async (data: Partial<Borrower>) => {
         try {
-            console.log("📥 Received data:", data);
-
-            // Sanitize the data before sending
-            const sanitizedData: any = { ...data };
-
-            // Remove undefined and null values
-            try {
-                Object.keys(sanitizedData).forEach(key => {
-                    if (sanitizedData[key] === undefined || sanitizedData[key] === null || sanitizedData[key] === '') {
-                        delete sanitizedData[key];
-                    }
-                });
-            } catch (sanitizeError) {
-                console.error("Error during sanitization:", sanitizeError);
-                throw sanitizeError;
-            }
-
-            // Convert lastContact to ISO format if it exists
-            if (sanitizedData.lastContact) {
-                try {
-                    // Check if it's already in ISO format
-                    if (!sanitizedData.lastContact.includes('T') || !sanitizedData.lastContact.endsWith('Z')) {
-                        const dateObj = new Date(sanitizedData.lastContact);
-                        if (isNaN(dateObj.getTime())) {
-                            console.warn("Invalid date for lastContact, removing field");
-                            delete sanitizedData.lastContact;
-                        } else {
-                            sanitizedData.lastContact = dateObj.toISOString();
-                        }
-                    }
-                } catch (dateError) {
-                    console.error("Error converting date:", dateError);
-                    delete sanitizedData.lastContact; // Remove invalid date
-                }
-            }
-
-            console.log("📤 Sending to API:", sanitizedData);
-
+            const sanitizedData = borrowerService._sanitizeData(data);
             const response = await api.post("/borrowers", sanitizedData);
-            console.log("✅ API Response:", response.data);
             return response.data;
         } catch (error: any) {
-            console.error("❌ Error in create:", {
-                message: error?.message || "Unknown error",
-                status: error?.response?.status,
-                statusText: error?.response?.statusText,
-                data: error?.response?.data,
-                url: error?.config?.url,
-                fullError: error
-            });
-
-            // Log the raw error as well
-            console.error("Raw error object:", error);
-
+            alert(`Create failed: ${error.response?.data?.message || error.message}`);
             throw error;
         }
     },
 
     update: async (id: string | number, data: Partial<Borrower>) => {
         try {
-            const response = await api.put(`/borrowers/${id}`, data);
+            if (!id || id === "undefined" || id === "[object Object]") {
+                throw new Error(`Invalid borrower ID: ${id}`);
+            }
+            const sanitizedData = borrowerService._sanitizeData(data);
+            const response = await api.put(`/borrowers/${id}`, sanitizedData);
             return response.data;
         } catch (error: any) {
-            console.error("Error in update:", error.response?.data || error.message);
+            const errorMsg = error.response?.data?.message || error.message;
+            console.error(`❌ Update Error [ID: ${id}]:`, errorMsg);
+            alert(`Update failed: ${errorMsg}`);
             throw error;
         }
     },
 
     delete: async (id: string | number) => {
         try {
+            // Safety Check
+            if (!id || id === "undefined" || id === "[object Object]" || typeof id === 'object') {
+                alert(`Cannot delete: Invalid ID detected (${typeof id})`);
+                return;
+            }
+
+            const fullUrl = `${api.defaults.baseURL}/borrowers/${id}`;
+            console.log(`🗑️ DELETE Request to: ${fullUrl}`);
+
             const response = await api.delete(`/borrowers/${id}`);
+            console.log("✅ Delete successful");
             return response.data;
         } catch (error: any) {
-            console.error("Error in delete:", error.response?.data || error.message);
+            const status = error.response?.status;
+            const errorMsg = error.response?.data?.message || error.message;
+            const url = error.config?.url || "unknown";
+
+            // Build a very clear diagnostic string for the user
+            const diagnosticInfo = `
+❌ DELETE FAILED
+Status: ${status || "Network Error"}
+URL: ${url}
+ID: ${id} (Type: ${typeof id})
+Message: ${errorMsg}
+            `.trim();
+
+            console.error(diagnosticInfo);
+
+            if (status === 404) {
+                alert(`DEBUG INFO:\nThe server returned 404 (Not Found).\n\nAction: Please check if your backend has a route defined as DELETE /api/borrowers/:id\n\nFull URL attempted: ${api.defaults.baseURL}${url}`);
+            } else {
+                alert(diagnosticInfo);
+            }
+
             throw error;
         }
     }

@@ -1,10 +1,12 @@
 
 "use client";
 
-import { useMemo, useState } from "react";
+import { useMemo, useState, useEffect } from "react";
 import Link from "next/link";
 import { useSearchParams, useRouter } from "next/navigation";
 import { useBorrowerStore } from "@/store/borrowers.store";
+import { borrowerService } from "@/services/borrowers.services";
+import { Borrower } from "@/types/borrower.types";
 
 import {
   ArrowLeft,
@@ -18,8 +20,12 @@ import {
   Edit,
   MessageSquare,
   PhoneCall,
-  Download
+  Download,
+  Plus,
+  Trash2
 } from "lucide-react";
+
+import AddBorrowerModal from "@/components/borrowers/AddBorrowerModal";
 
 import {
   Button,
@@ -40,15 +46,39 @@ export default function BorrowerProfile() {
   const router = useRouter();
 
   const { borrowers, updateBorrower, deleteBorrower } = useBorrowerStore();
+  const [borrower, setBorrower] = useState<Borrower | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
 
-  const borrower = useMemo(() => {
-    if (!borrowerId) return null;
-    return borrowers.find((b) => b.id === Number(borrowerId));
+  // Fetch borrower data on mount or when ID changes
+  useEffect(() => {
+    const fetchBorrower = async () => {
+      if (!borrowerId) return;
+      setIsLoading(true);
+      try {
+        const data = await borrowerService.getById(borrowerId);
+        // Normalize ID (handle _id from MongoDB)
+        const normalized = { ...data, id: data.id || data._id };
+        setBorrower(normalized);
+      } catch (error) {
+        console.error("Failed to fetch borrower:", error);
+        // Fallback to store if API fails
+        const found = borrowers.find((b) => String(b.id) === String(borrowerId));
+        if (found) setBorrower(found);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchBorrower();
   }, [borrowerId, borrowers]);
 
-  // State for editing
-  const [isEditing, setIsEditing] = useState(false);
-  const [isSaving, setIsSaving] = useState(false);
+  // Handle number to string ID comparison consistently
+  const numericId = useMemo(() => {
+    return isNaN(Number(borrowerId)) ? String(borrowerId) : Number(borrowerId);
+  }, [borrowerId]);
+
+  // State for modal
+  const [isModalOpen, setIsModalOpen] = useState(false);
   const [formData, setFormData] = useState<any>({});
 
   // Initialize form data when borrower loads
@@ -64,10 +94,25 @@ export default function BorrowerProfile() {
 
   const handleDelete = async () => {
     if (confirm("Are you sure you want to delete this borrower? This action cannot be undone.")) {
-      await deleteBorrower(Number(borrowerId));
-      router.push("/borrowers");
+      try {
+        await deleteBorrower(borrowerId);
+        router.push("/borrowers");
+      } catch (err) {
+        console.error("Delete failed in component:", err);
+      }
     }
   };
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-slate-50">
+        <div className="flex flex-col items-center gap-4">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+          <p className="text-slate-600 font-medium">Loading borrower profile...</p>
+        </div>
+      </div>
+    );
+  }
 
   if (!borrower) {
     return (
@@ -115,9 +160,17 @@ export default function BorrowerProfile() {
               </div>
 
               <div className="flex items-center gap-3">
-                <Button variant="outline" className="gap-2">
+                <Button variant="outline" className="gap-2" onClick={() => setIsModalOpen(true)}>
                   <Edit className="w-4 h-4" />
                   Edit
+                </Button>
+                <Button
+                  variant="outline"
+                  className="gap-2 text-red-600 border-red-200 hover:bg-red-50 hover:border-red-300"
+                  onClick={handleDelete}
+                >
+                  <Trash2 className="w-4 h-4" />
+                  Delete
                 </Button>
                 <Button className="bg-orange-600 hover:bg-orange-700 gap-2 text-white">
                   <PhoneCall className="w-4 h-4" />
@@ -125,6 +178,12 @@ export default function BorrowerProfile() {
                 </Button>
               </div>
             </div>
+
+            <AddBorrowerModal
+              isOpen={isModalOpen}
+              onClose={() => setIsModalOpen(false)}
+              borrowerId={borrowerId}
+            />
 
             {/* ---------- FINAL LAYOUT ---------- */}
             <div className="space-y-8">

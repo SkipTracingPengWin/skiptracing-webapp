@@ -22,6 +22,7 @@ export default function BorrowersPage() {
     const { borrowers, deleteBorrower, fetchBorrowers } = useBorrowerStore();
     const router = useRouter();
     const [isModalOpen, setIsModalOpen] = useState(false);
+    const [editingBorrowerId, setEditingBorrowerId] = useState<string | number | undefined>(undefined);
 
     useEffect(() => {
         fetchBorrowers();
@@ -32,9 +33,9 @@ export default function BorrowersPage() {
     // ----------------------
     const [menuOpen, setMenuOpen] = useState(false);
     const [menuPosition, setMenuPosition] = useState({ top: 0, left: 0 });
-    const [selectedBorrower, setSelectedBorrower] = useState<number | null>(null);
+    const [selectedBorrower, setSelectedBorrower] = useState<string | number | null>(null);
 
-    const openMenu = (event: React.MouseEvent, borrowerId: number) => {
+    const openMenu = (event: React.MouseEvent, borrowerId: string | number) => {
         const rect = (event.target as HTMLElement).getBoundingClientRect();
 
         setMenuPosition({
@@ -68,7 +69,8 @@ export default function BorrowersPage() {
     // Handle Edit action
     const handleEdit = () => {
         if (selectedBorrower) {
-            console.log("Editing borrower:", selectedBorrower);
+            setEditingBorrowerId(selectedBorrower);
+            setIsModalOpen(true);
         }
         closeMenu();
     };
@@ -118,7 +120,11 @@ export default function BorrowersPage() {
 
                     <AddBorrowerModal
                         isOpen={isModalOpen}
-                        onClose={() => setIsModalOpen(false)}
+                        onClose={() => {
+                            setIsModalOpen(false);
+                            setEditingBorrowerId(undefined);
+                        }}
+                        borrowerId={editingBorrowerId}
                     />
 
                     {/* TABLE */}
