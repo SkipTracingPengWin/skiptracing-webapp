@@ -14,12 +14,14 @@ import {
 } from "lucide-react";
 
 import { useBorrowerStore } from "@/store/borrowers.store";
+import { useAuthStore } from "@/store/auth.store";
 import AddBorrowerModal from "@/components/borrowers/AddBorrowerModal";
 import ActionMenu from "@/components/borrowers/Boroweractionmodal";
 import { RiskBadge, StatusBadge, VerificationStatus } from "@/components/borrowers/badges";
 
 export default function BorrowersPage() {
     const { borrowers, deleteBorrower, fetchBorrowers } = useBorrowerStore();
+    const { user } = useAuthStore();
     const router = useRouter();
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [editingBorrowerId, setEditingBorrowerId] = useState<string | number | undefined>(undefined);
@@ -36,11 +38,11 @@ export default function BorrowersPage() {
     const [selectedBorrower, setSelectedBorrower] = useState<string | number | null>(null);
 
     const openMenu = (event: React.MouseEvent, borrowerId: string | number) => {
-        const rect = (event.target as HTMLElement).getBoundingClientRect();
+        const rect = (event.currentTarget as HTMLElement).getBoundingClientRect();
 
         setMenuPosition({
-            top: rect.bottom + 6,
-            left: rect.left - 100,
+            top: rect.top, // Align with top for better visibility if "under" felt wrong
+            left: rect.left - 170, // Shift left more to avoid overlap with icon
         });
 
         setSelectedBorrower(borrowerId);
@@ -217,7 +219,7 @@ export default function BorrowersPage() {
                         onEdit={handleEdit}
                         onDelete={handleDelete}
                         position={menuPosition}
-
+                        showDelete={user?.role === "ADMIN"}
                     />
                 </main>
             </div>

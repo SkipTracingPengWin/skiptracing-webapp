@@ -5,6 +5,7 @@ import { useMemo, useState, useEffect } from "react";
 import Link from "next/link";
 import { useSearchParams, useRouter } from "next/navigation";
 import { useBorrowerStore } from "@/store/borrowers.store";
+import { useAuthStore } from "@/store/auth.store";
 import { borrowerService } from "@/services/borrowers.services";
 import { Borrower } from "@/types/borrower.types";
 
@@ -46,6 +47,7 @@ export default function BorrowerProfile() {
   const router = useRouter();
 
   const { borrowers, updateBorrower, deleteBorrower } = useBorrowerStore();
+  const { user } = useAuthStore();
   const [borrower, setBorrower] = useState<Borrower | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
@@ -164,14 +166,16 @@ export default function BorrowerProfile() {
                   <Edit className="w-4 h-4" />
                   Edit
                 </Button>
-                <Button
-                  variant="outline"
-                  className="gap-2 text-red-600 border-red-200 hover:bg-red-50 hover:border-red-300"
-                  onClick={handleDelete}
-                >
-                  <Trash2 className="w-4 h-4" />
-                  Delete
-                </Button>
+                {user?.role === "ADMIN" && (
+                  <Button
+                    variant="outline"
+                    className="gap-2 text-red-600 border-red-200 hover:bg-red-50 hover:border-red-300"
+                    onClick={handleDelete}
+                  >
+                    <Trash2 className="w-4 h-4" />
+                    Delete
+                  </Button>
+                )}
                 <Button className="bg-orange-600 hover:bg-orange-700 gap-2 text-white">
                   <PhoneCall className="w-4 h-4" />
                   Call Now

@@ -9,7 +9,7 @@ export const authService = {
                 password: data.password,
                 role: data.role.toUpperCase() // Convert to uppercase (ADMIN, MANAGER, AGENT)
             });
-            
+
             let result = response.data;
             const token = result.token || result.access_token;
 
@@ -73,7 +73,9 @@ export const authService = {
 
             return result;
         } catch (error: any) {
-            console.error("Login error:", error.response?.data || error.message);
+            const status = error.response?.status;
+            const errorData = error.response?.data;
+            console.error(`❌ Login error [Status: ${status}]:`, errorData || error.message);
             throw error;
         }
     },

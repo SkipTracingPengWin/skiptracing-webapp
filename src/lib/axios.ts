@@ -9,27 +9,26 @@ const api = axios.create({
 
 api.interceptors.request.use(
     (config) => {
-        let token = null;
+        let token = localStorage.getItem("token");
 
-        const authStorage = localStorage.getItem("auth-store");
-        if (authStorage) {
-            try {
-                const parsed = JSON.parse(authStorage);
-                token = parsed.state?.token || parsed.token;
-            } catch (error) {
-                console.error("Error parsing auth storage:", error);
-            }
-        }
-
+        // Try getting from auth-store if not found directly
         if (!token) {
-            token = localStorage.getItem("token");
+            const authStorage = localStorage.getItem("auth-store");
+            if (authStorage) {
+                try {
+                    const parsed = JSON.parse(authStorage);
+                    token = parsed.state?.token || parsed.token;
+                } catch (error) {
+                    console.error("Error parsing auth storage:", error);
+                }
+            }
         }
 
         if (token) {
             config.headers.Authorization = `Bearer ${token}`;
-            console.log("🔑 Token attached to request:", token?.substring(0, 20) + "...");
+            console.log(`🔑 [API Request] ${config.method?.toUpperCase()} ${config.url} - Token Attached`);
         } else {
-            console.warn("⚠️ No token found in storage");
+            console.warn(`⚠️ [API Request] ${config.method?.toUpperCase()} ${config.url} - NO TOKEN FOUND`);
         }
 
         return config;

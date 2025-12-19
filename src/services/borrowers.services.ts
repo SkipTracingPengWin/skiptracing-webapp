@@ -50,10 +50,19 @@ export const borrowerService = {
     create: async (data: Partial<Borrower>) => {
         try {
             const sanitizedData = borrowerService._sanitizeData(data);
+            console.log("🚀 Creating Borrower with payload:", JSON.stringify(sanitizedData, null, 2));
             const response = await api.post("/borrowers", sanitizedData);
+            console.log("✅ Create successful:", response.data);
             return response.data;
         } catch (error: any) {
-            alert(`Create failed: ${error.response?.data?.message || error.message}`);
+            const errorData = error.response?.data;
+            const errorMsg = errorData?.message || errorData?.error || error.message;
+            console.error("❌ Create failed:", {
+                status: error.response?.status,
+                data: errorData,
+                message: error.message
+            });
+            alert(`Create failed: ${errorMsg}`);
             throw error;
         }
     },
@@ -106,6 +115,8 @@ Message: ${errorMsg}
 
             if (status === 404) {
                 alert(`DEBUG INFO:\nThe server returned 404 (Not Found).\n\nAction: Please check if your backend has a route defined as DELETE /api/borrowers/:id\n\nFull URL attempted: ${api.defaults.baseURL}${url}`);
+            } else if (status === 403) {
+                alert("❌ ACTION DENIED\n\nOnly Administrators (ADMIN) are authorized to delete borrowers.\nManagers and Agents do not have permission for this action.");
             } else {
                 alert(diagnosticInfo);
             }

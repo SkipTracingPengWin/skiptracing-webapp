@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { X, Trash2 } from 'lucide-react';
 import { useBorrowerStore } from '@/store/borrowers.store';
+import { useAuthStore } from '@/store/auth.store';
 import { borrowerService } from '@/services/borrowers.services';
 import { Borrower } from '@/types/borrower.types';
 
@@ -12,6 +13,7 @@ interface AddBorrowerModalProps {
 
 export default function AddBorrowerModal({ isOpen, onClose, borrowerId }: AddBorrowerModalProps) {
     const { addBorrower, updateBorrower, deleteBorrower } = useBorrowerStore();
+    const { user } = useAuthStore();
     const isEditMode = !!borrowerId;
 
     const [formData, setFormData] = useState({
@@ -27,7 +29,8 @@ export default function AddBorrowerModal({ isOpen, onClose, borrowerId }: AddBor
         risk: 'Low',
         status: 'ACTIVE',
         lastContact: '',
-        notes: ''
+        notes: '',
+        verified: false
     });
 
     const [isSubmitting, setIsSubmitting] = useState(false);
@@ -54,7 +57,8 @@ export default function AddBorrowerModal({ isOpen, onClose, borrowerId }: AddBor
                         risk: borrower.risk || 'Low',
                         status: borrower.status || 'ACTIVE',
                         lastContact: borrower.lastContact ? new Date(borrower.lastContact).toISOString().slice(0, 16) : '',
-                        notes: borrower.notes || ''
+                        notes: borrower.notes || '',
+                        verified: borrower.verified || false
                     });
                 } catch (error) {
                     console.error('Failed to fetch borrower data:', error);
@@ -78,7 +82,8 @@ export default function AddBorrowerModal({ isOpen, onClose, borrowerId }: AddBor
                     risk: 'Low',
                     status: 'ACTIVE',
                     lastContact: '',
-                    notes: ''
+                    notes: '',
+                    verified: false
                 });
             }
         };
@@ -100,8 +105,8 @@ export default function AddBorrowerModal({ isOpen, onClose, borrowerId }: AddBor
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
 
-        if (!formData.fullName || !formData.phoneNumber || !formData.loanId) {
-            alert('Please fill required fields: Name, Phone, Loan ID');
+        if (!formData.fullName || !formData.phoneNumber || !formData.loanId || !formData.location) {
+            alert('Please fill required fields: Name, Phone, Loan ID, Location');
             return;
         }
 
@@ -123,7 +128,8 @@ export default function AddBorrowerModal({ isOpen, onClose, borrowerId }: AddBor
                 status: formData.status as Borrower["status"],
                 risk: formData.risk as Borrower["risk"],
                 lastContact: formData.lastContact || undefined,
-                notes: formData.notes || undefined
+                notes: formData.notes || undefined,
+                verified: formData.verified
             };
 
             console.log(isEditMode ? "UPDATE PAYLOAD:" : "CREATE PAYLOAD:", borrowerData);
@@ -151,7 +157,8 @@ export default function AddBorrowerModal({ isOpen, onClose, borrowerId }: AddBor
                 risk: 'Low',
                 status: 'ACTIVE',
                 lastContact: '',
-                notes: ''
+                notes: '',
+                verified: false
             });
         } catch (error) {
             console.error(isEditMode ? "Failed to update borrower:" : "Failed to add borrower:", error);
@@ -357,7 +364,10 @@ export default function AddBorrowerModal({ isOpen, onClose, borrowerId }: AddBor
                             {/* Location and Address */}
                             <div className="grid grid-cols-2 gap-4">
                                 <div className="space-y-2 group">
-                                    <label className="text-sm font-medium text-slate-600 group-focus-within:text-blue-600 transition-colors">Location/City</label>
+                                    <label className="text-sm font-semibold text-slate-700 flex items-center gap-1.5 group-focus-within:text-blue-600 transition-colors">
+                                        Location/City
+                                        <span className="text-red-500">*</span>
+                                    </label>
                                     <input
                                         type="text"
                                         name="location"
@@ -365,6 +375,7 @@ export default function AddBorrowerModal({ isOpen, onClose, borrowerId }: AddBor
                                         onChange={handleChange}
                                         placeholder="City"
                                         className="w-full px-4 py-2.5 text-sm border-2 border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none transition-all duration-200 bg-white hover:border-slate-300 placeholder:text-slate-400"
+                                        required
                                     />
                                 </div>
                                 <div className="space-y-2 group">
@@ -392,6 +403,36 @@ export default function AddBorrowerModal({ isOpen, onClose, borrowerId }: AddBor
                                 />
                             </div>
 
+                            {/* Verified Status - Full Width Select or Toggle */}
+                            <div className="space-y-2 group">
+                                <label className="text-sm font-semibold text-slate-700 flex items-center gap-1.5 group-focus-within:text-blue-600 transition-colors">
+                                    Verification Status
+                                </label>
+                                <div className="flex items-center gap-4 p-4 bg-white border-2 border-slate-200 rounded-xl hover:border-slate-300 transition-all shadow-sm">
+                                    <div className="flex items-center gap-3 flex-1">
+                                        <div className={`h-8 w-8 rounded-full flex items-center justify-center ${formData.verified ? 'bg-green-100 text-green-600' : 'bg-slate-100 text-slate-400'}`}>
+                                            <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                            </svg>
+                                        </div>
+                                        <div>
+                                            <p className="text-sm font-medium text-slate-900 font-semibold text-slate-700 flex items-center gap-1.5 group-focus-within:text-blue-600 transition-colors">Mark as Verified</p>
+                                            <p className="text-xs text-slate-500">Toggle if the borrower documentation is verified</p>
+                                        </div>
+                                    </div>
+                                    <label className="relative inline-flex items-center cursor-pointer">
+                                        <input
+                                            type="checkbox"
+                                            name="verified"
+                                            checked={formData.verified}
+                                            onChange={(e) => setFormData(prev => ({ ...prev, verified: e.target.checked }))}
+                                            className="sr-only peer"
+                                        />
+                                        <div className="w-11 h-6 bg-slate-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
+                                    </label>
+                                </div>
+                            </div>
+
                             {/* Notes - Full Width */}
                             <div className="space-y-2 group">
                                 <label className="text-sm font-medium text-slate-600 group-focus-within:text-blue-600 transition-colors">Notes</label>
@@ -407,7 +448,7 @@ export default function AddBorrowerModal({ isOpen, onClose, borrowerId }: AddBor
 
                             {/* Premium Action Buttons */}
                             <div className="flex items-center justify-end gap-3 pt-4 border-t-2 border-slate-100 mt-6">
-                                {isEditMode && (
+                                {isEditMode && user?.role === "ADMIN" && (
                                     <button
                                         type="button"
                                         onClick={handleDelete}

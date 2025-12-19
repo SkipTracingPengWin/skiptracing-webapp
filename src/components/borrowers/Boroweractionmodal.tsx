@@ -11,6 +11,7 @@ interface Props {
     onEdit: () => void;
     onDelete: () => void;
     position: { top: number; left: number };
+    showDelete?: boolean;
 }
 
 export default function BorrowerActionModal({
@@ -20,6 +21,7 @@ export default function BorrowerActionModal({
     onEdit,
     onDelete,
     position,
+    showDelete = true,
 }: Props) {
     const menuRef = useRef<HTMLDivElement | null>(null);
     const router = useRouter();
@@ -48,7 +50,7 @@ export default function BorrowerActionModal({
     return (
         <div
             ref={menuRef}
-            className="absolute z-50 bg-white shadow-xl rounded-lg border w-40 py-2"
+            className="fixed z-50 bg-white shadow-xl rounded-lg border w-40 py-2"
             style={{ top: position.top, left: position.left }}
         >
             <button
@@ -65,12 +67,15 @@ export default function BorrowerActionModal({
                 <Edit className="h-4 w-4" /> Edit
             </button>
 
-            <button
-                onClick={onDelete}
-                className="w-full flex items-center gap-2 px-3 py-2 hover:bg-red-50 text-sm text-red-600"
-            >
-                <Trash className="h-4 w-4" /> Delete
-            </button>
+            {showDelete && (
+                <button
+                    onClick={onDelete}
+                    className="w-full flex items-center gap-2 px-3 py-2 hover:bg-red-50 text-sm text-red-600 transition-colors duration-200 group"
+                >
+                    <Trash className="h-4 w-4 group-hover:scale-110 transition-transform duration-200" />
+                    <span>Delete Borrower</span>
+                </button>
+            )}
         </div>
     );
 }
