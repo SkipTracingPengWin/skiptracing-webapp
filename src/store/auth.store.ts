@@ -13,6 +13,7 @@ interface User {
 interface AuthState {
     user: User | null;
     isAuthenticated: boolean;
+    token: string | null;
     loading: boolean;
     error: string | null;
 
@@ -28,6 +29,7 @@ export const useAuthStore = create<AuthState>()(
         (set) => ({
             user: null,
             isAuthenticated: false,
+            token: null,
             loading: false,
             error: null,
 
@@ -35,7 +37,7 @@ export const useAuthStore = create<AuthState>()(
                 set({ loading: true, error: null });
                 try {
                     const response = await authService.login(credentials);
-                    
+
                     if (!response.user || !response.token) {
                         throw new Error("Invalid login response");
                     }
@@ -47,6 +49,7 @@ export const useAuthStore = create<AuthState>()(
                     set({
                         user: response.user,
                         isAuthenticated: true,
+                        token: response.token,
                         loading: false
                     });
                 } catch (error: any) {
@@ -63,7 +66,7 @@ export const useAuthStore = create<AuthState>()(
                 set({ loading: true, error: null });
                 try {
                     const response = await authService.register(data);
-                    
+
                     if (!response.user || !response.token) {
                         throw new Error("Invalid registration response");
                     }
@@ -75,6 +78,7 @@ export const useAuthStore = create<AuthState>()(
                     set({
                         user: response.user,
                         isAuthenticated: true,
+                        token: response.token,
                         loading: false
                     });
                 } catch (error: any) {
@@ -89,7 +93,7 @@ export const useAuthStore = create<AuthState>()(
 
             logout: () => {
                 authUtils.clearAuth();
-                set({ user: null, isAuthenticated: false, error: null });
+                set({ user: null, isAuthenticated: false, token: null, error: null });
             },
 
             checkAuth: async () => {
@@ -108,7 +112,11 @@ export const useAuthStore = create<AuthState>()(
         }),
         {
             name: 'auth-store',
-            partialize: (state) => ({ user: state.user, isAuthenticated: state.isAuthenticated }),
+            partialize: (state) => ({
+                user: state.user,
+                isAuthenticated: state.isAuthenticated,
+                token: state.token
+            }),
         }
     )
 );

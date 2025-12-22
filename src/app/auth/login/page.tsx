@@ -1,8 +1,191 @@
 
+// "use client";
+
+// import Link from "next/link";
+// import { Shield, Check, Eye, EyeOff, Mail, Lock } from "lucide-react";
+// import { useState } from "react";
+// import { useRouter } from "next/navigation";
+// import { authService } from "@/services/auth";
+// import { authUtils } from "@/utils/auth/auth.utils";
+// import { useAuthStore } from "@/store/auth.store";
+
+// export default function LoginPage() {
+//     const [showPassword, setShowPassword] = useState(false);
+//     const [email, setEmail] = useState("");
+//     const [password, setPassword] = useState("");
+//     const [error, setError] = useState("");
+//     const [loading, setLoading] = useState(false);
+//     const router = useRouter();
+
+//     const { login } = useAuthStore();
+
+//     const handleLogin = async (e: React.FormEvent) => {
+//         e.preventDefault();
+//         setError("");
+//         setLoading(true);
+
+//         try {
+//             await login({ email, password });
+
+//             // Get the updated user from the store state to handle redirection
+//             const user = useAuthStore.getState().user;
+
+//             if (!user) {
+//                 setError("Login succeeded but user data is missing");
+//                 return;
+//             }
+
+//             // Redirect based on role
+//             const role = user.role;
+//             switch (role) {
+//                 case "ADMIN":
+//                     router.push("/dashboard/admin");
+//                     break;
+//                 case "MANAGER":
+//                     router.push("/dashboard/manager");
+//                     break;
+//                 case "AGENT":
+//                     router.push("/dashboard/agent");
+//                     break;
+//                 default:
+//                     router.push("/unauthorized");
+//             }
+//         } catch (err: any) {
+//             console.error("Login error:", err);
+//             setError(err.message || "Login failed. Please try again.");
+//         } finally {
+//             setLoading(false);
+//         }
+//     };
+
+
+//     return (
+//         <div className="min-h-screen flex flex-col md:flex-row font-sans">
+//             {/* Left Panel - Promotional */}
+//             <div className="md:w-1/2 bg-blue-600 text-white p-8 md:p-16 flex flex-col justify-between relative overflow-hidden">
+//                 {/* Background Decorative Elements */}
+//                 <div className="absolute top-0 right-0 w-96 h-96 bg-blue-500 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2 opacity-50"></div>
+//                 <div className="absolute bottom-0 left-0 w-64 h-64 bg-blue-700 rounded-full blur-3xl translate-y-1/2 -translate-x-1/2 opacity-50"></div>
+
+//                 <div className="relative z-10">
+//                     <div className="flex items-center gap-2 mb-12">
+//                         <div className="h-10 w-10 bg-white/10 backdrop-blur-sm rounded-lg flex items-center justify-center border border-white/20">
+//                             <Shield className="h-6 w-6 text-white" />
+//                         </div>
+//                         <span className="text-2xl font-bold">SkipTrace</span>
+//                     </div>
+
+//                     <div className="space-y-6 max-w-lg">
+//                         <h1 className="text-4xl md:text-5xl font-bold leading-tight">
+//                             Welcome Back
+//                         </h1>
+//                         <p className="text-blue-100 text-lg leading-relaxed">
+//                             Log in to access your dashboard and manage your recovery operations.
+//                         </p>
+//                     </div>
+//                 </div>
+
+//                 <div className="relative z-10 mt-12">
+//                     <div className="bg-blue-700/50 backdrop-blur-md rounded-2xl p-6 border border-blue-500/30">
+//                         <div className="flex items-center gap-3 mb-4">
+//                             <div className="h-8 w-8 bg-green-500 rounded-full flex items-center justify-center shadow-lg">
+//                                 <Shield className="h-5 w-5 text-white" />
+//                             </div>
+//                             <span className="font-bold text-lg">Secure Access</span>
+//                         </div>
+//                         <p className="text-blue-100 leading-relaxed">
+//                             Your data is protected with enterprise-grade encryption and SOC 2 Type II compliance.
+//                         </p>
+//                     </div>
+//                 </div>
+//             </div>
+
+//             {/* Right Panel - Form */}
+//             <div className="md:w-1/2 bg-white p-8 md:p-16 flex items-center justify-center">
+//                 <div className="w-full max-w-md space-y-8">
+//                     <div className="text-center">
+//                         <h2 className="text-2xl font-bold text-slate-900">Sign In</h2>
+//                         <p className="text-slate-500 mt-2">Enter your credentials to continue</p>
+//                     </div>
+
+//                     {error && (
+//                         <div className="bg-red-50 text-red-600 p-3 rounded-lg text-sm text-center">
+//                             {error}
+//                         </div>
+//                     )}
+
+//                     <form className="space-y-5" onSubmit={handleLogin}>
+//                         <div className="space-y-1.5">
+//                             <label className="text-sm font-medium text-slate-700" htmlFor="email">Work Email</label>
+//                             <div className="relative">
+//                                 <input
+//                                     id="email"
+//                                     type="email"
+//                                     value={email}
+//                                     onChange={(e) => setEmail(e.target.value)}
+//                                     placeholder="name@company.com"
+//                                     className="w-full pl-4 pr-10 py-2.5 border border-slate-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all placeholder:text-slate-400"
+//                                     required
+//                                 />
+//                                 <div className="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
+//                                     <Mail className="h-5 w-5 text-slate-400" />
+//                                 </div>
+//                             </div>
+//                         </div>
+
+//                         <div className="space-y-1.5">
+//                             <div className="flex items-center justify-between">
+//                                 <label className="text-sm font-medium text-slate-700" htmlFor="password">Password</label>
+//                                 <Link href="/forgot-password" className="text-sm text-blue-600 hover:underline font-medium">
+//                                     Forgot password?
+//                                 </Link>
+//                             </div>
+//                             <div className="relative">
+//                                 <input
+//                                     id="password"
+//                                     type={showPassword ? "text" : "password"}
+//                                     value={password}
+//                                     onChange={(e) => setPassword(e.target.value)}
+//                                     placeholder="Enter your password"
+//                                     className="w-full pl-4 pr-10 py-2.5 border border-slate-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all placeholder:text-slate-400"
+//                                     required
+//                                 />
+//                                 <button
+//                                     type="button"
+//                                     onClick={() => setShowPassword(!showPassword)}
+//                                     className="absolute inset-y-0 right-0 pr-3 flex items-center text-slate-400 hover:text-slate-600"
+//                                 >
+//                                     {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
+//                                 </button>
+//                             </div>
+//                         </div>
+
+//                         <button
+//                             type="submit"
+//                             disabled={loading}
+//                             className="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 rounded-lg transition-colors shadow-md hover:shadow-lg flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+//                         >
+//                             {loading ? "Signing In..." : "Sign In"}
+//                         </button>
+//                     </form>
+
+//                     <div className="text-center">
+//                         <p className="text-sm text-slate-600">
+//                             Don't have an account? <Link href="/auth/register" className="text-blue-600 font-medium hover:underline">Start Free Trial</Link>
+//                         </p>
+//                     </div>
+//                 </div>
+//             </div>
+//         </div>
+//     );
+// }
+
+
+
 "use client";
 
 import Link from "next/link";
-import { Shield, Check, Eye, EyeOff, Mail, Lock } from "lucide-react";
+import { Shield, Check, Eye, EyeOff, Mail, Lock, ArrowRight, Sparkles } from "lucide-react";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { authService } from "@/services/auth";
@@ -58,86 +241,125 @@ export default function LoginPage() {
         }
     };
 
-
     return (
-        <div className="min-h-screen flex flex-col md:flex-row font-sans">
-            {/* Left Panel - Promotional */}
-            <div className="md:w-1/2 bg-blue-600 text-white p-8 md:p-16 flex flex-col justify-between relative overflow-hidden">
-                {/* Background Decorative Elements */}
-                <div className="absolute top-0 right-0 w-96 h-96 bg-blue-500 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2 opacity-50"></div>
-                <div className="absolute bottom-0 left-0 w-64 h-64 bg-blue-700 rounded-full blur-3xl translate-y-1/2 -translate-x-1/2 opacity-50"></div>
+        <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100 flex flex-col md:flex-row font-sans overflow-hidden">
+            {/* Animated Background */}
+            <div className="absolute inset-0 overflow-hidden pointer-events-none">
+                <div className="absolute -top-40 -right-40 w-80 h-80 bg-gradient-to-r from-blue-400/30 to-purple-500/30 rounded-full blur-3xl animate-pulse"></div>
+                <div className="absolute -bottom-40 -left-40 w-96 h-96 bg-gradient-to-r from-emerald-400/20 to-blue-500/20 rounded-full blur-3xl animate-pulse delay-1000"></div>
+                <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-64 h-64 bg-gradient-to-r from-purple-400/10 to-pink-500/10 rounded-full blur-3xl animate-ping"></div>
+            </div>
 
-                <div className="relative z-10">
-                    <div className="flex items-center gap-2 mb-12">
-                        <div className="h-10 w-10 bg-white/10 backdrop-blur-sm rounded-lg flex items-center justify-center border border-white/20">
-                            <Shield className="h-6 w-6 text-white" />
-                        </div>
-                        <span className="text-2xl font-bold">SkipTrace</span>
-                    </div>
+            {/* Left Panel - Enhanced Promotional */}
+            <div className="md:w-1/2 bg-gradient-to-br from-blue-600 via-blue-700 to-indigo-800 text-white p-12 md:p-20 flex flex-col justify-between relative z-10">
+                {/* Floating Geometric Shapes */}
+                <div className="absolute top-20 right-10 w-20 h-20 bg-white/10 rounded-2xl rotate-12 animate-float"></div>
+                <div className="absolute bottom-32 left-12 w-24 h-24 bg-white/5 rounded-full -rotate-6 animate-float delay-500"></div>
+                <div className="absolute top-1/2 right-20 w-16 h-16 bg-emerald-400/20 rounded-lg animate-bounce"></div>
 
-                    <div className="space-y-6 max-w-lg">
-                        <h1 className="text-4xl md:text-5xl font-bold leading-tight">
-                            Welcome Back
-                        </h1>
-                        <p className="text-blue-100 text-lg leading-relaxed">
-                            Log in to access your dashboard and manage your recovery operations.
-                        </p>
-                    </div>
-                </div>
-
-                <div className="relative z-10 mt-12">
-                    <div className="bg-blue-700/50 backdrop-blur-md rounded-2xl p-6 border border-blue-500/30">
-                        <div className="flex items-center gap-3 mb-4">
-                            <div className="h-8 w-8 bg-green-500 rounded-full flex items-center justify-center shadow-lg">
-                                <Shield className="h-5 w-5 text-white" />
+                <div className="flex flex-col h-full justify-between">
+                    {/* Header */}
+                    <div className="space-y-8">
+                        <div className="flex items-center gap-3 bg-white/10 backdrop-blur-xl p-4 rounded-2xl border border-white/20">
+                            <div className="h-14 w-14 bg-gradient-to-br from-white/20 to-transparent rounded-2xl flex items-center justify-center backdrop-blur-sm shadow-xl">
+                                <Shield className="h-8 w-8 text-white drop-shadow-lg" />
                             </div>
-                            <span className="font-bold text-lg">Secure Access</span>
+                            <div>
+                                <h1 className="text-3xl font-black bg-gradient-to-r from-white to-blue-100 bg-clip-text text-transparent">SkipTrace</h1>
+                                <p className="text-blue-200 text-sm font-medium tracking-wide">Enterprise Debt Recovery Platform</p>
+                            </div>
                         </div>
-                        <p className="text-blue-100 leading-relaxed">
-                            Your data is protected with enterprise-grade encryption and SOC 2 Type II compliance.
-                        </p>
+
+                        <div className="space-y-6 max-w-lg">
+                            <div>
+                                <h2 className="text-5xl md:text-6xl font-black leading-tight bg-gradient-to-r from-white via-blue-50 to-transparent bg-clip-text text-transparent drop-shadow-2xl">
+                                    Welcome Back
+                                </h2>
+                                <div className="h-1 w-24 bg-gradient-to-r from-emerald-400 to-green-500 rounded-full mt-4 shadow-lg"></div>
+                            </div>
+                            <p className="text-xl text-blue-100 leading-relaxed opacity-90">
+                                Access your intelligent dashboard and streamline your recovery operations with AI-powered insights.
+                            </p>
+                        </div>
+                    </div>
+
+                    {/* Features Cards */}
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div className="group bg-white/10 backdrop-blur-xl rounded-3xl p-8 border border-white/20 hover:bg-white/20 transition-all duration-500 hover:scale-[1.02] hover:shadow-2xl">
+                            <div className="flex items-center gap-4 mb-4">
+                                <div className="h-12 w-12 bg-gradient-to-br from-emerald-400 to-green-500 rounded-2xl flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform">
+                                    <Sparkles className="h-6 w-6 text-white" />
+                                </div>
+                                <h4 className="text-xl font-bold">AI Analytics</h4>
+                            </div>
+                            <p className="text-blue-100 leading-relaxed">Real-time recovery predictions with 95% accuracy</p>
+                        </div>
+                        <div className="group bg-white/10 backdrop-blur-xl rounded-3xl p-8 border border-white/20 hover:bg-white/20 transition-all duration-500 hover:scale-[1.02] hover:shadow-2xl">
+                            <div className="flex items-center gap-4 mb-4">
+                                <div className="h-12 w-12 bg-gradient-to-br from-purple-400 to-pink-500 rounded-2xl flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform">
+                                    <Lock className="h-6 w-6 text-white" />
+                                </div>
+                                <h4 className="text-xl font-bold">SOC 2 Secure</h4>
+                            </div>
+                            <p className="text-blue-100 leading-relaxed">Enterprise-grade encryption & compliance certified</p>
+                        </div>
                     </div>
                 </div>
             </div>
 
-            {/* Right Panel - Form */}
-            <div className="md:w-1/2 bg-white p-8 md:p-16 flex items-center justify-center">
-                <div className="w-full max-w-md space-y-8">
-                    <div className="text-center">
-                        <h2 className="text-2xl font-bold text-slate-900">Sign In</h2>
-                        <p className="text-slate-500 mt-2">Enter your credentials to continue</p>
+            {/* Right Panel - Enhanced Glassmorphism Form */}
+            <div className="md:w-1/2 bg-white/80 backdrop-blur-xl p-8 md:p-16 flex items-center justify-center relative z-20">
+                <div className="w-full max-w-lg">
+                    {/* Floating Particles */}
+                    <div className="absolute top-10 right-10 w-2 h-2 bg-blue-400 rounded-full animate-bounce" style={{animationDelay: '0s'}}></div>
+                    <div className="absolute top-20 left-10 w-3 h-3 bg-emerald-400 rounded-full animate-bounce" style={{animationDelay: '1s'}}></div>
+                    <div className="absolute bottom-20 right-20 w-2 h-2 bg-purple-400 rounded-full animate-bounce" style={{animationDelay: '2s'}}></div>
+
+                    <div className="text-center mb-12">
+                        <div className="inline-flex items-center gap-3 bg-gradient-to-r from-blue-500 to-indigo-600 text-white px-6 py-3 rounded-2xl shadow-2xl mb-6 backdrop-blur-sm border border-white/30">
+                            <ArrowRight className="h-5 w-5" />
+                            <span className="text-xl font-bold tracking-wide">Sign In to Continue</span>
+                        </div>
+                        <p className="text-slate-600 text-lg font-medium">Enter your credentials to access your dashboard</p>
                     </div>
 
                     {error && (
-                        <div className="bg-red-50 text-red-600 p-3 rounded-lg text-sm text-center">
-                            {error}
+                        <div className="bg-gradient-to-r from-red-500/10 to-pink-500/10 text-red-700 p-5 rounded-2xl border border-red-200/50 backdrop-blur-sm mb-8 shadow-lg">
+                            <div className="flex items-start gap-3">
+                                <div className="h-5 w-5 bg-red-500 rounded-lg flex items-center justify-center mt-0.5 flex-shrink-0">
+                                    <Check className="h-3 w-3 text-white" />
+                                </div>
+                                <span className="font-medium leading-relaxed">{error}</span>
+                            </div>
                         </div>
                     )}
 
-                    <form className="space-y-5" onSubmit={handleLogin}>
-                        <div className="space-y-1.5">
-                            <label className="text-sm font-medium text-slate-700" htmlFor="email">Work Email</label>
+                    <form className="space-y-6" onSubmit={handleLogin}>
+                        {/* Email Field */}
+                        <div className="group">
+                            <label className="block text-sm font-bold text-slate-900 mb-2.5 tracking-wide">Work Email Address</label>
                             <div className="relative">
                                 <input
                                     id="email"
                                     type="email"
                                     value={email}
                                     onChange={(e) => setEmail(e.target.value)}
-                                    placeholder="name@company.com"
-                                    className="w-full pl-4 pr-10 py-2.5 border border-slate-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all placeholder:text-slate-400"
+                                    placeholder="john@company.com"
+                                    className="w-full pl-14 pr-5 py-4 bg-white/70 backdrop-blur-sm border-2 border-slate-200/60 rounded-2xl focus:ring-4 focus:ring-blue-500/20 focus:border-blue-500/70 shadow-lg transition-all duration-300 group-hover:border-slate-300 hover:shadow-xl text-lg placeholder:text-slate-400"
                                     required
                                 />
-                                <div className="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
-                                    <Mail className="h-5 w-5 text-slate-400" />
+                                <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none group-focus-within:text-blue-600">
+                                    <Mail className="h-6 w-6 text-slate-400 group-focus-within:text-blue-600 transition-colors" />
                                 </div>
                             </div>
                         </div>
 
-                        <div className="space-y-1.5">
-                            <div className="flex items-center justify-between">
-                                <label className="text-sm font-medium text-slate-700" htmlFor="password">Password</label>
-                                <Link href="/forgot-password" className="text-sm text-blue-600 hover:underline font-medium">
-                                    Forgot password?
+                        {/* Password Field */}
+                        <div className="group">
+                            <div className="flex items-center justify-between mb-2.5">
+                                <label className="text-sm font-bold text-slate-900 tracking-wide">Password</label>
+                                <Link href="/forgot-password" className="text-sm font-semibold text-blue-600 hover:text-blue-700 transition-colors group-hover:underline flex items-center gap-1">
+                                    Forgot Password?
                                 </Link>
                             </div>
                             <div className="relative">
@@ -147,15 +369,18 @@ export default function LoginPage() {
                                     value={password}
                                     onChange={(e) => setPassword(e.target.value)}
                                     placeholder="Enter your password"
-                                    className="w-full pl-4 pr-10 py-2.5 border border-slate-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all placeholder:text-slate-400"
+                                    className="w-full pl-14 pr-14 py-4 bg-white/70 backdrop-blur-sm border-2 border-slate-200/60 rounded-2xl focus:ring-4 focus:ring-blue-500/20 focus:border-blue-500/70 shadow-lg transition-all duration-300 group-hover:border-slate-300 hover:shadow-xl text-lg placeholder:text-slate-400"
                                     required
                                 />
+                                <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none group-focus-within:text-blue-600">
+                                    <Lock className="h-6 w-6 text-slate-400 group-focus-within:text-blue-600 transition-colors" />
+                                </div>
                                 <button
                                     type="button"
                                     onClick={() => setShowPassword(!showPassword)}
-                                    className="absolute inset-y-0 right-0 pr-3 flex items-center text-slate-400 hover:text-slate-600"
+                                    className="absolute inset-y-0 right-0 pr-4 flex items-center text-slate-400 hover:text-slate-700 focus:outline-none transition-colors"
                                 >
-                                    {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
+                                    {showPassword ? <EyeOff className="h-6 w-6" /> : <Eye className="h-6 w-6" />}
                                 </button>
                             </div>
                         </div>
@@ -163,15 +388,20 @@ export default function LoginPage() {
                         <button
                             type="submit"
                             disabled={loading}
-                            className="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 rounded-lg transition-colors shadow-md hover:shadow-lg flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                            className="group w-full bg-gradient-to-r from-blue-600 to-indigo-700 hover:from-blue-700 hover:to-indigo-800 text-white font-black py-5 rounded-2xl transition-all duration-300 shadow-2xl hover:shadow-3xl hover:-translate-y-1 disabled:opacity-60 disabled:cursor-not-allowed disabled:hover:shadow-xl flex items-center justify-center gap-3 text-lg backdrop-blur-sm border border-white/20"
                         >
-                            {loading ? "Signing In..." : "Sign In"}
+                            <span>{loading ? "Signing In..." : "Sign In"}</span>
+                            <ArrowRight className={`h-6 w-6 transition-transform ${loading ? '' : 'group-hover:translate-x-1'}`} />
                         </button>
                     </form>
 
-                    <div className="text-center">
-                        <p className="text-sm text-slate-600">
-                            Don't have an account? <Link href="/auth/register" className="text-blue-600 font-medium hover:underline">Start Free Trial</Link>
+                    <div className="text-center pt-8 border-t border-slate-200/50">
+                        <p className="text-sm text-slate-600 font-medium">
+                            Don't have an account?{" "}
+                            <Link href="/auth/register" className="text-blue-600 font-bold hover:text-blue-700 transition-colors group-hover:underline inline-flex items-center gap-1">
+                                Start 14-Day Free Trial
+                                <Sparkles className="h-4 w-4 inline" />
+                            </Link>
                         </p>
                     </div>
                 </div>
