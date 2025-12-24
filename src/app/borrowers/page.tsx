@@ -18,6 +18,7 @@ import { useAuthStore } from "@/store/auth.store";
 import AddBorrowerModal from "@/components/borrowers/AddBorrowerModal";
 import ActionMenu from "@/components/borrowers/Boroweractionmodal";
 import { RiskBadge, StatusBadge, VerificationStatus } from "@/components/borrowers/badges";
+import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from "@/components/ui/table";
 
 export default function BorrowersPage() {
     const { borrowers, deleteBorrower, fetchBorrowers } = useBorrowerStore();
@@ -131,24 +132,24 @@ export default function BorrowersPage() {
 
                     {/* TABLE */}
                     <div className="bg-white rounded-xl border overflow-hidden">
-                        <table className="w-full">
-                            <thead className="bg-slate-50 border-b">
-                                <tr>
-                                    <th className="px-6 py-3 text-left text-xs font-semibold">Borrower</th>
-                                    <th className="px-6 py-3 text-left text-xs font-semibold">Loan Details</th>
-                                    <th className="px-6 py-3 text-left text-xs font-semibold">Outstanding</th>
-                                    <th className="px-6 py-3 text-left text-xs font-semibold">Status</th>
-                                    <th className="px-6 py-3 text-left text-xs font-semibold">Risk</th>
-                                    <th className="px-6 py-3 text-left text-xs font-semibold">Verification</th>
-                                    <th className="px-6 py-3 text-left text-xs font-semibold">Location</th>
-                                    <th className="px-6 py-3 text-left text-xs font-semibold">Actions</th>
-                                </tr>
-                            </thead>
+                        <Table>
+                            <TableHeader className="bg-slate-50 border-b">
+                                <TableRow>
+                                    <TableHead className="px-6 py-3">Borrower</TableHead>
+                                    <TableHead className="px-6 py-3">Loan Details</TableHead>
+                                    <TableHead className="px-6 py-3">Outstanding</TableHead>
+                                    <TableHead className="px-6 py-3">Status</TableHead>
+                                    <TableHead className="px-6 py-3">Risk</TableHead>
+                                    <TableHead className="px-6 py-3">Verification</TableHead>
+                                    <TableHead className="px-6 py-3">Location</TableHead>
+                                    <TableHead className="px-6 py-3 text-right">Actions</TableHead>
+                                </TableRow>
+                            </TableHeader>
 
-                            <tbody className="divide-y">
+                            <TableBody>
                                 {borrowers.map((borrower) => (
-                                    <tr key={borrower.id} className="hover:bg-slate-50">
-                                        <td className="px-6 py-4">
+                                    <TableRow key={borrower.id} className="hover:bg-slate-50">
+                                        <TableCell className="px-6 py-4">
                                             <div className="flex items-center gap-3">
                                                 <div className="h-10 w-10 bg-blue-600 rounded-full flex justify-center items-center text-white font-bold">
                                                     {borrower.name
@@ -164,51 +165,51 @@ export default function BorrowersPage() {
                                                     </div>
                                                 </div>
                                             </div>
-                                        </td>
+                                        </TableCell>
 
-                                        <td className="px-6 py-4">
+                                        <TableCell className="px-6 py-4">
                                             <div>
                                                 <div className="font-semibold">{borrower.loanId}</div>
                                                 <div className="text-xs text-slate-500">{borrower.loanType}</div>
                                             </div>
-                                        </td>
+                                        </TableCell>
 
-                                        <td className="px-6 py-4">
+                                        <TableCell className="px-6 py-4">
                                             <div className="font-semibold">₹{borrower.amount}</div>
                                             <div className="text-xs text-red-600">{borrower.overdue}</div>
-                                        </td>
+                                        </TableCell>
 
-                                        <td className="px-6 py-4">
+                                        <TableCell className="px-6 py-4">
                                             <StatusBadge status={borrower.status} />
-                                        </td>
+                                        </TableCell>
 
-                                        <td className="px-6 py-4">
+                                        <TableCell className="px-6 py-4">
                                             <RiskBadge risk={borrower.risk} />
-                                        </td>
+                                        </TableCell>
 
-                                        <td className="px-6 py-4">
+                                        <TableCell className="px-6 py-4">
                                             <VerificationStatus verified={borrower.verified} />
-                                        </td>
+                                        </TableCell>
 
-                                        <td className="px-6 py-4">
+                                        <TableCell className="px-6 py-4">
                                             <div className="flex items-center gap-1 text-slate-600">
                                                 <MapPin className="h-4 w-4" />
                                                 {borrower.location}
                                             </div>
-                                        </td>
+                                        </TableCell>
 
-                                        <td className="px-6 py-4 relative">
+                                        <TableCell className="px-6 py-4 text-right">
                                             <button
                                                 onClick={(e) => openMenu(e, borrower.id)}
                                                 className="p-2 hover:bg-slate-100 rounded-lg"
                                             >
                                                 <MoreVertical className="h-4 w-4" />
                                             </button>
-                                        </td>
-                                    </tr>
+                                        </TableCell>
+                                    </TableRow>
                                 ))}
-                            </tbody>
-                        </table>
+                            </TableBody>
+                        </Table>
                     </div>
 
                     {/* ACTION MENU - NO HARDCODED profileId */}
@@ -226,4 +227,5 @@ export default function BorrowersPage() {
         </div>
     );
 }
+
 

@@ -6,6 +6,8 @@ import Link from "next/link";
 import { useSearchParams, useRouter } from "next/navigation";
 import { useBorrowerStore } from "@/store/borrowers.store";
 import { useAuthStore } from "@/store/auth.store";
+import { useAssignmentStore } from "@/store/assignments.store";
+import { useAgentStore } from "@/store/agents.store";
 import { borrowerService } from "@/services/borrowers.services";
 import { Borrower } from "@/types/borrower.types";
 
@@ -47,6 +49,8 @@ export default function BorrowerProfile() {
   const router = useRouter();
 
   const { borrowers, updateBorrower, deleteBorrower } = useBorrowerStore();
+  const { assignments, fetchAssignments } = useAssignmentStore();
+  const { agents, fetchAgents } = useAgentStore();
   const { user } = useAuthStore();
   const [borrower, setBorrower] = useState<Borrower | null>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -72,12 +76,24 @@ export default function BorrowerProfile() {
     };
 
     fetchBorrower();
-  }, [borrowerId, borrowers]);
+    fetchAssignments();
+    fetchAgents();
+  }, [borrowerId, borrowers, fetchAssignments, fetchAgents]);
 
   // Handle number to string ID comparison consistently
   const numericId = useMemo(() => {
     return isNaN(Number(borrowerId)) ? String(borrowerId) : Number(borrowerId);
   }, [borrowerId]);
+
+  // Find assigned agent name
+  const assignedAgentName = useMemo(() => {
+    if (!borrowerId) return "N/A";
+    const assignment = assignments.find(a => String(a.borrowerId) === String(borrowerId));
+    if (!assignment) return "No Agent Assigned";
+
+    const agent = agents.find(ag => String(ag.id) === String(assignment.agentId));
+    return agent?.name || assignment.agentName || "Unknown Agent";
+  }, [borrowerId, assignments, agents]);
 
   // State for modal
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -192,7 +208,7 @@ export default function BorrowerProfile() {
             {/* ---------- FINAL LAYOUT ---------- */}
             <div className="space-y-8">
               {/* 1. TOP: Basic Information (Full Width) */}
-              <BasicInfoCard borrower={borrower} />
+              <BasicInfoCard borrower={borrower} assignedAgentName={assignedAgentName} />
 
               {/* 2. Loan Details (Full Width) */}
               <LoanDetailsCard borrower={borrower} />
@@ -231,7 +247,7 @@ const InfoItem = ({ icon, label, value, extra }: any) => (
 );
 
 /* ---------------- BASIC INFO ---------------- */
-const BasicInfoCard = ({ borrower }: any) => (
+const BasicInfoCard = ({ borrower, assignedAgentName }: any) => (
   <Card className="shadow-lg border-0 bg- from-slate-50 to-white">
     <CardHeader className="pb-4">
       <CardTitle>Basic Information</CardTitle>
@@ -242,7 +258,7 @@ const BasicInfoCard = ({ borrower }: any) => (
         <InfoItem icon={<Mail className="w-6 h-6 text-blue-600" />} label="Email" value={borrower.email} />
         <InfoItem icon={<MapPin className="w-6 h-6 text-blue-600" />} label="Location" value={borrower.location} />
         <InfoItem icon={<CreditCard className="w-6 h-6 text-blue-600" />} label="Loan ID" value={borrower.loanId} />
-        <InfoItem icon={<Briefcase className="w-6 h-6 text-blue-600" />} label="Assigned Agent" value={borrower.assignedAgent} />
+        <InfoItem icon={<Briefcase className="w-6 h-6 text-blue-600" />} label="Assigned Agent" value={assignedAgentName} />
         <InfoItem icon={<Landmark className="w-6 h-6 text-blue-600" />} label="Last Contact" value={borrower.lastContact} />
       </div>
     </CardContent>
@@ -363,5 +379,3 @@ const QuickActions = () => (
     </CardContent>
   </Card>
 );
-
-

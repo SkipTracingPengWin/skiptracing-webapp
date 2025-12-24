@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 import { devtools } from 'zustand/middleware';
-import type { DashboardStats } from '@/types';
+import type { DashboardStats } from '@/types/dashboard.types';
 import { dashboardService } from '@/services/dashboard.services';
 
 const initialDashboardStats: DashboardStats = {
@@ -24,6 +24,7 @@ export const useDashboardStatsStore = create<DashboardStatsState>()(
     devtools(
         (set) => ({
             dashboardStats: initialDashboardStats,
+
             fetchStats: async () => {
                 try {
                     const data = await dashboardService.getStats();

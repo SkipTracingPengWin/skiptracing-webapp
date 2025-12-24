@@ -1,63 +1,88 @@
 import { create } from 'zustand';
 import { devtools } from 'zustand/middleware';
 import type { Assignment } from '@/types';
-
-const assignmentsData: Assignment[] = [
-    {
-        id: 1,
-        borrowerId: 1,
-        borrowerName: "Rahul Sharma",
-        agentId: 1,
-        agentName: "Suresh Kumar",
-        loanId: "LN-2024-001",
-        amount: "₹125,000",
-        assignedAt: "2025-11-01",
-        dueDate: "2025-11-30",
-        status: "In Progress",
-        priority: "High",
-        progress: 60
-    },
-    {
-        id: 2,
-        borrowerId: 2,
-        borrowerName: "Priya Patel",
-        agentId: 2,
-        agentName: "Priya Sharma",
-        loanId: "LN-2024-002",
-        amount: "₹78,000",
-        assignedAt: "2025-11-05",
-        dueDate: "2025-12-05", 
-        status: "Pending",
-        priority: "Medium",
-        progress: 0
-    }
-];
+import { assignmentService } from '@/services/assignment.services';
 
 interface AssignmentState {
     assignments: Assignment[];
-    addAssignment: (assignment: Assignment) => void;
-    updateAssignment: (id: number, updates: Partial<Assignment>) => void;
-    deleteAssignment: (id: number) => void;
+    loading: boolean;
+    error: string | null;
+    fetchAssignments: () => Promise<void>;
+    addAssignment: (assignment: Partial<Assignment>) => Promise<void>;
+    updateAssignment: (id: string | number, updates: Partial<Assignment>) => Promise<void>;
+    deleteAssignment: (id: string | number) => Promise<void>;
 }
+
+const normalizeAssignment = (a: any): Assignment => ({
+    ...a,
+    id: a.id || a._id || String(Math.random()),
+    borrowerId: a.borrowerId || a.borrower?._id || a.borrower?.id,
+    agentId: a.agentId || a.agent?._id || a.agent?.id,
+});
 
 export const useAssignmentStore = create<AssignmentState>()(
     devtools(
         (set) => ({
-            assignments: assignmentsData,
-            addAssignment: (assignment) =>
-                set((state) => ({
-                    assignments: [...state.assignments, assignment],
-                })),
-            updateAssignment: (id, updates) =>
-                set((state) => ({
-                    assignments: state.assignments.map((a) =>
-                        a.id === id ? { ...a, ...updates } : a
-                    ),
-                })),
-            deleteAssignment: (id) =>
-                set((state) => ({
-                    assignments: state.assignments.filter((a) => a.id !== id),
-                })),
+            assignments: [],
+            loading: false,
+            error: null,
+
+            fetchAssignments: async () => {
+                set({ loading: true, error: null });
+                try {
+                    const data = await assignmentService.getAll();
+                    const normalized = Array.isArray(data) ? data.map(normalizeAssignment) : [];
+                    set({ assignments: normalized, loading: false });
+                } catch (error: any) {
+                    set({ error: error.message || 'Failed to fetch assignments', loading: false });
+                }
+            },
+
+            addAssignment: async (assignment) => {
+                set({ loading: true, error: null });
+                try {
+                    const responseData = await assignmentService.create(assignment);
+                    const newAssignment = normalizeAssignment(responseData);
+                    set((state) => ({
+                        assignments: [...state.assignments, newAssignment],
+                        loading: false,
+                    }));
+                } catch (error: any) {
+                    const errorMsg = error.response?.data?.message || error.message || 'Failed to add assignment';
+                    set({ error: errorMsg, loading: false });
+                    throw error;
+                }
+            },
+
+            updateAssignment: async (id, updates) => {
+                set({ loading: true, error: null });
+                try {
+                    const updatedAssignment = await assignmentService.update(id, updates);
+                    set((state) => ({
+                        assignments: state.assignments.map((a) =>
+                            String(a.id) === String(id) ? { ...a, ...updatedAssignment } : a
+                        ),
+                        loading: false,
+                    }));
+                } catch (error: any) {
+                    set({ error: error.message || 'Failed to update assignment', loading: false });
+                    throw error;
+                }
+            },
+
+            deleteAssignment: async (id) => {
+                set({ loading: true, error: null });
+                try {
+                    await assignmentService.delete(id);
+                    set((state) => ({
+                        assignments: state.assignments.filter((a) => String(a.id) !== String(id)),
+                        loading: false,
+                    }));
+                } catch (error: any) {
+                    set({ error: error.message || 'Failed to delete assignment', loading: false });
+                    throw error;
+                }
+            },
         }),
         { name: 'AssignmentStore' }
     )

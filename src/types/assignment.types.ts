@@ -1,19 +1,22 @@
 export interface Assignment {
-    id: number;
-    borrowerId: number;
-    borrowerName: string;
-    agentId: number;
-    agentName: string;
-    loanId: string;
+    id: string;
+    borrowerId: string;
+    borrowerName?: string;
+    agentId: string;
+    agentName?: string;
+    loanId?: string | null;
     amount: string;
     assignedAt: string;
     dueDate: string;
-    status: "Pending" | "In Progress" | "Completed" | "Overdue" | "Escalated";
-    priority: "Low" | "Medium" | "High" | "Critical";
+    status: "OPEN" | "IN_PROGRESS" | "COMPLETED" | "OVERDUE" | "ESCALATED";
+    priority: "low" | "medium" | "high" | "critical";
     progress: number;
     lastUpdate?: string;
     notes?: string;
+    createdAt?: string;
+    updatedAt?: string;
+    location?: string;
 }
 
-export type AssignmentStatus = "Pending" | "In Progress" | "Completed" | "Overdue" | "Escalated";
-export type AssignmentPriority = "Low" | "Medium" | "High" | "Critical";
+export type AssignmentStatus = "OPEN" | "IN_PROGRESS" | "COMPLETED" | "OVERDUE" | "ESCALATED";
+export type AssignmentPriority = "low" | "medium" | "high" | "critical";
