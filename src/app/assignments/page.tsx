@@ -477,6 +477,10 @@
 // // }
 
 
+
+
+
+
 "use client";
 
 import { useState, useEffect } from "react";
@@ -489,6 +493,7 @@ import {
 import { useBorrowerStore } from "@/store/borrowers.store";
 import { useAgentStore } from "@/store/agents.store";
 import { useAssignmentStore } from "@/store/assignments.store";
+import { useAuthStore } from "@/store/auth.store";
 import { useRouter } from "next/navigation";
 import AssignCaseModal from "@/components/assignments/assigncaseform.modal";
 import { Card, CardHeader, CardContent, CardFooter } from "@/components/ui/card";
@@ -530,6 +535,7 @@ function AgentWorkload({ name, location, cases }: any) {
 function CaseItem({ assignment, onEdit, onDelete }: { assignment: any, onEdit: (a: any) => void, onDelete: (id: string | number) => void }) {
   const [showActions, setShowActions] = useState(false);
   const router = useRouter();
+  const { user } = useAuthStore();
 
   const riskColors: Record<string, string> = {
     high: "bg-red-50 text-red-700 border-red-100",
@@ -572,19 +578,23 @@ function CaseItem({ assignment, onEdit, onDelete }: { assignment: any, onEdit: (
                 >
                   <ExternalLink className="h-3 w-3" /> View Profile
                 </button>
-                <div className="h-px bg-slate-100 my-1 mx-2"></div>
-                <button
-                  onClick={() => { onEdit(assignment); setShowActions(false); }}
-                  className="w-full px-4 py-2 text-left text-xs font-medium text-slate-700 hover:bg-slate-50 flex items-center gap-2"
-                >
-                  <Edit2 className="h-3 w-3 text-blue-500" /> Edit Case
-                </button>
-                <button
-                  onClick={() => { onDelete(assignment.id); setShowActions(false); }}
-                  className="w-full px-4 py-2 text-left text-xs font-medium text-red-600 hover:bg-red-50 flex items-center gap-2"
-                >
-                  <Trash2 className="h-3 w-3" /> Delete Case
-                </button>
+                {user?.role?.toLowerCase() !== "agent" && (
+                  <>
+                    <div className="h-px bg-slate-100 my-1 mx-2"></div>
+                    <button
+                      onClick={() => { onEdit(assignment); setShowActions(false); }}
+                      className="w-full px-4 py-2 text-left text-xs font-medium text-slate-700 hover:bg-slate-50 flex items-center gap-2"
+                    >
+                      <Edit2 className="h-3 w-3 text-blue-500" /> Edit Case
+                    </button>
+                    <button
+                      onClick={() => { onDelete(assignment.id); setShowActions(false); }}
+                      className="w-full px-4 py-2 text-left text-xs font-medium text-red-600 hover:bg-red-50 flex items-center gap-2"
+                    >
+                      <Trash2 className="h-3 w-3" /> Delete Case
+                    </button>
+                  </>
+                )}
               </div>
             </>
           )}
@@ -696,6 +706,7 @@ export default function AssignmentsPage() {
   const { assignments, loading: loadingAssignments, error, fetchAssignments, deleteAssignment } = useAssignmentStore();
   const { borrowers, fetchBorrowers, loading: loadingBorrowers } = useBorrowerStore();
   const { agents, fetchAgents, loading: loadingAgents } = useAgentStore();
+  const { user } = useAuthStore();
 
   useEffect(() => {
     fetchAssignments();
@@ -808,13 +819,15 @@ export default function AssignmentsPage() {
               <p className="text-sm text-slate-600 mt-1">Manage and track borrower-agent assignments</p>
             </div>
 
-            <button
-              onClick={() => { setEditingAssignment(null); setOpenModal(true); }}
-              className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 shadow-md transition-all active:scale-95"
-            >
-              <UserCircle className="h-4 w-4" />
-              <span className="text-sm font-medium">Assign New Case</span>
-            </button>
+            {user?.role?.toLowerCase() !== "agent" && (
+              <button
+                onClick={() => { setEditingAssignment(null); setOpenModal(true); }}
+                className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 shadow-md transition-all active:scale-95"
+              >
+                <UserCircle className="h-4 w-4" />
+                <span className="text-sm font-medium">Assign New Case</span>
+              </button>
+            )}
           </div>
 
           {/* Error Message */}
