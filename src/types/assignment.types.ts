@@ -8,7 +8,7 @@ export interface Assignment {
     amount: string;
     assignedAt: string;
     dueDate: string;
-    status: "OPEN" | "IN_PROGRESS" | "COMPLETED" | "OVERDUE" | "ESCALATED";
+    status: "OPEN" | "IN_PROGRESS" | "CLOSED" | "PENDING";
     priority: "low" | "medium" | "high" | "critical";
     progress: number;
     lastUpdate?: string;
@@ -18,5 +18,5 @@ export interface Assignment {
     location?: string;
 }
 
-export type AssignmentStatus = "OPEN" | "IN_PROGRESS" | "COMPLETED" | "OVERDUE" | "ESCALATED";
+export type AssignmentStatus = "OPEN" | "IN_PROGRESS" | "CLOSED" | "PENDING";
 export type AssignmentPriority = "low" | "medium" | "high" | "critical";

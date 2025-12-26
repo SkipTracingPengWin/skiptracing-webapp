@@ -1,115 +1,3 @@
-// import { create } from 'zustand';
-// import { devtools } from 'zustand/middleware';
-// import type { Agent } from '@/types';
-
-
-// const agentsData: Agent[] = [
-//     {
-//         id: 1,
-//         name: "Suresh Kumar",
-//         email: "suresh.k@example.com",
-//         phone: "9876543210",
-//         location: "Mumbai",
-//         cases: 15,
-//         status: "Active",
-//         joinedDate: "2023-01-15",
-//         successRate: 85,
-//         totalRecovered: "₹25,00,000"
-//     },
-//     {
-//         id: 2,
-//         name: "Priya Sharma",
-//         email: "priya.s@example.com",
-//         phone: "9876543211",
-//         location: "Delhi",
-//         cases: 12,
-//         status: "Busy",
-//         joinedDate: "2023-03-10",
-//         successRate: 92,
-//         totalRecovered: "₹18,50,000"
-//     },
-//     {
-//         id: 3,
-//         name: "Mohan Raj",
-//         email: "mohan.r@example.com",
-//         phone: "9876543212",
-//         location: "Bangalore",
-//         cases: 8,
-//         status: "Offline",
-//         joinedDate: "2023-06-20",
-//         successRate: 78,
-//         totalRecovered: "₹12,00,000"
-//     }
-// ];
-
-// interface AgentState {
-//     agents: Agent[];
-//     isAddAgentModalOpen: boolean;
-//     selectedAgent: Agent | null;
-//     modalMode: 'add' | 'edit' | 'delete';
-//     loading: boolean;
-
-//     fetchAgents: () => Promise<void>;
-//     addAgent: (agent: Partial<Agent>) => void;
-//     updateAgent: (id: number, updates: Partial<Agent>) => void;
-//     deleteAgent: (id: number) => void;
-//     openModal: (mode: 'add' | 'edit' | 'delete', agent?: Agent | null) => void;
-//     closeModal: () => void;
-// }
-
-// export const useAgentStore = create<AgentState>()(
-//     devtools(
-//         (set) => ({
-//             agents: agentsData,
-//             isAddAgentModalOpen: false,
-//             selectedAgent: null,
-//             modalMode: 'add',
-//             loading: false,
-
-//             fetchAgents: async () => {
-//                 // Simulating API call since we are using static data for now
-//                 set({ agents: agentsData });
-//             },
-//             addAgent: (agentData) =>
-//                 set((state) => {
-//                     const nextId = state.agents.length > 0 ? Math.max(...state.agents.map(a => a.id)) + 1 : 1;
-//                     const newAgent = {
-//                         id: nextId,
-//                         cases: 0,
-//                         status: "Active",
-//                         joinedDate: new Date().toISOString().split("T")[0],
-//                         successRate: 0,
-//                         totalRecovered: "₹0",
-//                         location: "Unknown",
-//                         ...agentData,
-//                     } as Agent;
-//                     return { agents: [...state.agents, newAgent] };
-//                 }),
-//             openModal: (mode, agent = null) => set({ isAddAgentModalOpen: true, modalMode: mode, selectedAgent: agent }),
-//             closeModal: () => set({ isAddAgentModalOpen: false, selectedAgent: null, modalMode: 'add' }),
-            
-//             updateAgent: (id, updates) =>
-//                 set((state) => ({
-//                     agents: state.agents.map((a) =>
-//                         a.id === id ? { ...a, ...updates } : a
-//                     ),
-//                 })),
-//             deleteAgent: (id) =>
-//                 set((state) => ({
-//                     agents: state.agents.filter((a) => a.id !== id),
-//                 })),
-//         }),
-//         { name: 'AgentStore' }
-//     )
-// );
-
-
-
-
-
-
-
-
 "use client";
 
 import { create } from "zustand";
@@ -128,12 +16,34 @@ interface AgentState {
 
     fetchAgents: () => Promise<void>;
     addAgent: (data: Partial<Agent>) => Promise<void>;
-    updateAgent: (id: number, data: Partial<Agent>) => Promise<void>;
-    deleteAgent: (id: number) => Promise<void>;
+    updateAgent: (id: string | number, data: Partial<Agent>) => Promise<void>;
+    deleteAgent: (id: string | number) => Promise<void>;
 
     openModal: (mode: 'add' | 'edit' | 'delete', agent?: Agent | null) => void;
     closeModal: () => void;
 }
+
+// const normalizeAgent = (a: any): Agent => ({
+//     ...a,
+//     id: a.id !== undefined ? a._id : a.id
+// });
+
+const normalizeAgent = (a: any): Agent => ({
+    ...a,
+    id: a._id ?? a.id,
+});
+
+
+const unwrapData = (data: any, fieldName: string): any => {
+    if (!data) return null;
+    console.log(`📦 Unwrapping ${fieldName} from:`, data);
+    if (data[fieldName]) return data[fieldName];
+    if (data.data && data.data[fieldName]) return data.data[fieldName];
+    if (data.data) return data.data;
+    // Handle cases where the object might be nested under 'user' or 'data' or is the object itself
+    if (data.user) return data.user;
+    return data;
+};
 
 export const useAgentStore = create<AgentState>()(
     devtools(
@@ -150,7 +60,9 @@ export const useAgentStore = create<AgentState>()(
                 try {
                     set({ loading: true, error: null });
                     const data = await agentServices.getAll();
-                    set({ agents: data, loading: false });
+                    const agentsList = unwrapData(data, 'agents');
+                    const normalizedData = (Array.isArray(agentsList) ? agentsList : []).map(normalizeAgent);
+                    set({ agents: normalizedData, loading: false });
                 } catch (error: any) {
                     set({
                         error: error.message || "Failed to fetch agents",
@@ -163,7 +75,9 @@ export const useAgentStore = create<AgentState>()(
             addAgent: async (data) => {
                 try {
                     set({ loading: true, error: null });
-                    const newAgent = await agentServices.create(data);
+                    const result = await agentServices.create(data);
+                    const agentData = unwrapData(result, 'agent');
+                    const newAgent = normalizeAgent(agentData);
                     set((state) => ({
                         agents: [...state.agents, newAgent],
                         loading: false,
@@ -181,14 +95,28 @@ export const useAgentStore = create<AgentState>()(
             // 🔹 UPDATE AGENT
             updateAgent: async (id, data) => {
                 try {
+                    console.log(`📡 Store: Updating Agent ${id}`, data);
                     set({ loading: true, error: null });
-                    const updatedAgent = await agentServices.update(id, data);
-                    set((state) => ({
-                        agents: state.agents.map((agent) =>
-                            agent.id === id ? updatedAgent : agent
-                        ),
-                        loading: false,
-                    }));
+                    const result = await agentServices.update(id, data);
+                    console.log("✅ Store: Update result:", result);
+                    const updatedData = unwrapData(result, 'agent');
+
+                    set((state) => {
+                        const existing = state.agents.find(a => String(a.id) === String(id));
+                        if (!existing) return { ...state, loading: false };
+
+                        const normalized = normalizeAgent({
+                            ...existing,
+                            ...updatedData
+                        });
+
+                        return {
+                            agents: state.agents.map((agent) =>
+                                String(agent.id) === String(id) ? normalized : agent
+                            ),
+                            loading: false,
+                        };
+                    });
                 } catch (error: any) {
                     const errorMessage = error.message || "Failed to update agent";
                     set({
@@ -202,10 +130,12 @@ export const useAgentStore = create<AgentState>()(
             // 🔹 DELETE AGENT
             deleteAgent: async (id) => {
                 try {
+                    console.log(`📡 Store: Deleting Agent ${id}`);
                     set({ loading: true, error: null });
-                    await agentServices.delete(id);
+                    const result = await agentServices.delete(id);
+                    console.log("✅ Store: Delete result:", result);
                     set((state) => ({
-                        agents: state.agents.filter((agent) => agent.id !== id),
+                        agents: state.agents.filter((agent) => String(agent.id) !== String(id)),
                         loading: false,
                     }));
                 } catch (error: any) {

@@ -255,9 +255,8 @@ export default function AssignCaseModal({
             >
               <option value="OPEN">OPEN</option>
               <option value="IN_PROGRESS">IN PROGRESS</option>
-              <option value="COMPLETED">COMPLETED</option>
-              <option value="OVERDUE">OVERDUE</option>
-              <option value="ESCALATED">ESCALATED</option>
+              <option value="CLOSED">CLOSED</option>
+              <option value="PENDING">PENDING</option>
             </select>
           </div>
           <div>

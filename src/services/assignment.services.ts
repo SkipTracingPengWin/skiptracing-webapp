@@ -19,7 +19,7 @@ export const assignmentService = {
     },
 
     getById: async (id: string | number) => {
-        const response = await api.get(`/assignments/${id}/`);
+        const response = await api.get(`/assignments/${id}`);
         return response.data;
     },
 
@@ -54,7 +54,7 @@ export const assignmentService = {
             const sanitizedData = assignmentService._sanitizeData(data);
             const payloadString = JSON.stringify(sanitizedData, null, 2);
             console.log("🚀 Creating Assignment with payload:", payloadString);
-            const response = await api.post("/assignments/", sanitizedData);
+            const response = await api.post("/assignments", sanitizedData);
             return response.data;
         } catch (error: any) {
             const diag = {
@@ -70,12 +70,12 @@ export const assignmentService = {
 
     update: async (id: string | number, data: Partial<Assignment>) => {
         const sanitizedData = assignmentService._sanitizeData(data);
-        const response = await api.put(`/assignments/${id}/`, sanitizedData);
+        const response = await api.put(`/assignments/${id}`, sanitizedData);
         return response.data;
     },
 
     delete: async (id: string | number) => {
-        const response = await api.delete(`/assignments/${id}/`);
+        const response = await api.delete(`/assignments/${id}`);
         return response.data;
     }
 };

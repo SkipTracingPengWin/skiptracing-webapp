@@ -486,9 +486,9 @@
 import { useState, useEffect } from "react";
 import Sidebar from "@/components/layout/Sidebar";
 import Header from "@/components/layout/Header";
-import { 
-  UserCircle, MapPin, Loader2, Search, ChevronDown, Check, 
-  MoreVertical, Edit2, Trash2, ExternalLink, Banknote, FileText, ArrowRightLeft 
+import {
+  UserCircle, MapPin, Loader2, Search, ChevronDown, Check,
+  MoreVertical, Edit2, Trash2, ExternalLink, Banknote, FileText, ArrowRightLeft
 } from "lucide-react";
 import { useBorrowerStore } from "@/store/borrowers.store";
 import { useAgentStore } from "@/store/agents.store";
@@ -544,6 +544,13 @@ function CaseItem({ assignment, onEdit, onDelete }: { assignment: any, onEdit: (
     critical: "bg-red-600 text-white border-red-600",
   };
 
+  const statusColors: Record<string, string> = {
+    OPEN: "bg-blue-50 text-blue-700 border-blue-100",
+    IN_PROGRESS: "bg-purple-50 text-purple-700 border-purple-100",
+    CLOSED: "bg-slate-100 text-slate-700 border-slate-200",
+    PENDING: "bg-amber-50 text-amber-700 border-amber-100",
+  };
+
   const priority = assignment.priority?.toLowerCase() || "medium";
   const isAssigned = !!assignment.agentName;
 
@@ -555,9 +562,14 @@ function CaseItem({ assignment, onEdit, onDelete }: { assignment: any, onEdit: (
           <h3 className="text-base font-bold text-slate-900 group-hover:text-blue-700 transition-colors truncate max-w-[200px]" title={assignment.borrowerName}>
             {assignment.borrowerName}
           </h3>
-          <span className={`px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wide border ${riskColors[priority]}`}>
-            {assignment.priority || 'Medium'}
-          </span>
+          <div className="flex items-center gap-1.5">
+            <span className={`px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wide border ${riskColors[priority]}`}>
+              {assignment.priority || 'Medium'}
+            </span>
+            <span className={`px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wide border ${statusColors[assignment.status] || 'bg-slate-50 text-slate-700 border-slate-200'}`}>
+              {(assignment.status || 'OPEN').replace('_', ' ')}
+            </span>
+          </div>
         </div>
 
         <div className="relative">
@@ -607,15 +619,15 @@ function CaseItem({ assignment, onEdit, onDelete }: { assignment: any, onEdit: (
           {/* Loan ID */}
           <div className="flex flex-col justify-center px-2 py-1.5 rounded bg-slate-50 border border-slate-100">
             <span className="text-[10px] text-slate-400 uppercase font-bold tracking-wider flex items-center gap-1">
-               <FileText className="h-3 w-3" /> Loan ID
+              <FileText className="h-3 w-3" /> Loan ID
             </span>
             <span className="text-xs font-semibold text-slate-700 truncate">{assignment.loanId}</span>
           </div>
 
           {/* Amount */}
           <div className="flex flex-col justify-center px-2 py-1.5 rounded bg-emerald-50/40 border border-emerald-100/50">
-             <span className="text-[10px] text-emerald-600/70 uppercase font-bold tracking-wider flex items-center gap-1">
-               <Banknote className="h-3 w-3" /> Amount
+            <span className="text-[10px] text-emerald-600/70 uppercase font-bold tracking-wider flex items-center gap-1">
+              <Banknote className="h-3 w-3" /> Amount
             </span>
             <span className="text-sm font-bold text-emerald-700 truncate">
               ₹{new Number(assignment.amount).toLocaleString()}
@@ -649,7 +661,7 @@ function CaseItem({ assignment, onEdit, onDelete }: { assignment: any, onEdit: (
               </div>
             </div>
           ) : (
-             <div className="flex items-center gap-2 opacity-60">
+            <div className="flex items-center gap-2 opacity-60">
               <div className="h-7 w-7 bg-slate-100 rounded-full flex items-center justify-center border border-slate-200">
                 <UserCircle className="h-4 w-4 text-slate-400" />
               </div>
@@ -661,7 +673,7 @@ function CaseItem({ assignment, onEdit, onDelete }: { assignment: any, onEdit: (
         {/* Action Buttons */}
         <div>
           {isAssigned ? (
-             <button
+            <button
               onClick={() => onEdit(assignment)}
               className="flex items-center gap-1.5 px-3 py-1.5 bg-white border border-slate-300 text-slate-700 text-[11px] font-bold rounded hover:border-blue-300 hover:text-blue-600 hover:shadow-sm transition-all active:scale-95 group/btn"
             >
@@ -762,7 +774,8 @@ export default function AssignmentsPage() {
     const matchesStatus =
       filterStatus === "All Cases" ||
       (filterStatus === "Assigned" && a.agentId) ||
-      (filterStatus === "Unassigned" && !a.agentId);
+      (filterStatus === "Unassigned" && !a.agentId) ||
+      (filterStatus === a.status);
 
     return matchesSearch && matchesStatus;
   });
@@ -802,7 +815,7 @@ export default function AssignmentsPage() {
   const unassigned = totalCases - assigned;
   const activeAgents = agentsWorkload.length;
 
-  const filterOptions = ["All Cases", "Assigned", "Unassigned"];
+  const filterOptions = ["All Cases", "Assigned", "Unassigned", "OPEN", "IN_PROGRESS", "CLOSED", "PENDING"];
 
   return (
     <div className="flex h-screen bg-slate-50">
@@ -906,7 +919,7 @@ export default function AssignmentsPage() {
                 </div>
               </div>
 
-              <div className="space-y-3 pb-8"> 
+              <div className="space-y-3 pb-8">
                 {loading && assignments.length === 0 ? (
                   <div className="flex flex-col items-center justify-center py-20 bg-white rounded-xl border border-slate-200 border-dashed">
                     <Loader2 className="h-8 w-8 animate-spin text-blue-600 mb-2" />
