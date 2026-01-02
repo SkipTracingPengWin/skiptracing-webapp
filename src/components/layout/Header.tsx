@@ -355,9 +355,16 @@ export default function Header({ title }: HeaderProps) {
 
           {openUser && (
             <div className="absolute right-0 mt-2 w-40 bg-white border border-slate-200 rounded-lg shadow-md py-2 z-50">
-              <button className="w-full text-left px-4 py-2 text-sm hover:bg-slate-50">
+              <button
+                onClick={() => {
+                  setOpenUser(false);
+                  router.push("/profile");
+                }}
+                className="w-full text-left px-4 py-2 text-sm hover:bg-slate-50"
+              >
                 Profile
               </button>
+
 
               <button
                 onClick={handleSettings}
