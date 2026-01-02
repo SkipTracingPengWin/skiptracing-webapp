@@ -311,9 +311,9 @@ export default function AddBorrowerModal({ isOpen, onClose, borrowerId }: AddBor
                                         className="w-full px-4 py-2.5 text-sm border-2 border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none transition-all duration-200 bg-white hover:border-slate-300 cursor-pointer"
                                     >
                                         <option value="ACTIVE">Active</option>
-                                        <option value="IN_RECOVERY">In Recovery</option>
-                                        <option value="LEGAL">Legal</option>
-                                        <option value="SETTLED">Settled</option>
+                                        <option value="INACTIVE">Inactive</option>
+                                        <option value="SKIPPED">Skipped</option>
+                                        <option value="CLOSED">Closed</option>
                                     </select>
                                 </div>
                             </div>

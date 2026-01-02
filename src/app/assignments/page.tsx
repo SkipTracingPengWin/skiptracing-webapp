@@ -723,8 +723,10 @@ export default function AssignmentsPage() {
   useEffect(() => {
     fetchAssignments();
     fetchBorrowers();
-    fetchAgents();
-  }, [fetchAssignments, fetchBorrowers, fetchAgents]);
+    if (user?.role === "ADMIN" || user?.role === "MANAGER") {
+      fetchAgents();
+    }
+  }, [fetchAssignments, fetchBorrowers, fetchAgents, user?.role]);
 
   const loading = loadingAssignments || loadingBorrowers || loadingAgents;
 

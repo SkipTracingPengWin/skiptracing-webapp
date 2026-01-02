@@ -15,6 +15,7 @@ interface AgentState {
     modalMode: 'add' | 'edit' | 'delete';
 
     fetchAgents: () => Promise<void>;
+    fetchCurrentAgent: (id: string | number) => Promise<void>;
     addAgent: (data: Partial<Agent>) => Promise<void>;
     updateAgent: (id: string | number, data: Partial<Agent>) => Promise<void>;
     deleteAgent: (id: string | number) => Promise<void>;
@@ -66,6 +67,37 @@ export const useAgentStore = create<AgentState>()(
                 } catch (error: any) {
                     set({
                         error: error.message || "Failed to fetch agents",
+                        loading: false,
+                    });
+                }
+            },
+
+            // 🔹 FETCH INDIVIDUAL AGENT
+            fetchCurrentAgent: async (id: string | number) => {
+                try {
+                    set({ loading: true, error: null });
+                    const data = await agentServices.getById(id);
+                    const agentData = unwrapData(data, 'agent');
+                    const normalizedAgent = normalizeAgent(agentData);
+
+                    set((state) => {
+                        const exists = state.agents.some(a => String(a.id) === String(id));
+                        if (exists) {
+                            return {
+                                agents: state.agents.map(a => String(a.id) === String(id) ? normalizedAgent : a),
+                                loading: false
+                            };
+                        } else {
+                            return {
+                                agents: [...state.agents, normalizedAgent],
+                                loading: false
+                            };
+                        }
+                    });
+                    return normalizedAgent;
+                } catch (error: any) {
+                    set({
+                        error: error.message || "Failed to fetch agent profile",
                         loading: false,
                     });
                 }

@@ -158,9 +158,13 @@ export default function AgentsPage() {
   // Zustand Store
   const { agents, fetchAgents, openModal } = useAgentStore();
 
+  const { user } = useAuthStore();
+
   useEffect(() => {
-    fetchAgents();
-  }, [fetchAgents]);
+    if (user?.role === "ADMIN" || user?.role === "MANAGER") {
+      fetchAgents();
+    }
+  }, [fetchAgents, user?.role]);
 
   // Combined Filter Logic
   const filteredAgents = agents.filter((agent: Agent) => {
@@ -232,9 +236,6 @@ export default function AgentsPage() {
               <span className="text-sm font-medium">Add Agent</span>
             </button>
           </div>
-
-          {/* Add/Edit Modal */}
-          <AddNewAgentModal />
 
           {/* Stats Grid */}
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">

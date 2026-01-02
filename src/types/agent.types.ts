@@ -1,5 +1,6 @@
 export interface Agent {
-    id: number;
+    id: string | number;
+    userId?: string;
     name: string;
     email: string;
     phone: string;
@@ -11,6 +12,7 @@ export interface Agent {
     successRate?: number;
     totalRecovered?: string;
     joinedDate: string;
+    password?: string;
 }
 
 export type AgentStatus = "Active" | "Busy" | "Offline" | "On Leave";

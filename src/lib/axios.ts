@@ -25,7 +25,9 @@ api.interceptors.request.use(
         }
 
         if (token) {
-            config.headers.Authorization = `Bearer ${token}`;
+            // Remove any existing quotes from token if it came from JSON stringify
+            const cleanToken = typeof token === 'string' ? token.replace(/['"]+/g, '') : token;
+            config.headers.Authorization = `Bearer ${cleanToken}`;
             console.log(`🔑 [API Request] ${config.method?.toUpperCase()} ${config.url} - Token Attached`);
         } else {
             console.warn(`⚠️ [API Request] ${config.method?.toUpperCase()} ${config.url} - NO TOKEN FOUND`);

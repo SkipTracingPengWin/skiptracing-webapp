@@ -55,6 +55,9 @@ export default function BorrowerProfile() {
   const [borrower, setBorrower] = useState<Borrower | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
+  // Determine back navigation path based on user role
+  const backPath = user?.role === "AGENT" ? "/assignments" : "/borrowers";
+
   // Fetch borrower data on mount or when ID changes
   useEffect(() => {
     const fetchBorrower = async () => {
@@ -77,8 +80,10 @@ export default function BorrowerProfile() {
 
     fetchBorrower();
     fetchAssignments();
-    fetchAgents();
-  }, [borrowerId, borrowers, fetchAssignments, fetchAgents]);
+    if (user?.role === "ADMIN" || user?.role === "MANAGER") {
+      fetchAgents();
+    }
+  }, [borrowerId, borrowers, fetchAssignments, fetchAgents, user?.role]);
 
   // Handle number to string ID comparison consistently
   const numericId = useMemo(() => {
@@ -114,7 +119,7 @@ export default function BorrowerProfile() {
     if (confirm("Are you sure you want to delete this borrower? This action cannot be undone.")) {
       try {
         await deleteBorrower(borrowerId);
-        router.push("/borrowers");
+        router.push(backPath);
       } catch (err) {
         console.error("Delete failed in component:", err);
       }
@@ -145,8 +150,8 @@ export default function BorrowerProfile() {
           <p className="text-slate-500 mb-8">
             The borrower profile could not be loaded or does not exist.
           </p>
-          <Link href="/borrowers">
-            <Button className="px-6 py-2">Back to Borrowers</Button>
+          <Link href={backPath}>
+            <Button className="px-6 py-2">Back to {user?.role === "AGENT" ? "Assignments" : "Borrowers"}</Button>
           </Link>
         </div>
       </div>
@@ -166,7 +171,7 @@ export default function BorrowerProfile() {
           <div className="max-w-7xl mx-auto space-y-8">
             {/* ---------- HEADER ---------- */}
             <div className="flex items-center gap-4">
-              <Link href="/borrowers">
+              <Link href={backPath}>
                 <Button variant="ghost" size="icon">
                   <ArrowLeft className="w-5 h-5" />
                 </Button>
@@ -273,21 +278,27 @@ const LoanItem = ({ label, value, highlight = false }: any) => (
   </div>
 );
 
-const LoanStatus = ({ borrower }: any) => (
-  <div>
-    <p className="text-sm text-slate-500 mb-2">Status</p>
-    <Badge
-      className={`${borrower.status === "in recovery"
-        ? "bg-orange-100 text-orange-800"
-        : borrower.status === "legal"
-          ? "bg-red-100 text-red-800"
-          : "bg-green-100 text-green-800"
-        } border`}
-    >
-      {borrower.status.toUpperCase()}
-    </Badge>
-  </div>
-);
+const LoanStatus = ({ borrower }: any) => {
+  const status = String(borrower.status).toUpperCase();
+  const getStatusStyles = (s: string) => {
+    switch (s) {
+      case "ACTIVE": return "bg-green-100 text-green-800 border-green-200";
+      case "SKIPPED": return "bg-purple-100 text-purple-800 border-purple-200";
+      case "CLOSED": return "bg-rose-100 text-rose-800 border-rose-200";
+      case "INACTIVE": return "bg-slate-100 text-slate-800 border-slate-200";
+      default: return "bg-slate-50 text-slate-600 border-slate-100";
+    }
+  };
+
+  return (
+    <div>
+      <p className="text-sm text-slate-500 mb-2">Status</p>
+      <Badge className={`${getStatusStyles(status)} border`}>
+        {status}
+      </Badge>
+    </div>
+  );
+};
 
 const LoanDetailsCard = ({ borrower }: any) => (
   <Card className="shadow-lg border-0">

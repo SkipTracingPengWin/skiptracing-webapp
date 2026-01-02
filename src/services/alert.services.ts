@@ -3,12 +3,12 @@ import { Alert } from "@/types/alert.types";
 
 export const alertService = {
     getAll: async () => {
-        const response = await api.get("/alerts/");
+        const response = await api.get("/alerts");
         return response.data;
     },
 
     create: async (data: Partial<Alert>) => {
-        const response = await api.post("/alerts/", data);
+        const response = await api.post("/alerts", data);
         return response.data;
     },
 

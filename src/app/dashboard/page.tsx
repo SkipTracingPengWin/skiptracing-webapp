@@ -15,6 +15,7 @@ import {
 import { useDashboardStatsStore } from "@/store/dashboardStats.store";
 import { useAlertStore } from "@/store/alerts.store"; // Assuming this is used elsewhere or will be
 import { useAgentStore } from "@/store/agents.store"; // Assuming this is used elsewhere or will be
+import { useAuthStore } from "@/store/auth.store";
 import { useRecoveryTrendStore } from "@/store/recoveryTrend.store"; // Assuming this is used elsewhere or will be
 
 // Stats Card Component
@@ -92,12 +93,16 @@ export default function DashboardPage() {
     const { agents, fetchAgents } = useAgentStore();
     const { recoveryTrend, fetchTrends } = useRecoveryTrendStore();
 
+    const { user } = useAuthStore();
+
     useEffect(() => {
         fetchStats();
         fetchAlerts();
-        fetchAgents();
+        if (user?.role === "ADMIN" || user?.role === "MANAGER") {
+            fetchAgents();
+        }
         fetchTrends();
-    }, [fetchStats, fetchAlerts, fetchAgents, fetchTrends]);
+    }, [fetchStats, fetchAlerts, fetchAgents, fetchTrends, user?.role]);
 
     // Render a loading state if the primary data isn't available yet.
     if (!dashboardStats) {

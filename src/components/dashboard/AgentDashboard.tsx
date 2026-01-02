@@ -101,7 +101,7 @@ export default function AgentDashboard() {
             {/* Main Content Grid */}
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
                 {/* Recovery Trend Chart */}
-                <div className="lg:col-span-2 bg-white p-6 rounded-xl border border-slate-200">
+                <div className="lg:col-span-2 bg-white p-6 rounded-xl border border-slate-200 min-w-0">
                     <div className="flex items-center justify-between mb-6">
                         <h3 className="text-lg font-bold text-slate-900">Recovery Trend (₹ Lakhs)</h3>
                         <div className="flex items-center gap-4 text-sm">
@@ -115,8 +115,8 @@ export default function AgentDashboard() {
                             </div>
                         </div>
                     </div>
-                    <div className="h-64 w-full">
-                        <ResponsiveContainer width="100%" height="100%">
+                    <div className="h-64 w-full min-w-0">
+                        <ResponsiveContainer width="100%" height={256} minWidth={0}>
                             <ComposedChart
                                 data={recoveryTrend}
                                 margin={{

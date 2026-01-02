@@ -8,20 +8,15 @@ import { CheckCircle, XCircle } from "lucide-react";
 
 export function StatusBadge({ status }: { status: string }) {
     const colors: Record<string, string> = {
-        "IN_RECOVERY": "bg-orange-100 text-orange-700",
         "ACTIVE": "bg-green-100 text-green-700",
-        "LEGAL": "bg-red-100 text-red-700",
-        "SETTLED": "bg-blue-100 text-blue-700",
-        "CLOSED": "bg-gray-100 text-gray-700",
+        "INACTIVE": "bg-slate-100 text-slate-700",
         "SKIPPED": "bg-purple-100 text-purple-700",
-        "VERIFIED": "bg-teal-100 text-teal-700",
-        "HIGH_RISK": "bg-red-100 text-red-700",
-        "CRITICAL": "bg-red-600 text-white",
-        // Fallbacks for legacy/lowercase
+        "CLOSED": "bg-rose-100 text-rose-700",
+        // Fallbacks for legacy/lowercase if needed temporarily
         "active": "bg-green-100 text-green-700",
-        "in recovery": "bg-orange-100 text-orange-700",
-        "legal": "bg-red-100 text-red-700",
-        "settled": "bg-blue-100 text-blue-700",
+        "inactive": "bg-slate-100 text-slate-700",
+        "skipped": "bg-purple-100 text-purple-700",
+        "closed": "bg-rose-100 text-rose-700",
     };
 
     return (

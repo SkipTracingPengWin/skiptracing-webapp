@@ -17,10 +17,14 @@ export interface Borrower {
     assignedAgent?: string;
     lastContact?: string;
     notes?: string;
+    relatedLinks?: {
+        platform: string;
+        url: string;
+    }[];
     createdAt: string;
     updatedAt: string;
 }
 
 export type LoanType = "Personal Loan" | "Vehicle Loan" | "Home Loan" | "Gold Loan" | "Business Loan";
-export type BorrowerStatus = "ACTIVE" | "CLOSED" | "SKIPPED" | "VERIFIED" | "HIGH_RISK" | "CRITICAL" | "IN_RECOVERY" | "LEGAL" | "SETTLED";
+export type BorrowerStatus = "ACTIVE" | "INACTIVE" | "SKIPPED" | "CLOSED";
 export type RiskLevel = "Low" | "Medium" | "High" | "Critical";
