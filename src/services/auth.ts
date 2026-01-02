@@ -94,5 +94,16 @@ export const authService = {
             console.error("Failed to get current user:", error);
             throw error;
         }
+    },
+
+    changePassword: async (data: any) => {
+        try {
+            const response = await api.put("/auth/change-password", data);
+            return response.data;
+        } catch (error: any) {
+            const errorMsg = error.response?.data?.message || error.message;
+            console.error("Failed to change password:", errorMsg);
+            throw error;
+        }
     }
 };
