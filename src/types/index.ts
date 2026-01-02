@@ -18,10 +18,12 @@ export type {
 // Verification types
 export type {
     Verification,
-    VerificationType,
     VerificationStatus,
     Priority
 } from './verification.types';
+
+export { VerificationType } from './verification.types';
+
 
 // Assignment types
 export type {

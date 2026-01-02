@@ -1,18 +1,50 @@
-export interface Verification {
-    id: number;
-    borrowerId: number;
-    borrowerName: string;
-    type: "KYC" | "Address" | "Employment" | "Income" | "Reference";
-    status: "Pending" | "Verified" | "Failed" | "In Progress";
-    requestedBy: string;
-    requestedAt: string;
-    completedAt?: string;
-    verifiedBy?: string;
-    documents?: string[];
-    notes?: string;
-    priority: "Low" | "Medium" | "High" | "Urgent";
+export enum VerificationType {
+    PAN = "PAN",
+    AADHAAR = "AADHAAR",
+    BANK = "BANK",
+    DL = "DL",
+    RC = "RC",
+    VOTER = "VOTER",
+    PASSPORT = "PASSPORT",
+    ADDRESS = "ADDRESS",
+    PHONE = "PHONE",
+    EMAIL = "EMAIL",
+    LIVENESS = "LIVENESS",
+    EMPLOYMENT = "EMPLOYMENT"
 }
 
-export type VerificationType = "KYC" | "Address" | "Employment" | "Income" | "Reference";
-export type VerificationStatus = "Pending" | "Verified" | "Failed" | "In Progress";
-export type Priority = "Low" | "Medium" | "High" | "Urgent";
+export interface Verification {
+    id: string; // Changed to string to match "6957583d0526ab0c013dc145"
+    borrowerId: string; // Changed to string
+    type: VerificationType;
+    provider: string; // "MOCK"
+    status: "PENDING" | "VERIFIED" | "FAILED" | "IN_PROGRESS"; // Updated status keys to match API response (uppercase?) The user example has "PENDING".
+    result: any;
+    requestedBy: string;
+    verifiedBy?: string | null;
+    priority: "High" | "Medium" | "Low";
+    requestedAt: string;
+    completedAt?: string | null;
+    createdAt: string;
+    updatedAt: string;
+    borrower?: {
+        id: string;
+        name: string;
+        phone: string;
+        email: string;
+        address?: string;
+        location?: string;
+        loanId?: string;
+        loanType?: string;
+        amount?: number;
+        amountNumeric?: number;
+        overdue?: string;
+        risk?: string;
+        verified?: boolean;
+        status?: string;
+    };
+}
+
+export type VerificationStatus = "PENDING" | "VERIFIED" | "FAILED" | "IN_PROGRESS";
+export type Priority = "High" | "Medium" | "Low";
+
