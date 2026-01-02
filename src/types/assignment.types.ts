@@ -17,6 +17,5 @@ export interface Assignment {
     updatedAt?: string;
     location?: string;
 }
-
 export type AssignmentStatus = "OPEN" | "IN_PROGRESS" | "CLOSED" | "PENDING";
 export type AssignmentPriority = "low" | "medium" | "high" | "critical";
