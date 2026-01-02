@@ -11,6 +11,7 @@ interface BorrowerState {
     addBorrower: (borrower: Partial<Borrower>) => Promise<void>;
     updateBorrower: (id: string | number, updates: Partial<Borrower>) => Promise<void>;
     deleteBorrower: (id: string | number) => Promise<void>;
+    getBorrowerById: (id: string | number) => Promise<Borrower | null>;
 }
 
 const normalizeBorrower = (b: any): Borrower => ({
@@ -103,6 +104,35 @@ export const useBorrowerStore = create<BorrowerState>()(
                 } catch (error: any) {
                     set({ error: error.message || 'Failed to delete borrower', loading: false });
                     throw error;
+                }
+            },
+
+            getBorrowerById: async (id) => {
+                set({ loading: true, error: null });
+                try {
+                    const data = await borrowerService.getById(id);
+                    const normalized = normalizeBorrower(data);
+
+                    set((state) => {
+                        const exists = state.borrowers.find(b => String(b.id) === String(id));
+                        if (exists) {
+                            return {
+                                borrowers: state.borrowers.map(b => String(b.id) === String(id) ? normalized : b),
+                                loading: false
+                            };
+                        } else {
+                            return {
+                                borrowers: [...state.borrowers, normalized],
+                                loading: false
+                            };
+                        }
+                    });
+
+                    return normalized;
+                } catch (error: any) {
+                    set({ error: error.message || 'Failed to fetch borrower', loading: false });
+                    console.error(`❌ Error fetching borrower ${id}:`, error);
+                    return null;
                 }
             },
         }),

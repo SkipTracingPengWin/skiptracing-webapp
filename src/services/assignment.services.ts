@@ -7,6 +7,7 @@ export const assignmentService = {
             const response = await api.get("/assignments");
             return response.data;
         } catch (error: any) {
+            console.error("❌ /assignments crashed:", error);
             const diag = {
                 message: error.message,
                 status: error.response?.status,
@@ -54,7 +55,7 @@ export const assignmentService = {
             const sanitizedData = assignmentService._sanitizeData(data);
             const payloadString = JSON.stringify(sanitizedData, null, 2);
             console.log("🚀 Creating Assignment with payload:", payloadString);
-            const response = await api.post("/assignments", sanitizedData);
+            const response = await api.post("/assignments/", sanitizedData);
             return response.data;
         } catch (error: any) {
             const diag = {
