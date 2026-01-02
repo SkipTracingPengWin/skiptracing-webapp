@@ -362,11 +362,13 @@ export default function Header({ title }: HeaderProps) {
                 onClick={() => {
                   setOpenUser(false);
                   openModal('edit');
+                  router.push("/profile");
                 }}
                 className="w-full text-left px-4 py-2 text-sm hover:bg-slate-50"
               >
                 Profile
               </button>
+
 
               <button
                 onClick={handleSettings}

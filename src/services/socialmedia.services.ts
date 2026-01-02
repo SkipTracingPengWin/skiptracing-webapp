@@ -1,3 +1,4 @@
+// services/socialmedia.services
 import api from "@/lib/axios";
 import { SocialMediaSearchResponse } from "@/types/socialmedia.type";
 

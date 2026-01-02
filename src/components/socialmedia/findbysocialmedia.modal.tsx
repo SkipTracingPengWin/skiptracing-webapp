@@ -222,7 +222,7 @@ const FindBySocialMediaModal: React.FC<FindBySocialMediaModalProps> = ({ isOpen,
                         </div>
                     </div>
 
-                    {/* Right Side: Selected Borrower Details Form */}
+                    {/* Right Side: Selected Borrower Details For */}
                     <div className="w-96 flex flex-col bg-slate-50">
                         {selectedBorrower ? (
                             <>

@@ -1,4 +1,4 @@
-// types/social-profiles.ts
+// types/social-profiles
 export interface SocialPlatform {
   id: number;
   name: string;

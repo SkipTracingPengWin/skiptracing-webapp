@@ -345,7 +345,7 @@ export default function SocialMediaPage() {
         </main>
       </div>
 
-      {/* Find by Social Media Modal */}
+      {/* Find by Social Media Moal */}
       <FindBySocialMediaModal
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}

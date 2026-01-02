@@ -1,4 +1,4 @@
-// store/social-profiles-store.ts
+// store/social-profiles-store
 "use client";
 
 import { create } from 'zustand';
