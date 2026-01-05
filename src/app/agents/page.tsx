@@ -40,11 +40,14 @@ function AgentCard({ agent }: AgentCardProps) {
   };
 
   const getInitials = (name: string) => {
+    if (!name) return "AG";
     return name
       .split(" ")
+      .filter(Boolean)
       .map((n) => n[0])
       .join("")
-      .toUpperCase();
+      .toUpperCase()
+      .slice(0, 2);
   };
 
   return (
@@ -58,7 +61,7 @@ function AgentCard({ agent }: AgentCardProps) {
           </div>
           <div>
             <h3 className="font-semibold text-slate-900">{agent.name || "Unnamed Agent"}</h3>
-            <p className="text-sm text-slate-500">AGT-{String(agent.id || "000").slice(-3)}</p>
+            <p className="text-sm text-slate-500">AGT-{agent.id ? String(agent.id).slice(-4) : "0000"}</p>
           </div>
         </div>
         <div className="relative">
@@ -71,16 +74,18 @@ function AgentCard({ agent }: AgentCardProps) {
 
           {isMenuOpen && (
             <div className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-xl border border-slate-100 z-50 py-1">
-              <button
-                onClick={() => {
-                  console.log("✏️ Editing agent:", agent.id);
-                  openModal("edit", agent);
-                  setIsMenuOpen(false);
-                }}
-                className="w-full px-4 py-2 text-left text-sm text-slate-700 hover:bg-slate-50 flex items-center gap-2"
-              >
-                <Edit className="h-4 w-4" /> Edit Agent
-              </button>
+              {isAdminOrManager && (
+                <button
+                  onClick={() => {
+                    console.log("✏️ Editing agent:", agent.id);
+                    openModal("edit", agent);
+                    setIsMenuOpen(false);
+                  }}
+                  className="w-full px-4 py-2 text-left text-sm text-slate-700 hover:bg-slate-50 flex items-center gap-2"
+                >
+                  <Edit className="h-4 w-4" /> Edit Agent
+                </button>
+              )}
               {isAdminOrManager && (
                 <button
                   onClick={() => {
@@ -159,6 +164,7 @@ export default function AgentsPage() {
   const { agents, fetchAgents, openModal } = useAgentStore();
 
   const { user } = useAuthStore();
+  const isAdminOrManager = user?.role === 'ADMIN' || user?.role === 'MANAGER';
 
   useEffect(() => {
     if (user?.role === "ADMIN" || user?.role === "MANAGER") {
@@ -228,13 +234,15 @@ export default function AgentsPage() {
               <h1 className="text-2xl font-bold text-slate-900">Field Agents</h1>
               <p className="text-sm text-slate-600 mt-1">Manage and track field collection agents</p>
             </div>
-            <button
-              onClick={() => openModal("add")}
-              className="flex items-center justify-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition shadow-lg shadow-blue-600/20"
-            >
-              <Users className="h-4 w-4" />
-              <span className="text-sm font-medium">Add Agent</span>
-            </button>
+            {isAdminOrManager && (
+              <button
+                onClick={() => openModal("add")}
+                className="flex items-center justify-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition shadow-lg shadow-blue-600/20"
+              >
+                <Users className="h-4 w-4" />
+                <span className="text-sm font-medium">Add Agent</span>
+              </button>
+            )}
           </div>
 
           {/* Stats Grid */}
@@ -295,6 +303,7 @@ export default function AgentsPage() {
           )}
         </main>
       </div>
+      <AddNewAgentModal />
     </div>
   );
 }

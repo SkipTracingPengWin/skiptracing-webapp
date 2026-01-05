@@ -190,8 +190,6 @@ const routeTitleMap: Record<string, string> = {
 };
 
 import { useAuthStore } from "@/store/auth.store";
-import { useAgentStore } from "@/store/agents.store";
-import AddNewAgentModal from "@/components/agents/addnewagent.modal";
 
 export default function Header({ title }: HeaderProps) {
   const [openUser, setOpenUser] = useState(false);
@@ -201,7 +199,6 @@ export default function Header({ title }: HeaderProps) {
   const router = useRouter();
   const pathname = usePathname();
   const { user, logout } = useAuthStore();
-  const { openModal } = useAgentStore();
 
   const currentTitle = title || routeTitleMap[pathname] || "SkipTraceAI";
 
@@ -361,7 +358,6 @@ export default function Header({ title }: HeaderProps) {
               <button
                 onClick={() => {
                   setOpenUser(false);
-                  openModal('edit');
                   router.push("/profile");
                 }}
                 className="w-full text-left px-4 py-2 text-sm hover:bg-slate-50"
@@ -387,7 +383,6 @@ export default function Header({ title }: HeaderProps) {
           )}
         </div>
       </div>
-      <AddNewAgentModal />
     </header>
   );
 }

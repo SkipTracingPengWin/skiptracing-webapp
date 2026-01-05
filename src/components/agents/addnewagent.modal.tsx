@@ -4,6 +4,7 @@ import React, { useState, useEffect } from 'react';
 import { X, AlertCircle, Trash2, Save } from 'lucide-react';
 import { useAgentStore } from '@/store/agents.store';
 import { useAuthStore } from '@/store/auth.store';
+import { AgentStatus } from '@/types';
 
 // Define the form data structure using TypeScript interface
 interface AgentFormData {
@@ -15,6 +16,8 @@ interface AgentFormData {
   location: string;
   password?: string;
   joinedDate: string;
+  status: AgentStatus;
+  cases: number;
 }
 
 // Custom reusable input component for consistent styling
@@ -62,6 +65,8 @@ const AddNewAgentModal: React.FC = () => {
     location: '',
     password: '',
     joinedDate: new Date().toISOString().split('T')[0],
+    status: 'Active',
+    cases: 0,
   });
   const [error, setError] = useState<string | null>(null);
 
@@ -98,6 +103,8 @@ const AddNewAgentModal: React.FC = () => {
             location: agentToEdit.location || '',
             password: '',
             joinedDate: agentToEdit.joinedDate ? agentToEdit.joinedDate.split('T')[0] : new Date().toISOString().split('T')[0],
+            status: agentToEdit.status || 'Active',
+            cases: agentToEdit.cases || 0,
           });
         }
       } else if (isAddAgentModalOpen && modalMode === 'add') {
@@ -109,7 +116,9 @@ const AddNewAgentModal: React.FC = () => {
           phone: '',
           location: '',
           password: '',
-          joinedDate: new Date().toISOString().split('T')[0]
+          joinedDate: new Date().toISOString().split('T')[0],
+          status: 'Active',
+          cases: 0,
         });
       }
     };
@@ -129,6 +138,8 @@ const AddNewAgentModal: React.FC = () => {
         location: selectedAgent.location || '',
         password: '',
         joinedDate: selectedAgent.joinedDate ? selectedAgent.joinedDate.split('T')[0] : new Date().toISOString().split('T')[0],
+        status: selectedAgent.status || 'Active',
+        cases: selectedAgent.cases || 0,
       });
     }
   }, [isAddAgentModalOpen, selectedAgent, modalMode]);

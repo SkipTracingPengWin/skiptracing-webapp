@@ -15,10 +15,10 @@ export const agentServices = {
     _sanitizeData: (data: any) => {
         const sanitized = { ...data };
 
-        // Remove internal IDs - backend doesn't want them
+        // Remove internal IDs - backend doesn't want them in the body
         delete sanitized.id;
         delete sanitized._id;
-        delete sanitized.userId;
+        // NOTE: Keeping userId just in case the backend needs it for linking
 
         // Convert joinedDate to ISO-8601 format if present
         if (sanitized.joinedDate) {
@@ -42,9 +42,14 @@ export const agentServices = {
             delete sanitized.password;
         }
 
-        // Remove empty/null/undefined values
+        // Remove empty/null/undefined values (but keep false or 0 if they existed)
         Object.keys(sanitized).forEach(key => {
-            if (sanitized[key] === undefined || sanitized[key] === null || sanitized[key] === '') {
+            if (sanitized[key] === undefined || sanitized[key] === null) {
+                delete sanitized[key];
+            }
+            // Only delete empty strings if they are NOT required fields we want to pass
+            // For now, let's stick to deleting truly empty values
+            if (sanitized[key] === '') {
                 delete sanitized[key];
             }
         });
@@ -71,11 +76,14 @@ export const agentServices = {
         } catch (error: any) {
             const errorData = error.response?.data;
             const errorMsg = errorData?.message || errorData?.error || error.message;
-            console.error("❌ Agent Create failed:", {
+            console.error("❌ Agent Create failed. Details:", JSON.stringify({
                 status: error.response?.status,
-                data: errorData,
-                message: error.message
-            });
+                data: error.response?.data,
+                message: error.message,
+                url: error.config?.url,
+                method: error.config?.method,
+                payload: error.config?.data
+            }, null, 2));
             throw new Error(errorMsg);
         }
     },
