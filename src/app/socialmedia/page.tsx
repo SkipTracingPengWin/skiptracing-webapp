@@ -8,6 +8,7 @@ import {
   Phone, Mail, MoreHorizontal, ArrowRight, ArrowLeft, MapPin
 } from "lucide-react";
 import FindBySocialMediaModal from "@/components/socialmedia/findbysocialmedia.modal";
+import SocialMediaResultsModal from "@/components/socialmedia/socialmediaresult.modal";
 import { useBorrowerStore } from "@/store/borrowers.store";
 import { useSocialProfilesStore } from "@/store/socialmedia.store";
 import type { Borrower } from "@/types";
@@ -88,6 +89,8 @@ const getSocialProfiles = (borrower: Borrower, searchResults: any[] = []) => {
 export default function SocialMediaPage() {
   const [searchQuery, setSearchQuery] = useState("");
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [resultsModalOpen, setResultsModalOpen] = useState(false);
+  const [resultBorrower, setResultBorrower] = useState<Borrower | null>(null);
 
   const { borrowers, getBorrowerById } = useBorrowerStore();
   const { selectedBorrowerIds, addSelectedBorrower, removeSelectedBorrower, searchResults } = useSocialProfilesStore();
@@ -105,10 +108,11 @@ export default function SocialMediaPage() {
       }
     });
   }, [selectedBorrowerIds, getBorrowerById, borrowers, removeSelectedBorrower]);
-
   // Handle borrower selection from modal
   const handleBorrowerSelect = (borrower: Borrower) => {
     addSelectedBorrower(String(borrower.id));
+    setResultBorrower(borrower);
+    setResultsModalOpen(true);
   };
 
   // Get current selected borrowers data from the store based on persisted IDs
@@ -350,6 +354,14 @@ export default function SocialMediaPage() {
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
         onBorrowerSelect={handleBorrowerSelect}
+      />
+
+      {/* Results Popup */}
+      <SocialMediaResultsModal
+        isOpen={resultsModalOpen}
+        onClose={() => setResultsModalOpen(false)}
+        borrower={resultBorrower}
+        socials={resultBorrower ? getSocialProfiles(resultBorrower, searchResults[String(resultBorrower.id)]) : []}
       />
     </div>
   );
