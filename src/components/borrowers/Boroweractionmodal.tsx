@@ -12,6 +12,7 @@ interface Props {
     onDelete: () => void;
     position: { top: number; left: number };
     showDelete?: boolean;
+    isAgent?: boolean;
 }
 
 export default function BorrowerActionModal({
@@ -22,6 +23,7 @@ export default function BorrowerActionModal({
     onDelete,
     position,
     showDelete = true,
+    isAgent = false,
 }: Props) {
     const menuRef = useRef<HTMLDivElement | null>(null);
     const router = useRouter();
@@ -60,12 +62,14 @@ export default function BorrowerActionModal({
                 <Eye className="h-4 w-4" /> View Profile
             </button>
 
-            <button
-                onClick={onEdit}
-                className="w-full flex items-center gap-2 px-3 py-2 hover:bg-slate-100 text-sm"
-            >
-                <Edit className="h-4 w-4" /> Edit
-            </button>
+            {!isAgent && (
+                <button
+                    onClick={onEdit}
+                    className="w-full flex items-center gap-2 px-3 py-2 hover:bg-slate-100 text-sm"
+                >
+                    <Edit className="h-4 w-4" /> Edit
+                </button>
+            )}
 
             {showDelete && (
                 <button

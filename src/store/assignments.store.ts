@@ -8,6 +8,7 @@ interface AssignmentState {
     loading: boolean;
     error: string | null;
     fetchAssignments: () => Promise<void>;
+    fetchAgentAssignments: (agentId: string | number) => Promise<void>;
     addAssignment: (assignment: Partial<Assignment>) => Promise<void>;
     updateAssignment: (id: string | number, updates: Partial<Assignment>) => Promise<void>;
     deleteAssignment: (id: string | number) => Promise<void>;
@@ -28,13 +29,36 @@ export const useAssignmentStore = create<AssignmentState>()(
             error: null,
 
             fetchAssignments: async () => {
+                // Prevent fetch if no token is present
+                const token = localStorage.getItem("token");
+                if (!token) {
+                    set({ assignments: [], loading: false });
+                    return;
+                }
+
                 set({ loading: true, error: null });
                 try {
                     const data = await assignmentService.getAll();
                     const normalized = Array.isArray(data) ? data.map(normalizeAssignment) : [];
                     set({ assignments: normalized, loading: false });
                 } catch (error: any) {
-                    set({ error: error.message || 'Failed to fetch assignments', loading: false });
+                    // Suppress 401 logs as they are handled by interceptor
+                    if (error.response?.status !== 401) {
+                        set({ error: error.message || 'Failed to fetch assignments', loading: false });
+                    } else {
+                        set({ loading: false });
+                    }
+                }
+            },
+
+            fetchAgentAssignments: async (agentId) => {
+                set({ loading: true, error: null });
+                try {
+                    const data = await assignmentService.getByAgentId(agentId);
+                    const normalized = Array.isArray(data) ? data.map(normalizeAssignment) : [];
+                    set({ assignments: normalized, loading: false });
+                } catch (error: any) {
+                    set({ error: error.message || 'Failed to fetch agent assignments', loading: false });
                 }
             },
 

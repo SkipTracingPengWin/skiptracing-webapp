@@ -1,26 +1,9 @@
-
-
 import { create } from "zustand";
 import { devtools } from "zustand/middleware";
-import {
-  Phone,
-  MessageSquare,
-  MapPin,
-  FileText,
-  Video,
-  MessageCircle,
-} from "lucide-react";
 import type { RecoveryAction } from "@/types/recoveryction.type";
-
-// Convert icon names to actual Lucide icons
-const iconMap: any = {
-  Phone: Phone,
-  MessageSquare: MessageSquare,
-  MapPin: MapPin,
-  FileText: FileText,
-  Video: Video,
-  MessageCircle: MessageCircle,
-};
+import { recoveryService } from "@/services/recovery.services";
+import { borrowerService } from "@/services/borrowers.services";
+import { agentServices } from "@/services/agent.services";
 
 interface Borrower {
   id: string;
@@ -37,173 +20,186 @@ interface RecoveryActionsState {
   borrowers: Borrower[];
   agents: Agent[];
   filteredActions: RecoveryAction[];
+
   filterType: string;
   filterStatus: string;
   searchQuery: string;
-  
-  addAction: (action: RecoveryAction) => void;
-  updateAction: (index: number, updates: Partial<RecoveryAction>) => void;
-  deleteAction: (index: number) => void;
+
+  isLoading: boolean;
+  error: string | null;
+
+  fetchActions: () => Promise<void>;
+  addAction: (action: RecoveryAction) => Promise<void>;
+  updateAction: (index: number, updates: Partial<RecoveryAction>) => Promise<void>;
+  deleteAction: (index: number) => Promise<void>;
+
   setFilterType: (type: string) => void;
   setFilterStatus: (status: string) => void;
   setSearchQuery: (query: string) => void;
   applyFilters: () => void;
 }
 
-const initialActions: RecoveryAction[] = [
-  {
-    type: "Call",
-    icon: iconMap["Phone"],
-    borrower: "Rahul Sharma",
-    scheduled: "Jan 15, 4:30 PM",
-    status: "completed",
-    priority: "high",
-    agent: "Suresh Kumar",
-    outcome: "promise to pay",
-  },
-  {
-    type: "SMS",
-    icon: iconMap["MessageSquare"],
-    borrower: "Priya Patel",
-    scheduled: "Jan 14, 2:30 PM",
-    status: "completed",
-    priority: "medium",
-    agent: "Unassigned",
-    outcome: "no response",
-  },
-  {
-    type: "Visit",
-    icon: iconMap["MapPin"],
-    borrower: "Amit Kumar",
-    scheduled: "Jan 20, 3:30 PM",
-    status: "scheduled",
-    priority: "urgent",
-    agent: "Priya Sharma",
-    outcome: "-",
-  },
-  {
-    type: "Legal Notice",
-    icon: iconMap["FileText"],
-    borrower: "Ramesh Verma",
-    scheduled: "Jan 18, 10:00 AM",
-    status: "pending",
-    priority: "high",
-    agent: "Agent Kumar",
-    outcome: "-",
-  },
-  {
-    type: "IVR Call",
-    icon: iconMap["Video"],
-    borrower: "Suresh Patel",
-    scheduled: "Jan 19, 2:00 PM",
-    status: "completed",
-    priority: "medium",
-    agent: "Agent Raju",
-    outcome: "call completed",
-  },
-  {
-    type: "WhatsApp",
-    icon: iconMap["MessageCircle"],
-    borrower: "Neha Singh",
-    scheduled: "Jan 17, 6:30 PM",
-    status: "scheduled",
-    priority: "low",
-    agent: "Priya Sharma",
-    outcome: "-",
-  },
-];
-
-const initialBorrowers: Borrower[] = [
-  { id: "b1", name: "Ramesh" },
-  { id: "b2", name: "Suresh" },
-  { id: "b3", name: "Priya" },
-  { id: "b4", name: "Amit" },
-  { id: "b5", name: "Rahul Sharma" },
-  { id: "b6", name: "Priya Patel" },
-  { id: "b7", name: "Amit Kumar" },
-  { id: "b8", name: "Ramesh Verma" },
-  { id: "b9", name: "Suresh Patel" },
-  { id: "b10", name: "Neha Singh" },
-];
-
-const initialAgents: Agent[] = [
-  { id: "a1", name: "Agent Kumar" },
-  { id: "a2", name: "Agent Raju" },
-  { id: "a3", name: "Priya Sharma" },
-  { id: "a4", name: "Suresh Kumar" },
-];
+const initialActions: RecoveryAction[] = [];
+const initialBorrowers: Borrower[] = [];
+const initialAgents: Agent[] = [];
 
 export const useRecoveryActionsStore = create<RecoveryActionsState>()(
-  devtools(
-    (set, get) => ({
-      actions: initialActions,
-      borrowers: initialBorrowers,
-      agents: initialAgents,
-      filteredActions: initialActions,
-      filterType: "All Types",
-      filterStatus: "All Status",
-      searchQuery: "",
+  devtools((set, get) => ({
+    actions: initialActions,
+    borrowers: initialBorrowers,
+    agents: initialAgents,
+    filteredActions: initialActions,
 
-      addAction: (action) =>
+    filterType: "All Types",
+    filterStatus: "All Status",
+    searchQuery: "",
+
+    isLoading: false,
+    error: null,
+
+    /* ---------------- FETCH FROM API ---------------- */
+    fetchActions: async () => {
+      set({ isLoading: true, error: null });
+
+      try {
+        const [actionsData, borrowersData, agentsData] = await Promise.all([
+          recoveryService.getActions(),
+          borrowerService.getAll(),
+          agentServices.getAll()
+        ]);
+
+        const mappedActions = actionsData.map((action: any) => ({
+          ...action,
+          borrower: borrowersData.find((b: any) => b.id === action.borrowerId || b._id === action.borrowerId)?.name || action.borrower || "Unknown Borrower",
+          agent: agentsData.find((a: any) => a.id === action.agentId || a._id === action.agentId)?.name || action.agent || "Unassigned"
+        }));
+
+        set({
+          actions: mappedActions,
+          filteredActions: mappedActions,
+          borrowers: borrowersData.map((b: any) => ({ id: b.id || b._id, name: b.name })),
+          agents: agentsData.map((a: any) => ({ id: a.id || a._id, name: a.name })),
+          isLoading: false,
+        });
+      } catch (error: any) {
+        // 🔐 Ignore 401 after logout
+        if (error.response?.status === 401) {
+          set({ isLoading: false });
+          return;
+        }
+
+        set({
+          error: error.message || "Failed to fetch recovery actions",
+          isLoading: false,
+        });
+      }
+    },
+
+    /* ---------------- MUTATIONS ---------------- */
+    addAction: async (action) => {
+      set({ isLoading: true, error: null });
+      try {
+        const newAction = await recoveryService.createAction(action);
+
+        // Re-map the new action with names from the store
+        const state = get();
+        const borrowerName = state.borrowers.find((b) => b.id === (action as any).borrowerId)?.name || "Unknown";
+        const agentName = state.agents.find((a) => a.id === (action as any).agentId)?.name || "Unassigned";
+
+        const mergedAction = { ...action, ...newAction, borrower: borrowerName, agent: agentName };
+
         set((state) => ({
-          actions: [...state.actions, action],
-          filteredActions: [...state.actions, action],
-        })),
+          actions: [...state.actions, mergedAction],
+          filteredActions: [...state.actions, mergedAction], // Note: this doesn't re-apply filters immediately, but keeps list sync
+          isLoading: false
+        }));
 
-      updateAction: (index, updates) =>
-        set((state) => ({
-          actions: state.actions.map((action, i) =>
-            i === index ? { ...action, ...updates } : action
-          ),
-        })),
+        // Re-apply filters to ensure view is correct
+        get().applyFilters();
 
-      deleteAction: (index) =>
+      } catch (error: any) {
+        set({ error: error.message, isLoading: false });
+      }
+    },
+
+    updateAction: async (index, updates) => {
+      const state = get();
+      const actionToUpdate = state.actions[index];
+      if (!actionToUpdate) return;
+
+      set({ isLoading: true, error: null });
+      try {
+        // @ts-ignore
+        const updated = await recoveryService.updateAction(actionToUpdate.id || actionToUpdate._id, updates);
+
+        set((state) => {
+          const newActions = [...state.actions];
+          newActions[index] = { ...newActions[index], ...updated };
+          return {
+            actions: newActions,
+            // We should re-run applyFilters, but for now we just update
+            filteredActions: newActions,
+            isLoading: false
+          };
+        });
+        get().applyFilters();
+      } catch (error: any) {
+        set({ error: error.message, isLoading: false });
+      }
+    },
+
+    deleteAction: async (index) => {
+      const state = get();
+      const actionToDelete = state.actions[index];
+      if (!actionToDelete) return;
+
+      set({ isLoading: true, error: null });
+      try {
+        // @ts-ignore
+        await recoveryService.deleteAction(actionToDelete.id || actionToDelete._id);
         set((state) => ({
           actions: state.actions.filter((_, i) => i !== index),
-        })),
+          filteredActions: state.actions.filter((_, i) => i !== index),
+          isLoading: false
+        }));
+        get().applyFilters();
+      } catch (error: any) {
+        set({ error: error.message, isLoading: false });
+      }
+    },
 
-      setFilterType: (type) =>
-        set({ filterType: type }, false, { type: "setFilterType" }),
+    /* ---------------- FILTERS ---------------- */
+    setFilterType: (type) => set({ filterType: type }),
+    setFilterStatus: (status) => set({ filterStatus: status }),
+    setSearchQuery: (query) => set({ searchQuery: query }),
 
-      setFilterStatus: (status) =>
-        set({ filterStatus: status }, false, { type: "setFilterStatus" }),
+    applyFilters: () => {
+      const { actions, filterType, filterStatus, searchQuery } = get();
 
-      setSearchQuery: (query) =>
-        set({ searchQuery: query }, false, { type: "setSearchQuery" }),
+      let filtered = actions;
 
-      applyFilters: () => {
-        const state = get();
-        let filtered = state.actions;
+      if (filterType !== "All Types") {
+        filtered = filtered.filter(
+          (a) => a.type.toLowerCase() === filterType.toLowerCase()
+        );
+      }
 
-        // Filter by type
-        if (state.filterType !== "All Types") {
-          filtered = filtered.filter(
-            (action) =>
-              action.type.toLowerCase() === state.filterType.toLowerCase()
-          );
-        }
+      if (filterStatus !== "All Status") {
+        filtered = filtered.filter(
+          (a) => a.status.toLowerCase() === filterStatus.toLowerCase()
+        );
+      }
 
-        // Filter by status
-        if (state.filterStatus !== "All Status") {
-          filtered = filtered.filter(
-            (action) =>
-              action.status.toLowerCase() === state.filterStatus.toLowerCase()
-          );
-        }
+      if (searchQuery.trim()) {
+        const q = searchQuery.toLowerCase();
+        filtered = filtered.filter(
+          (a) =>
+            a.borrower.toLowerCase().includes(q) ||
+            a.agent.toLowerCase().includes(q)
+        );
+      }
 
-        // Filter by search query
-        if (state.searchQuery.trim()) {
-          const query = state.searchQuery.toLowerCase();
-          filtered = filtered.filter(
-            (action) =>
-              action.borrower.toLowerCase().includes(query) ||
-              action.agent.toLowerCase().includes(query)
-          );
-        }
-
-        set({ filteredActions: filtered }, false, { type: "applyFilters" });
-      },
-    }),
-    { name: "RecoveryActionsStore" }
-  )
+      set({ filteredActions: filtered });
+    },
+  }))
 );

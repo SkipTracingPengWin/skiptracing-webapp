@@ -1,7 +1,7 @@
 import { create } from 'zustand';
 import { devtools } from 'zustand/middleware';
 import type { Verification } from '@/types/verification.types';
-import api from '@/lib/axios';
+import { verificationService } from '@/services/verifications.services';
 
 interface VerificationState {
     verifications: Verification[];
@@ -25,8 +25,8 @@ export const useVerificationStore = create<VerificationState>()(
             fetchVerifications: async () => {
                 set({ loading: true, error: null });
                 try {
-                    const response = await api.get('/verifications/');
-                    set({ verifications: response.data, loading: false });
+                    const data = await verificationService.getAll();
+                    set({ verifications: data, loading: false });
                 } catch (error: any) {
                     console.error("Failed to fetch verifications:", error);
                     set({
@@ -39,7 +39,7 @@ export const useVerificationStore = create<VerificationState>()(
             addVerification: async (data: any) => {
                 set({ loading: true, error: null });
                 try {
-                    const response = await api.post('/verifications/', data);
+                    await verificationService.create(data);
                     // Optimistically update or re-fetch? Re-fetching is safer for now to get full object including ID/dates
                     await get().fetchVerifications();
                 } catch (error: any) {

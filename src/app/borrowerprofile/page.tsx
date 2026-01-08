@@ -279,7 +279,7 @@ const LoanItem = ({ label, value, highlight = false }: any) => (
 );
 
 const LoanStatus = ({ borrower }: any) => {
-  const status = String(borrower.status).toUpperCase();
+  const status = String(borrower.status || "UNKNOWN").toUpperCase();
   const getStatusStyles = (s: string) => {
     switch (s) {
       case "ACTIVE": return "bg-green-100 text-green-800 border-green-200";
@@ -360,7 +360,7 @@ const SkipTraceCard = ({ borrower }: any) => (
     <CardContent>
       <p className="text-sm font-medium">Risk Level</p>
       <Badge className={borrower.risk === "high" ? "bg-red-100 text-red-800" : borrower.risk === "medium" ? "bg-amber-100 text-amber-800" : "bg-green-100 text-green-800"}>
-        {borrower.risk.toUpperCase()}
+        {String(borrower.risk || "N/A").toUpperCase()}
       </Badge>
     </CardContent>
   </Card>

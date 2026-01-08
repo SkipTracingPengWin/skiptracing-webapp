@@ -318,7 +318,7 @@
 //         { id: "a3", name: "Priya Sharma" },
 //         { id: "a4", name: "Suresh Kumar" },
 //     ];
-    
+
 //     // Assuming useRecoveryActionsStore provides an actions array and addAction function
 //     const { actions, addAction } = useRecoveryActionsStore();
 
@@ -537,6 +537,7 @@
 import Sidebar from "@/components/layout/Sidebar";
 import Header from "@/components/layout/Header";
 import { useRecoveryActionsStore } from "@/store/recoveryactionsStore";
+import { useAuthStore } from "@/store/auth.store";
 
 import {
     MessageSquare,
@@ -585,13 +586,44 @@ export default function RecoveryActionsPage() {
         setFilterType,
         setFilterStatus,
         setSearchQuery,
-        applyFilters
+        applyFilters,
+        fetchActions
     } = useRecoveryActionsStore();
+
+    // ==================== FETCH DATA ====================
+    useEffect(() => {
+        fetchActions();
+    }, [fetchActions]);
 
     // ==================== APPLY FILTERS ON CHANGE ====================
     useEffect(() => {
         applyFilters();
     }, [filterType, filterStatus, searchQuery, applyFilters]);
+
+    // ==================== ICON MAPPING ====================
+    const iconMap: any = {
+        Phone,
+        MessageSquare,
+        Video,
+        MapPin,
+        FileText,
+        MessageCircle,
+        // Map common backend values if they differ
+        "Call": Phone,
+        "SMS": MessageSquare,
+        "Visit": MapPin,
+        "Legal Notice": FileText,
+        "IVR": Video,
+        "WhatsApp": MessageCircle,
+        // Lowercase fallbacks
+        "phone": Phone,
+        "call": Phone,
+        "sms": MessageSquare,
+        "visit": MapPin,
+        "legal": FileText,
+        "ivr": Video,
+        "whatsapp": MessageCircle
+    };
 
     // ==================== ACTION TYPES ====================
     const actionTypes = [
@@ -647,6 +679,11 @@ export default function RecoveryActionsPage() {
         setSearchQuery(e.target.value);
     };
 
+    // ==================== AUTH ====================
+    const { user } = useAuthStore();
+    const isAgent = user?.role === "AGENT";
+
+    // ==================== RENDER ====================
     return (
         <div className="flex h-screen bg-slate-50">
             <Sidebar />
@@ -664,16 +701,18 @@ export default function RecoveryActionsPage() {
                         </p>
                     </div>
 
-                    {/* ACTION ICONS */}
-                    <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4 mb-6">
-                        {actionTypes.map((type, i) => (
-                            <ActionTypeCard
-                                key={i}
-                                {...type}
-                                onClick={() => openActionForm(type)}
-                            />
-                        ))}
-                    </div>
+                    {/* ACTION ICONS - Hidden for Agents */}
+                    {!isAgent && (
+                        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4 mb-6">
+                            {actionTypes.map((type, i) => (
+                                <ActionTypeCard
+                                    key={i}
+                                    {...type}
+                                    onClick={() => openActionForm(type)}
+                                />
+                            ))}
+                        </div>
+                    )}
 
                     {/* STATS */}
                     <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
@@ -742,7 +781,7 @@ export default function RecoveryActionsPage() {
 
                                 <tbody className="divide-y divide-slate-200">
                                     {filteredActions.map((action: any, i: any) => {
-                                        const Icon = action.icon;
+                                        const Icon = iconMap[action.icon] || iconMap[action.type] || MessageSquare;
                                         return (
                                             <tr key={i} className="hover:bg-slate-50">
                                                 <td className="px-6 py-4">
@@ -797,15 +836,13 @@ export default function RecoveryActionsPage() {
                 </main>
 
                 {/* MODAL */}
-                {isModalOpen && selectedAction && (
+                {!isAgent && isModalOpen && selectedAction && (
                     <ActionModal
                         isOpen={isModalOpen}
                         onClose={() => setModalOpen(false)}
                         actionId={selectedAction.actionId}
                         title={selectedAction.label}
                         icon={<selectedAction.icon />}
-                        borrowers={borrowers}
-                        agents={agents}
                         onSubmit={handleSubmit}
                     />
                 )}

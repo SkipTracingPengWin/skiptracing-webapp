@@ -162,9 +162,10 @@ export default function Sidebar() {
       case "AGENT":
         return [
           dashboardItem,
+          allMenuItems.borrowers,
           allMenuItems.assignments,
-          allMenuItems.verifications,
-          allMenuItems.settings,
+          allMenuItems.socialmedia,
+          allMenuItems.recovery,
         ];
       default:
         // Guest / Fallback

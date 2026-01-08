@@ -60,6 +60,8 @@ export const agentServices = {
     getById: async (id: string | number) => {
         try {
             const response = await api.get(`/agents/${id}`);
+            console.log("🚀 Fetched Agent with ID:", id);
+            console.log("📊 Fetched Agent RAW Data:", JSON.stringify(response.data, null, 2));
             return response.data;
         } catch (error: any) {
             console.error(`❌ Error in getById for Agent ID ${id}:`, error.message);

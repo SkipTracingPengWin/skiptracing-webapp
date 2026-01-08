@@ -69,33 +69,34 @@ export default function VerificationModal({ isOpen, onClose, service, onSubmit }
         setError(null);
 
         try {
-            // Construct payload based on type
+            // Construct flat payload
             let payload: any = {
-                borrowerId: borrowerId, // Use correct state
+                borrowerId: borrowerId,
                 type: service.type,
-                provider: "MOCK",
-                data: {}
+                // provider: "MOCK", // Removed as per backend requirement/postman
+                ...formData
             };
 
-            // Map form data to payload
-            switch (service.type) {
-                case VerificationType.PAN:
-                    payload.data = { panNumber: formData.pan };
-                    break;
-                case VerificationType.AADHAAR:
-                    payload.data = { aadhaarNumber: formData.aadhaar };
-                    break;
-                case VerificationType.BANK:
-                    payload.data = {
-                        accountNumber: formData.accountNumber,
-                        ifsc: formData.ifsc
-                    };
-                    break;
-                case VerificationType.PHONE:
-                    payload.data = { mobileNumber: formData.mobile };
-                    break;
-                default:
-                    payload.data = { ...formData };
+            // Ensure specific fields are mapped correctly if needed, 
+            // but based on "flat" requirement, formData keys should match backend expectation.
+            // valid keys from formData: pan, aadhaar, accountNumber, ifsc, mobile
+
+            // Map specific keys if the form state keys don't match API expectation exactly
+            // Based on previous code:
+            // PAN -> panNumber
+            // AADHAAR -> aadhaarNumber
+            // PHONE -> mobileNumber
+            // BANK -> accountNumber, ifsc (already matching)
+
+            if (service.type === VerificationType.PAN) {
+                payload.panNumber = formData.pan;
+                delete payload.pan;
+            } else if (service.type === VerificationType.AADHAAR) {
+                payload.aadhaarNumber = formData.aadhaar;
+                delete payload.aadhaar;
+            } else if (service.type === VerificationType.PHONE) {
+                payload.mobileNumber = formData.mobile;
+                delete payload.mobile;
             }
 
             await onSubmit(payload);

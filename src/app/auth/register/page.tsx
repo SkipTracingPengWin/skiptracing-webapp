@@ -355,9 +355,9 @@ export default function RegisterPage() {
             {/* CHANGE 8: Right panel p-6 lg:p-17→p-4 lg:p-8, max-w-lg→max-w-md */}
             <div className="lg:w-1/2 bg-white/90 backdrop-blur-2xl p-4 lg:p-8 flex items-center justify-center relative z-20 border border-white/50 shadow-xl">
                 {/* CHANGE 9: Particles smaller */}
-                <div className="absolute top-6 right-6 w-1.5 h-1.5 bg-gradient-to-r from-amber-400 to-orange-500 rounded-full animate-bounce" style={{animationDelay: '0s'}}></div>
-                <div className="absolute top-14 left-6 w-1 h-1 bg-gradient-to-r from-emerald-400 to-amber-500 rounded-full animate-bounce" style={{animationDelay: '1s'}}></div>
-                <div className="absolute bottom-12 right-12 w-2 h-2 bg-gradient-to-r from-rose-400 to-orange-500 rounded-full animate-bounce" style={{animationDelay: '2s'}}></div>
+                <div className="absolute top-6 right-6 w-1.5 h-1.5 bg-gradient-to-r from-amber-400 to-orange-500 rounded-full animate-bounce" style={{ animationDelay: '0s' }}></div>
+                <div className="absolute top-14 left-6 w-1 h-1 bg-gradient-to-r from-emerald-400 to-amber-500 rounded-full animate-bounce" style={{ animationDelay: '1s' }}></div>
+                <div className="absolute bottom-12 right-12 w-2 h-2 bg-gradient-to-r from-rose-400 to-orange-500 rounded-full animate-bounce" style={{ animationDelay: '2s' }}></div>
 
                 <div className="w-full max-w-md">
                     {/* CHANGE 10: Header px-6 py-3→px-4 py-2, text-xl→text-lg, text-lg→text-sm */}
@@ -448,8 +448,7 @@ export default function RegisterPage() {
                                 >
                                     <option value="" disabled>Select role</option>
                                     <option value="ADMIN">👑 Administrator</option>
-                                    <option value="MANAGER">📊 Collection Manager</option>
-                                    <option value="AGENT">🎯 Field Agent</option>
+                                    <option value="MANAGER">📊 Manager</option>
                                 </select>
                                 <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none group-focus-within:text-amber-600">
                                     <Briefcase className="h-5 w-5 text-slate-400 group-focus-within:text-amber-600" />

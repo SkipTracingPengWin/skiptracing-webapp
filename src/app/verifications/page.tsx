@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import Sidebar from "@/components/layout/Sidebar";
 import Header from "@/components/layout/Header";
 import VerificationModal from "@/components/verifications/VerificationModal";
+import VerificationResultModal from "@/components/verifications/verificationresult.modal";
 import { Verification, VerificationType } from "@/types/verification.types";
 import { useVerificationStore } from "@/store/verifications.store";
 import { cn } from "@/lib/utils";
@@ -72,6 +73,8 @@ export default function VerificationsPage() {
     const [selectedService, setSelectedService] = useState<any>(null);
     const [filterStatus, setFilterStatus] = useState<string>("All");
     const [searchTerm, setSearchTerm] = useState("");
+    const [selectedVerification, setSelectedVerification] = useState<Verification | null>(null);
+    const [showResultModal, setShowResultModal] = useState(false);
 
     // Use Store
     const { verifications, loading: isLoading, fetchVerifications, addVerification } = useVerificationStore();
@@ -286,7 +289,13 @@ export default function VerificationsPage() {
                                                     {getStatusBadge(verification.status)}
                                                 </td>
                                                 <td className="px-6 py-4 text-right">
-                                                    <button className="text-blue-600 text-xs font-bold hover:underline px-3 py-1.5 bg-blue-50 rounded-lg opacity-0 group-hover:opacity-100 transition-all hover:bg-blue-100">
+                                                    <button
+                                                        onClick={() => {
+                                                            setSelectedVerification(verification);
+                                                            setShowResultModal(true);
+                                                        }}
+                                                        className="text-blue-600 text-xs font-bold hover:underline px-3 py-1.5 bg-blue-50 rounded-lg opacity-0 group-hover:opacity-100 transition-all hover:bg-blue-100"
+                                                    >
                                                         VIEW REPORT
                                                     </button>
                                                 </td>
@@ -304,6 +313,15 @@ export default function VerificationsPage() {
                     onClose={() => setSelectedService(null)}
                     service={selectedService}
                     onSubmit={handleVerificationSubmit}
+                />
+
+                <VerificationResultModal
+                    isOpen={showResultModal}
+                    onClose={() => {
+                        setShowResultModal(false);
+                        setSelectedVerification(null);
+                    }}
+                    verification={selectedVerification}
                 />
             </div>
         </div>

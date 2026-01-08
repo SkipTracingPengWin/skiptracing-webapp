@@ -37,12 +37,11 @@ export default function AssignCaseModal({
   useEffect(() => {
     if (open) {
       fetchBorrowers();
-      if (user?.role === "ADMIN" || user?.role === "MANAGER") {
+      if (user?.role === "ADMIN" || user?.role === "MANAGER" || user?.role === "AGENT") {
         fetchAgents();
       }
     }
   }, [open, fetchBorrowers, fetchAgents, user?.role]);
-
   useEffect(() => {
     if (open && initialData) {
       setBorrowerId(String(initialData.borrowerId || ""));
@@ -163,32 +162,34 @@ export default function AssignCaseModal({
           </div>
         </div>
 
-        {/* Agent Selection */}
-        <div className="mb-5">
-          <label className="text-sm font-semibold text-slate-700 block mb-2">
-            Select Agent
-          </label>
-          <div className="relative">
-            <select
-              className="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all disabled:opacity-50 appearance-none"
-              value={agentId}
-              onChange={(e) => setAgentId(e.target.value)}
-              disabled={isLoading || isSubmitting}
-            >
-              <option value="">Choose an agent...</option>
-              {agents.map((a) => (
-                <option key={a.id} value={String(a.id)}>
-                  {a.name} ({a.status})
-                </option>
-              ))}
-            </select>
-            {loadingAgents && (
-              <div className="absolute right-3 top-2.5">
-                <Loader2 className="h-4 w-4 animate-spin text-slate-400" />
-              </div>
-            )}
+        {!(user?.role === "AGENT" && initialData) && (
+          <div className="mb-5">
+            <label className="text-sm font-semibold text-slate-700 block mb-2">
+              Select Agent
+            </label>
+            <div className="relative">
+              <select
+                className="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all disabled:opacity-50 appearance-none"
+                value={agentId}
+                onChange={(e) => setAgentId(e.target.value)}
+                disabled={isLoading || isSubmitting}
+              >
+                <option value="">Choose an agent...</option>
+                {agents.map((a) => (
+                  <option key={a.id} value={String(a.id)}>
+                    {a.name} ({a.status})
+                  </option>
+                ))}
+
+              </select>
+              {loadingAgents && (
+                <div className="absolute right-3 top-2.5">
+                  <Loader2 className="h-4 w-4 animate-spin text-slate-400" />
+                </div>
+              )}
+            </div>
           </div>
-        </div>
+        )}
 
         {/* Case Details */}
         <div className="grid grid-cols-2 gap-4 mb-5">
@@ -221,30 +222,32 @@ export default function AssignCaseModal({
           </div>
         </div>
 
-        <div className="grid grid-cols-2 gap-4 mb-5">
-          <div>
-            <label className="text-sm font-semibold text-slate-700 block mb-2">
-              Assigned At
-            </label>
-            <input
-              type="date"
-              className="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all"
-              value={assignedAt}
-              onChange={(e) => setAssignedAt(e.target.value)}
-            />
+        {!(user?.role === "AGENT" && initialData) && (
+          <div className="grid grid-cols-2 gap-4 mb-5">
+            <div>
+              <label className="text-sm font-semibold text-slate-700 block mb-2">
+                Assigned At
+              </label>
+              <input
+                type="date"
+                className="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all"
+                value={assignedAt}
+                onChange={(e) => setAssignedAt(e.target.value)}
+              />
+            </div>
+            <div>
+              <label className="text-sm font-semibold text-slate-700 block mb-2">
+                Due Date
+              </label>
+              <input
+                type="date"
+                className="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all"
+                value={dueDate}
+                onChange={(e) => setDueDate(e.target.value)}
+              />
+            </div>
           </div>
-          <div>
-            <label className="text-sm font-semibold text-slate-700 block mb-2">
-              Due Date
-            </label>
-            <input
-              type="date"
-              className="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all"
-              value={dueDate}
-              onChange={(e) => setDueDate(e.target.value)}
-            />
-          </div>
-        </div>
+        )}
 
         <div className="grid grid-cols-2 gap-4 mb-5">
           <div>

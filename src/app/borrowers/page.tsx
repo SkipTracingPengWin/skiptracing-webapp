@@ -99,25 +99,27 @@ export default function BorrowersPage() {
                                 </p>
                             </div>
 
-                            <div className="flex items-center gap-3">
-                                <button className="flex items-center gap-2 px-4 py-2 border rounded-lg hover:bg-slate-50">
-                                    <Download className="h-4 w-4" />
-                                    <span className="text-sm">Import</span>
-                                </button>
+                            {user?.role !== "AGENT" && (
+                                <div className="flex items-center gap-3">
+                                    <button className="flex items-center gap-2 px-4 py-2 border rounded-lg hover:bg-slate-50">
+                                        <Download className="h-4 w-4" />
+                                        <span className="text-sm">Import</span>
+                                    </button>
 
-                                <button className="flex items-center gap-2 px-4 py-2 border rounded-lg hover:bg-slate-50">
-                                    <Upload className="h-4 w-4" />
-                                    <span className="text-sm">Export</span>
-                                </button>
+                                    <button className="flex items-center gap-2 px-4 py-2 border rounded-lg hover:bg-slate-50">
+                                        <Upload className="h-4 w-4" />
+                                        <span className="text-sm">Export</span>
+                                    </button>
 
-                                <button
-                                    onClick={() => setIsModalOpen(true)}
-                                    className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
-                                >
-                                    <Plus className="h-4 w-4" />
-                                    Add Borrower
-                                </button>
-                            </div>
+                                    <button
+                                        onClick={() => setIsModalOpen(true)}
+                                        className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+                                    >
+                                        <Plus className="h-4 w-4" />
+                                        Add Borrower
+                                    </button>
+                                </div>
+                            )}
                         </div>
                     </div>
 
@@ -221,6 +223,7 @@ export default function BorrowersPage() {
                         onDelete={handleDelete}
                         position={menuPosition}
                         showDelete={user?.role === "ADMIN"}
+                        isAgent={user?.role === "AGENT"}
                     />
                 </main>
             </div>

@@ -24,6 +24,12 @@ export const assignmentService = {
         return response.data;
     },
 
+    getByAgentId: async (agentId: string | number) => {
+        const response = await api.get(`/agents/${agentId}`);
+        // The assignments are nested in the agent object
+        return response.data.assignedCases || [];
+    },
+
     _sanitizeData: (data: any) => {
         const sanitized = { ...data };
         delete sanitized.id; // Backend handles ID

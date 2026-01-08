@@ -27,16 +27,28 @@ export const useBorrowerStore = create<BorrowerState>()(
             error: null,
 
             fetchBorrowers: async () => {
+                const token = localStorage.getItem("token");
+                if (!token) {
+                    set({ borrowers: [], loading: false });
+                    return;
+                }
+
                 set({ loading: true, error: null });
                 try {
                     const data = await borrowerService.getAll();
                     const normalizedData = (data || []).map(normalizeBorrower);
                     set({ borrowers: normalizedData, loading: false });
                 } catch (error: any) {
-                    console.warn('Backend API not available, using empty dataset');
+                    // Ignore 401s which are handled globally
+                    if (error.response?.status === 401) {
+                        set({ loading: false });
+                        return;
+                    }
+
+                    console.warn('Backend API not available or error, using empty dataset');
                     set({
                         borrowers: [],
-                        error: 'Backend API not available. Please start the backend server or add borrowers manually.',
+                        error: 'Failed to fetch borrowers',
                         loading: false
                     });
                 }
