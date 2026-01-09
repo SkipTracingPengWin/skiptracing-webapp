@@ -1,40 +1,63 @@
 import { create } from 'zustand';
 import { devtools } from 'zustand/middleware';
-import type { AuditLog } from '@/types';
-
-const auditLogsData: AuditLog[] = [
-    {
-        id: 1,
-        timestamp: "2025-11-28 10:30:00",
-        user: "Admin",
-        action: "Updated Borrower Status",
-        module: "Borrowers",
-        details: "Changed status of Rahul Sharma to In Recovery",
-        status: "Success"
-    },
-    {
-        id: 2,
-        timestamp: "2025-11-28 11:15:00",
-        user: "System",
-        action: "Generated Report",
-        module: "Reports",
-        details: "Monthly Recovery Report generated",
-        status: "Success"
-    }
-];
+import type { AuditLog } from '@/types/audit.types';
+import { AuditService, DashboardStats } from '@/services/audit.services';
 
 interface AuditLogState {
     auditLogs: AuditLog[];
+    stats: DashboardStats;
+    loading: boolean;
+    error: string | null;
+
+    fetchLogs: (params?: any) => Promise<void>;
+    fetchStats: () => Promise<void>;
     addAuditLog: (log: AuditLog) => void;
 }
 
+const initialStats: DashboardStats = {
+    totalLogs: 0,
+    verifications: 0,
+    dataChanges: 0,
+    exports: 0
+};
+
 export const useAuditLogStore = create<AuditLogState>()(
     devtools(
-        (set) => ({
-            auditLogs: auditLogsData,
+        (set, get) => ({
+            auditLogs: [],
+            stats: initialStats,
+            loading: false,
+            error: null,
+
+            fetchLogs: async (params) => {
+                set({ loading: true, error: null });
+                try {
+                    const response = await AuditService.getLogs(params);
+                    // Handle case where API might return { data: [...] } or just [...]
+                    const logs = Array.isArray(response) ? response : (response as any).data || [];
+                    set({ auditLogs: logs, loading: false });
+                } catch (error: any) {
+                    set({
+                        error: error.message || "Failed to fetch audit logs",
+                        loading: false
+                    });
+                    console.error("Fetch logs error:", error);
+                }
+            },
+
+            fetchStats: async () => {
+                try {
+                    const stats = await AuditService.getStats();
+                    set({ stats });
+                } catch (error) {
+                    console.error("Fetch stats error:", error);
+                    // Keep initial stats on error to avoid breaking UI
+                }
+            },
+
             addAuditLog: (log) =>
                 set((state) => ({
-                    auditLogs: [...state.auditLogs, log],
+                    auditLogs: [log, ...state.auditLogs],
                 })),
         }),
         { name: 'AuditLogStore' }
