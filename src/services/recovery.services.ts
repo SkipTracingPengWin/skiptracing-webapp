@@ -8,18 +8,18 @@ export const recoveryService = {
     },
 
     create: async (data: RecoveryTrendPayload): Promise<RecoveryTrend> => {
-        const response = await api.post("recovery-trends/", data);
+        const response = await api.post("recovery-actions/", data);
         return response.data;
     },
 
     // --- Actions ---
     getActions: async () => {
-        const response = await api.get("/recovery-actions");
+        const response = await api.get("/recovery-actions/");
         return response.data;
     },
 
     createAction: async (data: any) => {
-        const response = await api.post("/recovery-actions", data);
+        const response = await api.post("/recovery-actions/", data);
         return response.data;
     },
 

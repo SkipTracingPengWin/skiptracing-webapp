@@ -9,7 +9,7 @@ export function middleware(request: NextRequest) {
     const userRole = request.cookies.get("role")?.value as string | undefined;
 
     // Public routes - allow without authentication
-    const publicRoutes = ["/login", "/register", "/forgot-password", "/verify-otp", "/landing"];
+    const publicRoutes = ["/auth/login", "/auth/register", "/forgot-password", "/verify-otp", "/landing"];
     if (publicRoutes.some(route => pathname.startsWith(route)) || pathname.startsWith("/api/auth")) {
         return NextResponse.next();
     }
@@ -25,7 +25,7 @@ export function middleware(request: NextRequest) {
         ];
 
         if (protectedPaths.some(path => pathname.startsWith(path))) {
-            return NextResponse.redirect(new URL("/login", request.url));
+            return NextResponse.redirect(new URL("/auth/login", request.url));
         }
     }
 
@@ -72,8 +72,7 @@ export const config = {
         "/admin/:path*",
         "/manager/:path*",
         "/agent/:path*",
-        "/login",
-        "/register",
+        "/auth/:path*",
         "/forgot-password",
         "/verify-otp",
         "/borrowers/:path*",

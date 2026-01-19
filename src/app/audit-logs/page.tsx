@@ -2,13 +2,21 @@
 
 import Sidebar from "@/components/layout/Sidebar";
 import Header from "@/components/layout/Header";
-import { FileText, CheckCircle, Database, Download, FileDown, Search, Filter } from "lucide-react";
+import { FileText, CheckCircle, Database, Download, FileDown, Search } from "lucide-react";
 import { useAuditLogStore } from "@/store/auditLogs.store";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import { format } from "date-fns";
 import { AuditModule, AuditLog } from "@/types/audit.types";
 import LogDetailsModal from "@/components/auditlogs/LogDetailsModal";
 import { Eye } from "lucide-react";
+import {
+    Table,
+    TableBody,
+    TableCell,
+    TableHead,
+    TableHeader,
+    TableRow,
+} from "@/components/ui/table";
 
 export default function AuditLogsPage() {
     const { auditLogs, stats, loading, fetchLogs, fetchStats } = useAuditLogStore();
@@ -28,33 +36,79 @@ export default function AuditLogsPage() {
         fetchStats();
     }, [fetchLogs, fetchStats]);
 
-    // Handle filters (client-side filtering for now)
-    const filteredLogs = auditLogs.filter(log => {
-        const userName = (typeof log.user === 'object' && log.user) ? log.user.name : (log.user || "");
-        const matchSearch =
-            log.action.toLowerCase().includes(searchTerm.toLowerCase()) ||
-            log.details.toLowerCase().includes(searchTerm.toLowerCase()) ||
-            userName.toLowerCase().includes(searchTerm.toLowerCase());
+    // Optimized filtered logs
+    const filteredLogs = useMemo(() => {
+        return auditLogs.filter(log => {
+            // User name extraction
+            const userName = String(log.actorName ||
+                (typeof log.user === 'object' && log.user ? log.user.name : (log.user || "")));
 
-        const matchModule = selectedModule ? log.module === selectedModule : true;
+            // Search filter - only apply if search term exists
+            const matchSearch = !searchTerm ||
+                log.action.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                log.details.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                userName.toLowerCase().includes(searchTerm.toLowerCase());
 
-        // Simple client-side time filtering could be added here if needed
-        // const matchTime = ...
+            // Robust Module Mapping Logic
+            const logModule = String(log.module).toUpperCase();
+            let matchModule = !selectedModule;
 
-        return matchSearch && matchModule;
-    });
+            if (selectedModule) {
+                const target = selectedModule.toLowerCase();
+                // Map user-friendly dropdown values to technical log labels
+                if (target === "borrowers") matchModule = logModule.includes("BORROWER");
+                else if (target === "agents") matchModule = logModule.includes("AGENT");
+                else if (target === "assignments") matchModule = logModule.includes("ASSIG");
+                else if (target === "verifications") matchModule = logModule.includes("VERIF");
+                else if (target === "socialmedia") matchModule = logModule.includes("SOCIAL");
+                else if (target === "recoveryactions") matchModule = logModule.includes("RECOVERY");
+                else if (target === "system") matchModule = logModule.includes("SYSTEM");
+                else if (target === "reports") matchModule = logModule.includes("REPORT");
+                else matchModule = logModule === selectedModule.toUpperCase();
+            }
+
+            // Time filter - robust timestamp handling
+            let matchTime = true;
+            if (selectedTimeRange) {
+                const logDate = new Date(log.timestamp).getTime();
+                const now = Date.now();
+                if (isNaN(logDate)) {
+                    matchTime = false;
+                } else {
+                    const diffMs = now - logDate;
+                    switch (selectedTimeRange) {
+                        case "24h":
+                            matchTime = diffMs <= 24 * 60 * 60 * 1000;
+                            break;
+                        case "7d":
+                            matchTime = diffMs <= 7 * 24 * 60 * 60 * 1000;
+                            break;
+                        case "30d":
+                            matchTime = diffMs <= 30 * 24 * 60 * 60 * 1000;
+                            break;
+
+                        default:
+                            matchTime = true;
+                    }
+                }
+            }
+
+            return matchSearch && matchModule && matchTime;
+        });
+    }, [auditLogs, searchTerm, selectedModule, selectedTimeRange]);
 
     const getModuleColor = (module: string) => {
-        switch (module) {
-            case 'Borrowers': return 'bg-blue-100 text-blue-800';
-            case 'Agents': return 'bg-green-100 text-green-800';
-            case 'Assignments': return 'bg-indigo-100 text-indigo-800';
-            case 'Verifications': return 'bg-purple-100 text-purple-800';
-            case 'SocialMedia': return 'bg-pink-100 text-pink-800';
-            case 'RecoveryActions': return 'bg-red-100 text-red-800';
-            case 'System': return 'bg-gray-100 text-gray-800';
-            default: return 'bg-slate-100 text-slate-800';
-        }
+        const colors: Record<string, string> = {
+            'Borrowers': 'bg-blue-100 text-blue-800',
+            'Agents': 'bg-green-100 text-green-800',
+            'Assignments': 'bg-indigo-100 text-indigo-800',
+            'Verifications': 'bg-purple-100 text-purple-800',
+            'SocialMedia': 'bg-pink-100 text-pink-800',
+            'RecoveryActions': 'bg-red-100 text-red-800',
+            'System': 'bg-gray-100 text-gray-800',
+            'Reports': 'bg-yellow-100 text-yellow-800',
+        };
+        return colors[module] || 'bg-slate-100 text-slate-800';
     };
 
     const statCards = [
@@ -80,11 +134,11 @@ export default function AuditLogsPage() {
                                 <p className="text-sm text-slate-600 mt-1">Real-time immutable audit trail for all system activities</p>
                             </div>
                             <div className="flex items-center gap-3">
-                                <button className="flex items-center gap-2 px-4 py-2 border border-slate-200 rounded-lg hover:bg-slate-50 transition-colors bg-white">
+                                <button className="flex items-center gap-2 px-4 py-2 border border-slate-200 rounded-lg hover:bg-slate-50 transition-colors bg-white shadow-sm">
                                     <Download className="h-4 w-4" />
                                     <span className="text-sm font-medium">Export CSV</span>
                                 </button>
-                                <button className="flex items-center gap-2 px-4 py-2 border border-slate-200 rounded-lg hover:bg-slate-50 transition-colors bg-white">
+                                <button className="flex items-center gap-2 px-4 py-2 border border-slate-200 rounded-lg hover:bg-slate-50 transition-colors bg-white shadow-sm">
                                     <FileDown className="h-4 w-4" />
                                     <span className="text-sm font-medium">Export PDF</span>
                                 </button>
@@ -96,11 +150,10 @@ export default function AuditLogsPage() {
                     <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
                         {statCards.map((stat, i) => {
                             const Icon = stat.icon;
-                            // Extract color class logic
                             const textColor = stat.color.replace('bg-', 'text-').replace('500', '600');
 
                             return (
-                                <div key={i} className="bg-white p-6 rounded-xl border border-slate-200 hover:shadow-sm transition-shadow">
+                                <div key={i} className="bg-white p-6 rounded-xl border border-slate-200 hover:shadow-sm transition-all">
                                     <div className="flex items-center gap-4">
                                         <div className={`p-3 rounded-lg ${stat.color} bg-opacity-10`}>
                                             <Icon className={`h-6 w-6 ${textColor}`} />
@@ -118,25 +171,25 @@ export default function AuditLogsPage() {
                     </div>
 
                     {/* Filters and Table */}
-                    <div className="bg-white rounded-xl border border-slate-200 shadow-sm">
+                    <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
                         {/* Filters */}
-                        <div className="p-6 border-b border-slate-200">
-                            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                        <div className="p-6 border-b border-slate-200 bg-white">
+                            <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
                                 <div className="relative">
                                     <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
                                     <input
                                         type="text"
-                                        placeholder="Search action, details or user..."
+                                        placeholder="Search actions, details or users..."
                                         value={searchTerm}
                                         onChange={(e) => setSearchTerm(e.target.value)}
-                                        className="w-full pl-10 pr-4 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none text-sm transition-all"
+                                        className="w-full pl-10 pr-4 py-2.5 border border-slate-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none text-sm transition-all"
                                     />
                                 </div>
 
                                 <select
                                     value={selectedModule}
                                     onChange={(e) => setSelectedModule(e.target.value)}
-                                    className="px-4 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none text-sm bg-white"
+                                    className="px-4 py-2.5 border border-slate-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none text-sm bg-white"
                                 >
                                     <option value="">All Modules</option>
                                     <option value="Borrowers">Borrowers</option>
@@ -152,7 +205,7 @@ export default function AuditLogsPage() {
                                 <select
                                     value={selectedTimeRange}
                                     onChange={(e) => setSelectedTimeRange(e.target.value)}
-                                    className="px-4 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none text-sm bg-white"
+                                    className="px-4 py-2.5 border border-slate-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none text-sm bg-white"
                                 >
                                     <option value="">All Time</option>
                                     <option value="24h">Last 24 Hours</option>
@@ -160,91 +213,111 @@ export default function AuditLogsPage() {
                                     <option value="30d">Last 30 Days</option>
                                 </select>
                             </div>
+
+                            {/* Active filters indicator */}
+                            {filteredLogs.length !== auditLogs.length && (
+                                <div className="mt-3 flex items-center gap-2 text-xs text-blue-600 bg-blue-50 px-3 py-1.5 rounded-full w-fit">
+                                    <div className="w-1.5 h-1.5 bg-blue-500 rounded-full animate-pulse"></div>
+                                    <span>Showing {filteredLogs.length} of {auditLogs.length} logs</span>
+                                    <button
+                                        onClick={() => {
+                                            setSearchTerm("");
+                                            setSelectedModule("");
+                                            setSelectedTimeRange("");
+                                        }}
+                                        className="ml-2 text-blue-600 hover:text-blue-800 font-medium underline"
+                                    >
+                                        Clear filters
+                                    </button>
+                                </div>
+                            )}
                         </div>
 
                         {/* Table */}
                         <div className="overflow-x-auto">
-                            <table className="w-full">
-                                <thead className="bg-slate-50 border-b border-slate-200">
-                                    <tr>
-                                        <th className="px-6 py-4 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider">Timestamp</th>
-                                        <th className="px-6 py-4 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider">Action</th>
-                                        <th className="px-6 py-4 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider">Module</th>
-                                        <th className="px-6 py-4 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider">User</th>
-                                        <th className="px-6 py-4 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider">Details</th>
-                                        <th className="px-6 py-4 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider">Status</th>
-                                        <th className="px-6 py-4 text-right text-xs font-semibold text-slate-600 uppercase tracking-wider">Actions</th>
-                                    </tr>
-                                </thead>
-                                <tbody className="divide-y divide-slate-200">
+                            <Table>
+                                <TableHeader className="bg-slate-50/50">
+                                    <TableRow>
+                                        <TableHead className="px-6 py-4 text-xs font-semibold text-slate-600 uppercase tracking-wider">Timestamp</TableHead>
+                                        <TableHead className="px-6 py-4 text-xs font-semibold text-slate-600 uppercase tracking-wider">Action</TableHead>
+                                        <TableHead className="px-6 py-4 text-xs font-semibold text-slate-600 uppercase tracking-wider">Module</TableHead>
+                                        <TableHead className="px-6 py-4 text-xs font-semibold text-slate-600 uppercase tracking-wider">User</TableHead>
+                                        <TableHead className="px-6 py-4 text-xs font-semibold text-slate-600 uppercase tracking-wider">Details</TableHead>
+                                        <TableHead className="px-6 py-4 text-xs font-semibold text-slate-600 uppercase tracking-wider">Status</TableHead>
+                                        <TableHead className="px-6 py-4 text-right text-xs font-semibold text-slate-600 uppercase tracking-wider">Actions</TableHead>
+                                    </TableRow>
+                                </TableHeader>
+                                <TableBody>
                                     {loading ? (
-                                        <tr>
-                                            <td colSpan={6} className="px-6 py-16 text-center">
-                                                <div className="flex justify-center">
-                                                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+                                        <TableRow>
+                                            <TableCell colSpan={7} className="px-6 py-16 text-center">
+                                                <div className="flex flex-col items-center justify-center">
+                                                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mb-3"></div>
+                                                    <p className="text-slate-500">Loading audit logs...</p>
                                                 </div>
-                                                <p className="mt-2 text-slate-500">Loading audit logs...</p>
-                                            </td>
-                                        </tr>
+                                            </TableCell>
+                                        </TableRow>
                                     ) : filteredLogs.length > 0 ? (
                                         filteredLogs.map((log) => (
-                                            <tr key={log.id} className="hover:bg-slate-50 transition-colors">
-                                                <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-500">
+                                            <TableRow key={log.id} className="hover:bg-slate-50 transition-colors group">
+                                                <TableCell className="px-6 py-4 text-sm text-slate-500">
                                                     {format(new Date(log.timestamp), 'PPpp')}
-                                                </td>
-                                                <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-slate-900">
+                                                </TableCell>
+                                                <TableCell className="px-6 py-4 text-sm font-medium text-slate-900">
                                                     {log.action}
-                                                </td>
-                                                <td className="px-6 py-4 whitespace-nowrap">
-                                                    <span className={`px-2 py-1 text-xs font-semibold rounded-full ${getModuleColor(log.module)}`}>
+                                                </TableCell>
+                                                <TableCell className="px-6 py-4">
+                                                    <span className={`px-3 py-1 text-xs font-semibold rounded-full ${getModuleColor(log.module)}`}>
                                                         {log.module}
                                                     </span>
-                                                </td>
-                                                <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-600">
-                                                    {(typeof log.user === 'object' && log.user) ? log.user.name : (log.user || "Unknown")}
-                                                </td>
-                                                <td className="px-6 py-4 text-sm text-slate-600 max-w-xs truncate" title={log.details}>
+                                                </TableCell>
+                                                <TableCell className="px-6 py-4 text-sm text-slate-600 max-w-[150px] truncate" title={log.actorName || (typeof log.user === 'object' && log.user ? log.user.name : String(log.user))}>
+                                                    {log.actorName || (typeof log.user === 'object' && log.user ? log.user.name : (log.user || "Unknown"))}
+                                                </TableCell>
+                                                <TableCell className="px-6 py-4 text-sm text-slate-600 max-w-[250px] truncate" title={log.details}>
                                                     {log.details}
-                                                </td>
-                                                <td className="px-6 py-4 whitespace-nowrap">
-                                                    <span className={`flex items-center gap-1.5 text-xs font-medium
-                                                        ${log.status === 'Success' ? 'text-green-600' :
-                                                            log.status === 'Warning' ? 'text-amber-600' :
-                                                                'text-red-600'}`}>
-                                                        <span className={`w-1.5 h-1.5 rounded-full ${log.status === 'Success' ? 'bg-green-600' :
+                                                </TableCell>
+                                                <TableCell className="px-6 py-4">
+                                                    <span className={`inline-flex items-center gap-1.5 px-2 py-1 rounded-full text-xs font-medium ${log.status === 'Success' ? 'bg-green-100 text-green-800' :
+                                                        log.status === 'Warning' ? 'bg-amber-100 text-amber-800' :
+                                                            'bg-red-100 text-red-800'
+                                                        }`}>
+                                                        <span className={`w-2 h-2 rounded-full ${log.status === 'Success' ? 'bg-green-600' :
                                                             log.status === 'Warning' ? 'bg-amber-600' :
                                                                 'bg-red-600'
                                                             }`}></span>
                                                         {log.status}
                                                     </span>
-
-                                                </td>
-                                                <td className="px-6 py-4 whitespace-nowrap text-right">
+                                                </TableCell>
+                                                <TableCell className="px-6 py-4 text-right">
                                                     <button
                                                         onClick={() => handleViewDetails(log)}
-                                                        className="p-2 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
+                                                        className="p-2 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-all group-hover:bg-blue-50"
                                                         title="View Details"
                                                     >
                                                         <Eye className="h-4 w-4" />
                                                     </button>
-                                                </td>
-                                            </tr>
+                                                </TableCell>
+                                            </TableRow>
                                         ))
                                     ) : (
-                                        <tr>
-                                            <td colSpan={6} className="px-6 py-16 text-center">
+                                        <TableRow>
+                                            <TableCell colSpan={7} className="px-6 py-16 text-center">
                                                 <div className="flex flex-col items-center justify-center">
-                                                    <FileText className="h-16 w-16 text-slate-300 mb-4" />
-                                                    <p className="text-slate-600 font-medium mb-1">No logs found</p>
-                                                    <p className="text-sm text-slate-500">
-                                                        {searchTerm || selectedModule ? "Try adjusting your filters" : "Audit logs will appear here once actions are performed"}
+                                                    <FileText className="h-16 w-16 text-slate-400 mb-4" />
+                                                    <h3 className="text-lg font-semibold text-slate-900 mb-1">No logs found</h3>
+                                                    <p className="text-sm text-slate-500 max-w-md">
+                                                        {searchTerm || selectedModule || selectedTimeRange
+                                                            ? "Try adjusting your search term or filters to see matching logs."
+                                                            : "Audit logs will appear here once system activities are performed."
+                                                        }
                                                     </p>
                                                 </div>
-                                            </td>
-                                        </tr>
+                                            </TableCell>
+                                        </TableRow>
                                     )}
-                                </tbody>
-                            </table>
+                                </TableBody>
+                            </Table>
                         </div>
                     </div>
                 </main>
@@ -255,6 +328,6 @@ export default function AuditLogsPage() {
                 onClose={() => setIsModalOpen(false)}
                 log={selectedLog}
             />
-        </div >
+        </div>
     );
 }

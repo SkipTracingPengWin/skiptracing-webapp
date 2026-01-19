@@ -43,7 +43,7 @@ export default function LandingPage() {
                                 Reduce time-to-recovery using automated verification, field agent tracking & regulatory audit trails. Built for NBFCs, Banks & Collection Agencies.
                             </p>
                             <div className="flex flex-col sm:flex-row gap-4 pt-2">
-                                <Link href="/register" className="bg-blue-600 hover:bg-blue-700 text-white px-8 py-4 rounded-lg font-bold text-lg transition-all shadow-lg hover:shadow-blue-500/25 flex items-center justify-center gap-2">
+                                <Link href="/auth/register" className="bg-blue-600 hover:bg-blue-700 text-white px-8 py-4 rounded-lg font-bold text-lg transition-all shadow-lg hover:shadow-blue-500/25 flex items-center justify-center gap-2">
                                     Get Started Now <ArrowRight className="h-5 w-5" />
                                 </Link>
                                 <button className="bg-white border border-slate-200 hover:border-slate-300 hover:bg-slate-50 text-slate-700 px-8 py-4 rounded-lg font-bold text-lg transition-all flex items-center justify-center gap-2 shadow-sm">

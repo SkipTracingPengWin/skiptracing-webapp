@@ -75,10 +75,12 @@ export default function LogDetailsModal({ open, onClose, log }: LogDetailsModalP
                                         {userInitial}
                                     </div>
                                     <div className="flex-1 min-w-0">
-                                        <div className="font-bold text-slate-900 text-lg truncate">{userName}</div>
-                                        <div className="text-sm text-slate-500 flex items-center gap-1.5">
+                                        <div className="font-bold text-slate-900 text-lg truncate">
+                                            {log.actorName || (typeof log.user === 'object' ? log.user.name : (log.user || "Unknown"))}
+                                        </div>
+                                        <div className="text-sm text-slate-500 flex items-center gap-1.5 capitalize">
                                             <Shield className="h-3 w-3" />
-                                            System Administrator
+                                            {log.actorRole || "System User"}
                                         </div>
                                     </div>
                                 </div>

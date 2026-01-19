@@ -3,14 +3,8 @@ import { devtools } from "zustand/middleware";
 import type { RecoveryAction } from "@/types/recoveryction.type";
 import { recoveryService } from "@/services/recovery.services";
 import { borrowerService } from "@/services/borrowers.services";
-import { agentServices } from "@/services/agent.services";
 
 interface Borrower {
-  id: string;
-  name: string;
-}
-
-interface Agent {
   id: string;
   name: string;
 }
@@ -18,7 +12,6 @@ interface Agent {
 interface RecoveryActionsState {
   actions: RecoveryAction[];
   borrowers: Borrower[];
-  agents: Agent[];
   filteredActions: RecoveryAction[];
 
   filterType: string;
@@ -29,9 +22,9 @@ interface RecoveryActionsState {
   error: string | null;
 
   fetchActions: () => Promise<void>;
-  addAction: (action: RecoveryAction) => Promise<void>;
-  updateAction: (index: number, updates: Partial<RecoveryAction>) => Promise<void>;
-  deleteAction: (index: number) => Promise<void>;
+  addAction: (action: Partial<RecoveryAction>) => Promise<void>;
+  updateAction: (id: string, updates: Partial<RecoveryAction>) => Promise<void>;
+  deleteAction: (id: string) => Promise<void>;
 
   setFilterType: (type: string) => void;
   setFilterStatus: (status: string) => void;
@@ -41,13 +34,11 @@ interface RecoveryActionsState {
 
 const initialActions: RecoveryAction[] = [];
 const initialBorrowers: Borrower[] = [];
-const initialAgents: Agent[] = [];
 
 export const useRecoveryActionsStore = create<RecoveryActionsState>()(
   devtools((set, get) => ({
     actions: initialActions,
     borrowers: initialBorrowers,
-    agents: initialAgents,
     filteredActions: initialActions,
 
     filterType: "All Types",
@@ -62,23 +53,26 @@ export const useRecoveryActionsStore = create<RecoveryActionsState>()(
       set({ isLoading: true, error: null });
 
       try {
-        const [actionsData, borrowersData, agentsData] = await Promise.all([
+        const [actionsData, borrowersData] = await Promise.all([
           recoveryService.getActions(),
-          borrowerService.getAll(),
-          agentServices.getAll()
+          borrowerService.getAll()
         ]);
 
+        // Map actions with borrower names
         const mappedActions = actionsData.map((action: any) => ({
           ...action,
-          borrower: borrowersData.find((b: any) => b.id === action.borrowerId || b._id === action.borrowerId)?.name || action.borrower || "Unknown Borrower",
-          agent: agentsData.find((a: any) => a.id === action.agentId || a._id === action.agentId)?.name || action.agent || "Unassigned"
+          borrowerName: borrowersData.find((b: any) =>
+            (b.id === action.borrowerId || b._id === action.borrowerId)
+          )?.name || "Unknown Borrower"
         }));
 
         set({
           actions: mappedActions,
           filteredActions: mappedActions,
-          borrowers: borrowersData.map((b: any) => ({ id: b.id || b._id, name: b.name })),
-          agents: agentsData.map((a: any) => ({ id: a.id || a._id, name: a.name })),
+          borrowers: borrowersData.map((b: any) => ({
+            id: b.id || b._id,
+            name: b.name
+          })),
           isLoading: false,
         });
       } catch (error: any) {
@@ -96,48 +90,65 @@ export const useRecoveryActionsStore = create<RecoveryActionsState>()(
     },
 
     /* ---------------- MUTATIONS ---------------- */
-    addAction: async (action) => {
+    addAction: async (actionData) => {
       set({ isLoading: true, error: null });
       try {
-        const newAction = await recoveryService.createAction(action);
+        // API expects only: borrowerId, type, status, executedAt (optional)
+        const payload: any = {
+          borrowerId: actionData.borrowerId,
+          type: actionData.type,
+          status: actionData.status || "PENDING",
+        };
 
-        // Re-map the new action with names from the store
+        // Only add executedAt if it has a value
+        if (actionData.executedAt) {
+          payload.executedAt = actionData.executedAt;
+        }
+
+        console.log("📤 Sending recovery action payload:", JSON.stringify(payload, null, 2));
+        const newAction = await recoveryService.createAction(payload);
+
+        // Map the new action with borrower name
         const state = get();
-        const borrowerName = state.borrowers.find((b) => b.id === (action as any).borrowerId)?.name || "Unknown";
-        const agentName = state.agents.find((a) => a.id === (action as any).agentId)?.name || "Unassigned";
+        const borrowerName = state.borrowers.find((b) =>
+          b.id === newAction.borrowerId
+        )?.name || "Unknown";
 
-        const mergedAction = { ...action, ...newAction, borrower: borrowerName, agent: agentName };
+        const mergedAction = {
+          ...newAction,
+          borrowerName
+        };
 
         set((state) => ({
           actions: [...state.actions, mergedAction],
-          filteredActions: [...state.actions, mergedAction], // Note: this doesn't re-apply filters immediately, but keeps list sync
+          filteredActions: [...state.filteredActions, mergedAction],
           isLoading: false
         }));
 
-        // Re-apply filters to ensure view is correct
+        // Re-apply filters
         get().applyFilters();
 
       } catch (error: any) {
-        set({ error: error.message, isLoading: false });
+        console.error("❌ Failed to create recovery action:", error);
+        console.error("📋 Response data:", JSON.stringify(error.response?.data, null, 2));
+        console.error("📊 Response status:", error.response?.status);
+        console.error("📝 Error message:", error.message);
+        set({ error: error.response?.data?.message || error.message, isLoading: false });
+        throw error;
       }
     },
 
-    updateAction: async (index, updates) => {
-      const state = get();
-      const actionToUpdate = state.actions[index];
-      if (!actionToUpdate) return;
-
+    updateAction: async (id, updates) => {
       set({ isLoading: true, error: null });
       try {
-        // @ts-ignore
-        const updated = await recoveryService.updateAction(actionToUpdate.id || actionToUpdate._id, updates);
+        const updated = await recoveryService.updateAction(id, updates);
 
         set((state) => {
-          const newActions = [...state.actions];
-          newActions[index] = { ...newActions[index], ...updated };
+          const newActions = state.actions.map(action =>
+            action.id === id ? { ...action, ...updated } : action
+          );
           return {
             actions: newActions,
-            // We should re-run applyFilters, but for now we just update
             filteredActions: newActions,
             isLoading: false
           };
@@ -145,26 +156,23 @@ export const useRecoveryActionsStore = create<RecoveryActionsState>()(
         get().applyFilters();
       } catch (error: any) {
         set({ error: error.message, isLoading: false });
+        throw error;
       }
     },
 
-    deleteAction: async (index) => {
-      const state = get();
-      const actionToDelete = state.actions[index];
-      if (!actionToDelete) return;
-
+    deleteAction: async (id) => {
       set({ isLoading: true, error: null });
       try {
-        // @ts-ignore
-        await recoveryService.deleteAction(actionToDelete.id || actionToDelete._id);
+        await recoveryService.deleteAction(id);
         set((state) => ({
-          actions: state.actions.filter((_, i) => i !== index),
-          filteredActions: state.actions.filter((_, i) => i !== index),
+          actions: state.actions.filter((a) => a.id !== id),
+          filteredActions: state.filteredActions.filter((a) => a.id !== id),
           isLoading: false
         }));
         get().applyFilters();
       } catch (error: any) {
         set({ error: error.message, isLoading: false });
+        throw error;
       }
     },
 
@@ -193,9 +201,7 @@ export const useRecoveryActionsStore = create<RecoveryActionsState>()(
       if (searchQuery.trim()) {
         const q = searchQuery.toLowerCase();
         filtered = filtered.filter(
-          (a) =>
-            a.borrower.toLowerCase().includes(q) ||
-            a.agent.toLowerCase().includes(q)
+          (a) => a.borrowerName?.toLowerCase().includes(q)
         );
       }
 

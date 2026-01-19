@@ -99,6 +99,14 @@ export const borrowerService = {
             return response.data;
         } catch (error: any) {
             const status = error.response?.status;
+
+            // If the borrower is not found (404), it's already deleted.
+            // We should treat this as a success so the UI can update.
+            if (status === 404) {
+                console.warn(`⚠️ Borrower ${id} not found (404). Treating as already deleted.`);
+                return { message: "Borrower already deleted or not found" };
+            }
+
             const errorMsg = error.response?.data?.message || error.message;
             const url = error.config?.url || "unknown";
 
@@ -113,9 +121,7 @@ Message: ${errorMsg}
 
             console.error(diagnosticInfo);
 
-            if (status === 404) {
-                alert(`DEBUG INFO:\nThe server returned 404 (Not Found).\n\nAction: Please check if your backend has a route defined as DELETE /api/borrowers/:id\n\nFull URL attempted: ${api.defaults.baseURL}${url}`);
-            } else if (status === 403) {
+            if (status === 403) {
                 alert("❌ ACTION DENIED\n\nOnly Administrators (ADMIN) are authorized to delete borrowers.\nManagers and Agents do not have permission for this action.");
             } else {
                 alert(diagnosticInfo);
