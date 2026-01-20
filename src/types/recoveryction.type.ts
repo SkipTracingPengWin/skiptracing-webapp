@@ -23,6 +23,7 @@ export interface RecoveryAction {
   status: RecoveryActionStatus | string;
   note?: string;
   executedAt?: string | Date;
+  executedBy?: string;
   createdAt: string | Date;
 
   // Client-side display fields (populated from relationships)

@@ -100,9 +100,17 @@ export const useRecoveryActionsStore = create<RecoveryActionsState>()(
           status: actionData.status || "PENDING",
         };
 
-        // Only add executedAt if it has a value
+        // Only add optional fields if they have a value
         if (actionData.executedAt) {
           payload.executedAt = actionData.executedAt;
+        }
+
+        if (actionData.note) {
+          payload.note = actionData.note;
+        }
+
+        if (actionData.executedBy) {
+          payload.executedBy = actionData.executedBy;
         }
 
         console.log("📤 Sending recovery action payload:", JSON.stringify(payload, null, 2));

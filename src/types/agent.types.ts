@@ -6,7 +6,7 @@ export interface Agent {
     phone: string;
     location: string;
     cases: number;
-    status: "Active" | "Busy" | "Offline" | "On Leave";
+    status: AgentStatus;
     avatar?: string;
     specialization?: string[];
     successRate?: number;
@@ -14,5 +14,4 @@ export interface Agent {
     joinedDate: string;
     password?: string;
 }
-
-export type AgentStatus = "Active" | "Busy" | "Offline" | "On Leave";
+export type AgentStatus = "ONLINE" | "OFFLINE" | "BUSY" | "ON_BREAK";

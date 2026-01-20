@@ -16,6 +16,7 @@ export const useSocialProfilesStore = create<SocialProfilesState>()(
       selectedProfileId: null,
       searchResults: {},
       selectedBorrowerIds: [],
+      selectedAccounts: {},
       setProfiles: (profiles) => set({ profiles }),
       setLoading: (loading) => set({ loading }),
       setSelectedProfile: (id) => set({ selectedProfileId: id }),
@@ -45,6 +46,13 @@ export const useSocialProfilesStore = create<SocialProfilesState>()(
       }),
       removeSelectedBorrower: (id: string) => set((state) => ({
         selectedBorrowerIds: state.selectedBorrowerIds.filter(bid => bid !== id)
+      })),
+      deleteBorrower: (id: string) => get().removeSelectedBorrower(id),
+      setSelectedAccounts: (borrowerId: string, accounts: any[]) => set((state) => ({
+        selectedAccounts: {
+          ...state.selectedAccounts,
+          [borrowerId]: accounts
+        }
       }))
     }),
     {
@@ -52,3 +60,4 @@ export const useSocialProfilesStore = create<SocialProfilesState>()(
     }
   )
 );
+

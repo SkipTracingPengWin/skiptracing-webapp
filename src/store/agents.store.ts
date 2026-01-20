@@ -134,8 +134,16 @@ export const useAgentStore = create<AgentState>()(
                     const updatedData = unwrapData(result, 'agent');
 
                     set((state) => {
-                        const existing = state.agents.find(a => String(a.id) === String(id));
-                        if (!existing) return { ...state, loading: false };
+                        // Find by internal id OR userId used for update
+                        const existing = state.agents.find(a =>
+                            String(a.id) === String(id) ||
+                            (a.userId && String(a.userId) === String(id))
+                        );
+
+                        if (!existing) {
+                            console.warn(`⚠️ Store: Failed to update local agent state. ID ${id} not found in list.`);
+                            return { ...state, loading: false };
+                        }
 
                         const normalized = normalizeAgent({
                             ...existing,
@@ -144,7 +152,7 @@ export const useAgentStore = create<AgentState>()(
 
                         return {
                             agents: state.agents.map((agent) =>
-                                String(agent.id) === String(id) ? normalized : agent
+                                (String(agent.id) === String(existing.id)) ? normalized : agent
                             ),
                             loading: false,
                         };

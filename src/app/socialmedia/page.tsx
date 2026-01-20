@@ -14,8 +14,8 @@ import { useBorrowerStore } from "@/store/borrowers.store";
 import { useSocialProfilesStore } from "@/store/socialmedia.store";
 import type { Borrower } from "@/types";
 
-// Helper to generate social buttons based on relatedLinks and searchResults
-const getSocialProfiles = (borrower: Borrower, searchResults: any[] = []) => {
+// Helper to generate social buttons based on selectedAccounts, relatedLinks and searchResults
+const getSocialProfiles = (borrower: Borrower, searchResults: any[] = [], selectedAccounts: any[] = []) => {
   const supportedPlatforms = [
     {
       name: 'Instagram',
@@ -48,6 +48,24 @@ const getSocialProfiles = (borrower: Borrower, searchResults: any[] = []) => {
   ];
 
   const profiles: any[] = [];
+
+  // 1. Prioritize Selected Accounts (Manual selection from popup)
+  if (selectedAccounts && selectedAccounts.length > 0) {
+    selectedAccounts.forEach(account => {
+      const config = supportedPlatforms.find(p =>
+        p.matchKeys.some(key => account.platform?.toLowerCase().includes(key)) ||
+        p.matchKeys.some(key => account.source?.toLowerCase().includes(key))
+      );
+
+      profiles.push({
+        name: config?.name || account.platform || account.source || 'Social',
+        icon: config?.icon || Instagram, // Fallback icon
+        bg: config?.bg || "bg-slate-500",
+        href: account.link || account.url
+      });
+    });
+    return profiles;
+  }
 
   supportedPlatforms.forEach(platform => {
     // 1. Check Search Results First
@@ -92,9 +110,10 @@ export default function SocialMediaPage() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [resultsModalOpen, setResultsModalOpen] = useState(false);
   const [resultBorrower, setResultBorrower] = useState<Borrower | null>(null);
+  const [openMenuId, setOpenMenuId] = useState<string | null>(null);
 
   const { borrowers, getBorrowerById } = useBorrowerStore();
-  const { selectedBorrowerIds, addSelectedBorrower, removeSelectedBorrower, searchResults } = useSocialProfilesStore();
+  const { selectedBorrowerIds, addSelectedBorrower, removeSelectedBorrower, deleteBorrower, searchResults, selectedAccounts } = useSocialProfilesStore();
 
   // Load selected borrowers data
   useEffect(() => {
@@ -109,9 +128,8 @@ export default function SocialMediaPage() {
       }
     });
   }, [selectedBorrowerIds, getBorrowerById, borrowers, removeSelectedBorrower]);
-  // Handle borrower selection from modal
+  // Handle borrower selection from modal - triggered after search is done
   const handleBorrowerSelect = (borrower: Borrower) => {
-    addSelectedBorrower(String(borrower.id));
     setResultBorrower(borrower);
     setResultsModalOpen(true);
   };
@@ -154,7 +172,7 @@ export default function SocialMediaPage() {
           style: getRiskStyle(borrower.risk || (borrower.verified ? "Low" : "Medium"))
         },
         avatarColor: ["bg-purple-100 text-purple-600", "bg-blue-100 text-blue-600", "bg-pink-100 text-pink-600"][index % 3],
-        socials: getSocialProfiles(borrower, borrowerSearchResults)
+        socials: getSocialProfiles(borrower, borrowerSearchResults, selectedAccounts[String(borrower.id)] || [])
       };
     }).filter((p: any) =>
       p.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -189,10 +207,19 @@ export default function SocialMediaPage() {
     ];
   }, [profiles]);
 
+  // Close menu on click outside
+  useEffect(() => {
+    const handleClickOutside = () => setOpenMenuId(null);
+    if (openMenuId) {
+      window.addEventListener('click', handleClickOutside);
+    }
+    return () => window.removeEventListener('click', handleClickOutside);
+  }, [openMenuId]);
+
   return (
     <div className="flex h-screen bg-white font-sans">
       <Sidebar />
-      <div className="flex-1 ml-64 flex flex-col overflow-hidden bg-slate-50/50">
+      <div className="flex-1 md:ml-64 flex flex-col overflow-hidden bg-slate-50/50">
         <Header />
 
         <main className="flex-1 overflow-y-auto p-8">
@@ -285,8 +312,42 @@ export default function SocialMediaPage() {
                             <p className="text-xs font-medium text-slate-400 mt-0.5">{profile.loanId}</p>
                           </div>
                         </div>
-                        <div className="flex flex-col items-end gap-2">
-                          <MoreHorizontal className="h-5 w-5 text-slate-300 cursor-pointer hover:text-slate-500" />
+                        <div className="relative">
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setOpenMenuId(openMenuId === String(profile.id) ? null : String(profile.id));
+                            }}
+                            className="p-1 rounded-full hover:bg-slate-100 transition-colors"
+                          >
+                            <MoreHorizontal className="h-5 w-5 text-slate-400 hover:text-slate-600" />
+                          </button>
+
+                          {openMenuId === String(profile.id) && (
+                            <div className="absolute right-0 mt-2 w-48 bg-white rounded-xl shadow-xl border border-slate-100 py-2 z-20 animate-in fade-in slide-in-from-top-2 duration-200">
+                              <button
+                                onClick={() => {
+                                  setResultBorrower(borrowers.find(b => String(b.id) === String(profile.id)) || null);
+                                  setResultsModalOpen(true);
+                                }}
+                                className="w-full text-left px-4 py-2 text-sm text-slate-700 hover:bg-slate-50 flex items-center gap-2"
+                              >
+                                <Search className="h-4 w-4 text-slate-400" />
+                                View Search Results
+                              </button>
+                              <div className="h-px bg-slate-100 my-1"></div>
+                              <button
+                                onClick={() => {
+                                  deleteBorrower(String(profile.id));
+                                  setOpenMenuId(null);
+                                }}
+                                className="w-full text-left px-4 py-2 text-sm text-rose-600 hover:bg-rose-50 flex items-center gap-2"
+                              >
+                                <Users className="h-4 w-4 text-rose-400" />
+                                Delete Borrower
+                              </button>
+                            </div>
+                          )}
                         </div>
                       </div>
 
@@ -362,7 +423,6 @@ export default function SocialMediaPage() {
         isOpen={resultsModalOpen}
         onClose={() => setResultsModalOpen(false)}
         borrower={resultBorrower}
-        socials={resultBorrower ? getSocialProfiles(resultBorrower, searchResults[String(resultBorrower.id)]) : []}
       />
     </div>
   );

@@ -65,7 +65,7 @@ const AddNewAgentModal: React.FC = () => {
     location: '',
     password: '',
     joinedDate: new Date().toISOString().split('T')[0],
-    status: 'Active',
+    status: 'ONLINE',
     cases: 0,
   });
   const [error, setError] = useState<string | null>(null);
@@ -103,7 +103,7 @@ const AddNewAgentModal: React.FC = () => {
             location: agentToEdit.location || '',
             password: '',
             joinedDate: agentToEdit.joinedDate ? agentToEdit.joinedDate.split('T')[0] : new Date().toISOString().split('T')[0],
-            status: agentToEdit.status || 'Active',
+            status: agentToEdit.status || 'ONLINE',
             cases: agentToEdit.cases || 0,
           });
         }
@@ -117,7 +117,7 @@ const AddNewAgentModal: React.FC = () => {
           location: '',
           password: '',
           joinedDate: new Date().toISOString().split('T')[0],
-          status: 'Active',
+          status: 'ONLINE',
           cases: 0,
         });
       }
@@ -138,13 +138,13 @@ const AddNewAgentModal: React.FC = () => {
         location: selectedAgent.location || '',
         password: '',
         joinedDate: selectedAgent.joinedDate ? selectedAgent.joinedDate.split('T')[0] : new Date().toISOString().split('T')[0],
-        status: selectedAgent.status || 'Active',
+        status: selectedAgent.status || 'ONLINE',
         cases: selectedAgent.cases || 0,
       });
     }
   }, [isAddAgentModalOpen, selectedAgent, modalMode]);
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
     setFormData((prevData) => ({
       ...prevData,
@@ -298,6 +298,25 @@ const AddNewAgentModal: React.FC = () => {
                 value={formData.joinedDate || ''}
                 onChange={handleChange}
               />
+
+              <div className="space-y-1">
+                <label htmlFor="status" className="text-sm font-medium text-slate-700">
+                  Status <span className="text-red-500">*</span>
+                </label>
+                <select
+                  id="status"
+                  name="status"
+                  required
+                  value={formData.status}
+                  onChange={handleChange}
+                  className="w-full rounded-lg border border-slate-300 bg-white px-4 py-2.5 text-slate-800 shadow-sm focus:border-sky-500 focus:ring-1 focus:ring-sky-500 transition duration-150"
+                >
+                  <option value="ONLINE">Online</option>
+                  <option value="OFFLINE">Offline</option>
+                  <option value="BUSY">Busy</option>
+                  <option value="ON_BREAK">On Break</option>
+                </select>
+              </div>
             </>
           )}
 

@@ -1,4 +1,4 @@
-// types/social-profiles
+// types/social-profilesthth
 export interface SocialPlatform {
   id: number;
   name: string;
@@ -41,10 +41,13 @@ export interface SocialProfilesState {
   selectedProfileId: string | null;
   searchResults: Record<string, SocialMediaSearchResult[]>; // borrowerId -> results
   selectedBorrowerIds: string[];
+  selectedAccounts: Record<string, SocialMediaSearchResult[]>; // borrowerId -> selected accounts
   setProfiles: (profiles: SocialProfile[]) => void;
   setLoading: (loading: boolean) => void;
   setSelectedProfile: (id: string | null) => void;
   performSearch: (borrowerId: string, name: string) => Promise<void>;
   addSelectedBorrower: (id: string) => void;
   removeSelectedBorrower: (id: string) => void;
+  deleteBorrower: (id: string) => void;
+  setSelectedAccounts: (borrowerId: string, accounts: SocialMediaSearchResult[]) => void;
 }

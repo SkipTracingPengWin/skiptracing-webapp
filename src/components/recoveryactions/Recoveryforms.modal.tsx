@@ -58,6 +58,37 @@ function DateTimeField({ label, isRequired = false, ...props }: any) {
     );
 }
 
+// Helper component for text input field
+function InputField({ label, isRequired = false, ...props }: any) {
+    return (
+        <div className="mb-4">
+            <label className="block text-sm font-semibold text-slate-800 mb-1">
+                {label} {isRequired && <span className="text-red-500">*</span>}
+            </label>
+            <input
+                type="text"
+                className="w-full px-4 py-2.5 border border-slate-300 rounded-lg text-sm bg-white shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition duration-150 text-slate-700"
+                {...props}
+            />
+        </div>
+    );
+}
+
+// Helper component for textarea field
+function TextAreaField({ label, isRequired = false, ...props }: any) {
+    return (
+        <div className="mb-4">
+            <label className="block text-sm font-semibold text-slate-800 mb-1">
+                {label} {isRequired && <span className="text-red-500">*</span>}
+            </label>
+            <textarea
+                className="w-full px-4 py-2.5 border border-slate-300 rounded-lg text-sm bg-white shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition duration-150 text-slate-700 min-h-[100px]"
+                {...props}
+            />
+        </div>
+    );
+}
+
 export default function ActionModal({
     isOpen,
     onClose,
@@ -73,6 +104,8 @@ export default function ActionModal({
         type: "",
         status: "PENDING",
         executedAt: "",
+        executedBy: "",
+        note: "",
     });
 
     useEffect(() => {
@@ -89,6 +122,8 @@ export default function ActionModal({
                 type: "",
                 status: "PENDING",
                 executedAt: "",
+                executedBy: "",
+                note: "",
             });
         }
     }, [isOpen]);
@@ -114,6 +149,8 @@ export default function ActionModal({
                 borrowerId: formData.borrowerId,
                 type: formData.type,
                 status: formData.status,
+                executedBy: formData.executedBy,
+                note: formData.note,
             };
 
             // Only add executedAt if it has a value
@@ -210,6 +247,24 @@ export default function ActionModal({
                         label="Execution Date & Time (optional)"
                         name="executedAt"
                         value={formData.executedAt}
+                        onChange={handleChange}
+                    />
+
+                    {/* Executed By (Optional) */}
+                    <InputField
+                        label="Executed By (optional)"
+                        name="executedBy"
+                        placeholder="Name of the person who executed the action"
+                        value={formData.executedBy}
+                        onChange={handleChange}
+                    />
+
+                    {/* Note (Optional) */}
+                    <TextAreaField
+                        label="Note (optional)"
+                        name="note"
+                        placeholder="Additional details about the action"
+                        value={formData.note}
                         onChange={handleChange}
                     />
 
