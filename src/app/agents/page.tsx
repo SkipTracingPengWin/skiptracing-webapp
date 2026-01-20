@@ -202,7 +202,7 @@ export default function AgentsPage() {
     },
     {
       icon: UserCheck,
-      label: "Active",
+      label: "online",
       value: agents.filter((a: Agent) => (a.status || "").toLowerCase() === "active").length,
       color: "bg-green-500",
     },
@@ -277,7 +277,7 @@ export default function AgentsPage() {
               className="px-4 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none text-sm bg-slate-50/50 min-w-[140px]"
             >
               <option value="All">All Statuses</option>
-              <option value="Active">Active</option>
+              <option value="online">Online</option>
               <option value="Busy">Busy</option>
               <option value="Offline">Offline</option>
             </select>
