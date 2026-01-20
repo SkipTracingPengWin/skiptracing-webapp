@@ -383,15 +383,15 @@ export default function AssignmentsPage() {
     <div className="flex h-screen bg-slate-50">
       <Sidebar />
 
-      <div className="flex-1 ml-64 flex flex-col overflow-hidden">
+      <div className="flex-1 md:ml-64 flex flex-col overflow-hidden">
         <Header />
 
-        <main className="flex-1 overflow-y-auto p-6 custom-scrollbar">
+        <main className="flex-1 overflow-y-auto p-4 sm:p-6 custom-scrollbar">
           {/* Page Header */}
-          <div className="mb-6 flex items-center justify-between">
+          <div className="mb-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
             <div>
-              <h1 className="text-2xl font-bold text-slate-900">Agent Assignments</h1>
-              <p className="text-sm text-slate-600 mt-1">Manage and track borrower-agent assignments</p>
+              <h1 className="text-xl sm:text-2xl font-bold text-slate-900">Agent Assignments</h1>
+              <p className="text-sm text-slate-600 mt-1">Manage borrower-agent assignments</p>
             </div>
 
             {user?.role?.toLowerCase() !== "agent" && (

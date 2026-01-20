@@ -4,7 +4,6 @@ import { useState, useRef, useEffect, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import Sidebar from "@/components/layout/Sidebar";
 import Header from "@/components/layout/Header";
-
 import {
     Download,
     Upload,
@@ -15,7 +14,6 @@ import {
     ChevronDown,
     X
 } from "lucide-react";
-
 import { useBorrowerStore } from "@/store/borrowers.store";
 import { useAuthStore } from "@/store/auth.store";
 import AddBorrowerModal from "@/components/borrowers/AddBorrowerModal";
@@ -121,48 +119,47 @@ export default function BorrowersPage() {
             <div className="flex-1 md:ml-64 flex flex-col overflow-hidden">
                 <Header />
 
-                <main className="flex-1 overflow-y-auto p-6">
-                    {/* PAGE HEADER - ORIGINAL CSS */}
+                <main className="flex-1 overflow-y-auto p-4 sm:p-6">
+                    {/* PAGE HEADER */}
                     <div className="mb-6">
-                        <div className="flex items-center justify-between mb-2">
+                        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-2">
                             <div>
-                                <h1 className="text-2xl font-bold text-slate-900">
+                                <h1 className="text-xl sm:text-2xl font-bold text-slate-900">
                                     Borrower Management
                                 </h1>
                                 <p className="text-sm text-slate-600 mt-1">
-                                    Manage and track all borrower cases • Total:{" "}
-                                    {borrowers.length}
+                                    Total: {borrowers.length} borrowers
                                 </p>
                             </div>
 
                             {user?.role !== "AGENT" && (
-                                <div className="flex items-center gap-3">
-                                    <button className="flex items-center gap-2 px-4 py-2 border rounded-lg hover:bg-slate-50">
+                                <div className="flex flex-wrap items-center gap-2 sm:gap-3">
+                                    <button className="flex items-center gap-2 px-3 sm:px-4 py-2 border rounded-lg hover:bg-slate-50 text-sm">
                                         <Download className="h-4 w-4" />
-                                        <span className="text-sm">Import</span>
+                                        <span className="hidden sm:inline">Import</span>
                                     </button>
 
-                                    <button className="flex items-center gap-2 px-4 py-2 border rounded-lg hover:bg-slate-50">
+                                    <button className="flex items-center gap-2 px-3 sm:px-4 py-2 border rounded-lg hover:bg-slate-50 text-sm">
                                         <Upload className="h-4 w-4" />
-                                        <span className="text-sm">Export</span>
+                                        <span className="hidden sm:inline">Export</span>
                                     </button>
 
                                     <button
                                         onClick={() => setIsModalOpen(true)}
-                                        className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+                                        className="flex items-center gap-2 px-3 sm:px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 text-sm"
                                     >
                                         <Plus className="h-4 w-4" />
-                                        Add Borrower
+                                        <span className="hidden sm:inline">Add Borrower</span>
                                     </button>
                                 </div>
                             )}
                         </div>
                     </div>
 
-                    {/* FILTER BAR - SEARCH AND DROPDOWNS */}
-                    <div className="mb-6 flex flex-wrap items-center gap-4">
+                    {/* FILTER BAR */}
+                    <div className="mb-6 flex flex-col sm:flex-row flex-wrap items-stretch sm:items-center gap-3 sm:gap-4">
                         {/* Search Input */}
-                        <div className="relative flex-1 min-w-[300px] max-w-md">
+                        <div className="relative flex-1 min-w-0 sm:min-w-[200px] sm:max-w-md">
                             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
                             <input
                                 type="text"
@@ -231,9 +228,9 @@ export default function BorrowersPage() {
                         borrowerId={editingBorrowerId}
                     />
 
-                    {/* TABLE - ORIGINAL CSS */}
-                    <div className="bg-white rounded-xl border overflow-hidden shadow-sm">
-                        <Table>
+                    {/* TABLE - Horizontally scrollable on mobile */}
+                    <div className="bg-white rounded-xl border shadow-sm overflow-x-auto">
+                        <Table className="min-w-[900px]">
                             <TableHeader className="bg-slate-50 border-b">
                                 <TableRow>
                                     <TableHead className="px-6 py-3">Borrower</TableHead>

@@ -245,20 +245,20 @@ export default function Header({ title }: HeaderProps) {
   };
 
   return (
-    <header className="bg-white border-b border-slate-200 px-6 py-4 flex items-center justify-between">
-      {/* LEFT: Route Title */}
-      <div className="flex-1">
-        <h1 className="text-xl font-bold text-slate-900">{currentTitle}</h1>
+    <header className="bg-white border-b border-slate-200 px-4 sm:px-6 py-4 flex items-center justify-between ml-0 md:ml-0">
+      {/* LEFT: Route Title - with left padding for hamburger on mobile */}
+      <div className="flex-1 pl-12 md:pl-0">
+        <h1 className="text-lg sm:text-xl font-bold text-slate-900 truncate">{currentTitle}</h1>
       </div>
 
       {/* RIGHT: Search + Notifications + User */}
-      <div className="flex items-center gap-4">
-        {/* Search Bar (right side) */}
-        <div className="relative w-56 md:w-72">
+      <div className="flex items-center gap-2 sm:gap-4">
+        {/* Search Bar - hidden on mobile */}
+        <div className="relative hidden sm:block w-40 md:w-56 lg:w-72">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-400" />
           <input
             type="text"
-            placeholder="Search borrowers, agents..."
+            placeholder="Search..."
             className="w-full pl-10 pr-4 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none text-sm"
           />
         </div>
