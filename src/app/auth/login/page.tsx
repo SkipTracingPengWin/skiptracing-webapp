@@ -2,6 +2,7 @@
 
 
 import Link from "next/link";
+import toast from "react-hot-toast";
 import { Shield, Check, Eye, EyeOff, Mail, Lock, ArrowRight, Sparkles } from "lucide-react";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
@@ -26,6 +27,7 @@ export default function LoginPage() {
 
         try {
             await login({ email, password });
+            toast.success("Login successful!");
 
             // Get the updated user from the store state to handle redirection
             const user = useAuthStore.getState().user;
@@ -52,7 +54,9 @@ export default function LoginPage() {
             }
         } catch (err: any) {
             console.error("Login error:", err);
-            setError(err.message || "Login failed. Please try again.");
+            const message = err.message || "Login failed. Please try again.";
+            setError(message);
+            toast.error(message);
         } finally {
             setLoading(false);
         }

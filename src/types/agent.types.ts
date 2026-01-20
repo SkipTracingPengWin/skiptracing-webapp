@@ -14,4 +14,5 @@ export interface Agent {
     joinedDate: string;
     password?: string;
 }
-export type AgentStatus = "ONLINE" | "OFFLINE" | "BUSY" | "ON_BREAK";
+
+export type AgentStatus = "Active" | "Busy" | "Offline" | "On Leave";

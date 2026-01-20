@@ -1,6 +1,10 @@
 "use client";
 
 import { useEffect } from "react";
+import VerificationStatusWidget from "@/components/dashboard/VerificationStatusWidget";
+import StatsCard from "@/components/dashboard/StatsCard";
+import AlertItem from "@/components/dashboard/AlertItem";
+
 import {
     Users,
     CheckCircle,
@@ -22,46 +26,9 @@ import {
     ComposedChart
 } from 'recharts';
 
-// Stats Card Component
-function StatsCard({ icon: Icon, label, value, trend, color }: any) {
-    return (
-        <div className="bg-white p-6 rounded-xl border border-slate-200 hover:shadow-md transition-shadow">
-            <div className="flex items-start justify-between">
-                <div className="flex-1">
-                    <div className="text-sm text-slate-600 mb-2">{label}</div>
-                    <div className="text-3xl font-bold text-slate-900 mb-1">{value}</div>
-                    {trend && (
-                        <div className="text-xs text-green-600 font-medium">{trend}</div>
-                    )}
-                </div>
-                <div className={`h-12 w-12 rounded-xl flex items-center justify-center ${color}`}>
-                    <Icon className="h-6 w-6 text-white" />
-                </div>
-            </div>
-        </div>
-    );
-}
 
-// Alert Item Component
-function AlertItem({ title, description, type, action }: any) {
-    const colors = {
-        warning: "border-l-orange-500 bg-orange-50",
-        danger: "border-l-red-500 bg-red-50",
-        info: "border-l-blue-500 bg-blue-50"
-    };
 
-    return (
-        <div className={`border-l-4 ${colors[type as keyof typeof colors]} p-4 rounded-r-lg mb-3`}>
-            <div className="flex items-start justify-between">
-                <div className="flex-1">
-                    <div className="font-semibold text-slate-900 text-sm mb-1">{title}</div>
-                    <div className="text-xs text-slate-600">{description}</div>
-                </div>
-                <button className="text-blue-600 text-xs font-medium hover:underline">{action}</button>
-            </div>
-        </div>
-    );
-}
+
 
 export default function AgentDashboard() {
     const { dashboardStats, fetchStats } = useDashboardStatsStore();
@@ -195,48 +162,7 @@ export default function AgentDashboard() {
             {/* Bottom Grid */}
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                 {/* Verification Status */}
-                <div className="bg-white p-6 rounded-xl border border-slate-200">
-                    <h3 className="text-lg font-bold text-slate-900 mb-6">My Verification Status</h3>
-                    <div className="flex items-center justify-center mb-6">
-                        <div className="relative h-40 w-40">
-                            <svg className="transform -rotate-90" viewBox="0 0 100 100">
-                                <circle cx="50" cy="50" r="40" fill="none" stroke="#e2e8f0" strokeWidth="12" />
-                                <circle cx="50" cy="50" r="40" fill="none" stroke="#10b981" strokeWidth="12" strokeDasharray="175 251" />
-                                <circle cx="50" cy="50" r="40" fill="none" stroke="#3b82f6" strokeWidth="12" strokeDasharray="75 251" strokeDashoffset="-175" />
-                                <circle cx="50" cy="50" r="40" fill="none" stroke="#f59e0b" strokeWidth="12" strokeDasharray="50 251" strokeDashoffset="-250" />
-                            </svg>
-                            <div className="absolute inset-0 flex items-center justify-center">
-                                <div className="text-center">
-                                    <div className="text-2xl font-bold text-slate-900">8</div>
-                                    <div className="text-xs text-slate-500">Total</div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    <div className="space-y-3">
-                        <div className="flex items-center justify-between text-sm">
-                            <div className="flex items-center gap-2">
-                                <div className="h-3 w-3 rounded-full bg-green-500"></div>
-                                <span className="text-slate-600">Verified</span>
-                            </div>
-                            <span className="font-semibold text-slate-900">6</span>
-                        </div>
-                        <div className="flex items-center justify-between text-sm">
-                            <div className="flex items-center gap-2">
-                                <div className="h-3 w-3 rounded-full bg-blue-500"></div>
-                                <span className="text-slate-600">Pending</span>
-                            </div>
-                            <span className="font-semibold text-slate-900">1</span>
-                        </div>
-                        <div className="flex items-center justify-between text-sm">
-                            <div className="flex items-center gap-2">
-                                <div className="h-3 w-3 rounded-full bg-orange-500"></div>
-                                <span className="text-slate-600">Failed</span>
-                            </div>
-                            <span className="font-semibold text-slate-900">1</span>
-                        </div>
-                    </div>
-                </div>
+                <VerificationStatusWidget title="My Verification Status" filterByCurrentUser={true} />
 
                 {/* My Assignments */}
                 <div className="bg-white p-6 rounded-xl border border-slate-200">

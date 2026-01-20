@@ -2,6 +2,7 @@
 
 import { useState, useRef, useEffect, useMemo } from "react";
 import { useRouter } from "next/navigation";
+import toast from "react-hot-toast";
 import Sidebar from "@/components/layout/Sidebar";
 import Header from "@/components/layout/Header";
 import {
@@ -17,6 +18,7 @@ import {
 import { useBorrowerStore } from "@/store/borrowers.store";
 import { useAuthStore } from "@/store/auth.store";
 import AddBorrowerModal from "@/components/borrowers/AddBorrowerModal";
+import DeleteBorrowerModal from "@/components/borrowers/DeleteBorrowerModal";
 import ActionMenu from "@/components/borrowers/Boroweractionmodal";
 import { RiskBadge, StatusBadge, VerificationStatus } from "@/components/borrowers/badges";
 import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from "@/components/ui/table";
@@ -27,6 +29,11 @@ export default function BorrowersPage() {
     const router = useRouter();
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [editingBorrowerId, setEditingBorrowerId] = useState<string | number | undefined>(undefined);
+
+    // Delete Modal State
+    const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+    const [isDeleting, setIsDeleting] = useState(false);
+    const [borrowerToDelete, setBorrowerToDelete] = useState<{ id: string | number; name: string } | null>(null);
 
     // ----------------------
     // FILTER STATE
@@ -83,11 +90,34 @@ export default function BorrowersPage() {
 
     const closeMenu = () => setMenuOpen(false);
 
-    const handleDelete = () => {
-        if (selectedBorrower && confirm("Are you sure you want to delete?")) {
-            deleteBorrower(selectedBorrower);
+    const handleDelete = async () => {
+        if (selectedBorrower) {
+            // Find borrower name for better UX
+            const borrower = borrowers.find(b => b.id === selectedBorrower);
+            setBorrowerToDelete({
+                id: selectedBorrower,
+                name: borrower?.name || "this borrower"
+            });
+            setIsDeleteModalOpen(true);
         }
         closeMenu();
+    };
+
+    const confirmDelete = async () => {
+        if (!borrowerToDelete) return;
+
+        setIsDeleting(true);
+        try {
+            await deleteBorrower(borrowerToDelete.id);
+            toast.success("Borrower deleted successfully");
+            setIsDeleteModalOpen(false);
+            setBorrowerToDelete(null);
+        } catch (error) {
+            console.error("Failed to delete borrower:", error);
+            toast.error("Failed to delete borrower");
+        } finally {
+            setIsDeleting(false);
+        }
     };
 
     const handleView = (id?: string) => {
@@ -226,6 +256,17 @@ export default function BorrowersPage() {
                             setEditingBorrowerId(undefined);
                         }}
                         borrowerId={editingBorrowerId}
+                    />
+
+                    <DeleteBorrowerModal
+                        isOpen={isDeleteModalOpen}
+                        onClose={() => {
+                            setIsDeleteModalOpen(false);
+                            setBorrowerToDelete(null);
+                        }}
+                        onConfirm={confirmDelete}
+                        borrowerName={borrowerToDelete?.name}
+                        isDeleting={isDeleting}
                     />
 
                     {/* TABLE - Horizontally scrollable on mobile */}

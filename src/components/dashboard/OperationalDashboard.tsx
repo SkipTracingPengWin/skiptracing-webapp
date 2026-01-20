@@ -1,6 +1,12 @@
 "use client";
 
+import VerificationStatusWidget from "@/components/dashboard/VerificationStatusWidget";
+import StatsCard from "@/components/dashboard/StatsCard";
+import AlertItem from "@/components/dashboard/AlertItem";
+import AgentItem from "@/components/dashboard/AgentItem";
+
 import { useEffect, useState } from "react";
+import Link from "next/link";
 import { authService } from "@/services/auth";
 import {
     Users,
@@ -30,73 +36,11 @@ import {
     ComposedChart
 } from 'recharts';
 
-// Stats Card Component
-function StatsCard({ icon: Icon, label, value, trend, color }: any) {
-    return (
-        <div className="bg-white p-6 rounded-xl border border-slate-200 hover:shadow-md transition-shadow">
-            <div className="flex items-start justify-between">
-                <div className="flex-1">
-                    <div className="text-sm text-slate-600 mb-2">{label}</div>
-                    <div className="text-3xl font-bold text-slate-900 mb-1">{value}</div>
-                    {trend && (
-                        <div className="text-xs text-green-600 font-medium">{trend}</div>
-                    )}
-                </div>
-                <div className={`h-12 w-12 rounded-xl flex items-center justify-center ${color}`}>
-                    <Icon className="h-6 w-6 text-white" />
-                </div>
-            </div>
-        </div>
-    );
-}
 
-// Alert Item Component
-function AlertItem({ title, description, type, action }: any) {
-    const colors = {
-        warning: "border-l-orange-500 bg-orange-50",
-        danger: "border-l-red-500 bg-red-50",
-        info: "border-l-blue-500 bg-blue-50"
-    };
 
-    return (
-        <div className={`border-l-4 ${colors[type as keyof typeof colors]} p-4 rounded-r-lg mb-3`}>
-            <div className="flex items-start justify-between">
-                <div className="flex-1">
-                    <div className="font-semibold text-slate-900 text-sm mb-1">{title}</div>
-                    <div className="text-xs text-slate-600">{description}</div>
-                </div>
-                <button className="text-blue-600 text-xs font-medium hover:underline">{action}</button>
-            </div>
-        </div>
-    );
-}
 
-// Agent Item Component
-function AgentItem({ name, location, cases, status }: any) {
-    return (
-        <div className="flex items-center justify-between p-3 hover:bg-slate-50 rounded-lg transition-colors">
-            <div className="flex items-center gap-3">
-                <div className="h-10 w-10 bg-blue-600 rounded-full flex items-center justify-center">
-                    <span className="text-white font-semibold text-sm">{name.split(' ').map((n: string) => n[0]).join('')}</span>
-                </div>
-                <div>
-                    <div className="font-semibold text-sm text-slate-900">{name}</div>
-                    <div className="text-xs text-slate-500 flex items-center gap-1">
-                        <MapPin className="h-3 w-3" />
-                        {location}
-                    </div>
-                </div>
-            </div>
-            <div className="text-right">
-                <div className="text-sm font-semibold text-slate-900">{cases} cases</div>
-                <div className={`text-xs ${status === 'ONLINE' ? 'text-green-600' : 'text-orange-600'}`}>
-                    <span className={`inline-block h-1.5 w-1.5 rounded-full mr-1 ${status === 'ONLINE' ? 'bg-green-600' : 'bg-orange-600'}`}></span>
-                    {status}
-                </div>
-            </div>
-        </div>
-    );
-}
+
+
 
 export default function OperationalDashboard() {
     // Using modular Zustand stores
@@ -109,14 +53,16 @@ export default function OperationalDashboard() {
     const { user } = useAuthStore();
 
     useEffect(() => {
-        // Always fetch general stats and alerts
-        fetchStats();
-        fetchAlerts();
-        fetchTrends();
+        if (user) {
+            // Always fetch general stats and alerts
+            fetchStats();
+            fetchAlerts();
+            fetchTrends();
 
-        // Only fetch agents if user has permission
-        if (user?.role === "ADMIN" || user?.role === "MANAGER") {
-            fetchAgents();
+            // Only fetch agents if user has permission
+            if (user.role === "ADMIN" || user.role === "MANAGER") {
+                fetchAgents();
+            }
         }
     }, [fetchStats, fetchAlerts, fetchTrends, fetchAgents, user]);
 
@@ -161,20 +107,14 @@ export default function OperationalDashboard() {
             trend: null,
             color: "bg-purple-600",
         },
-        {
-            icon: AlertTriangle,
-            label: "SLA Alerts",
-            value: String(dashboardStats?.slaAlerts ?? 0),
-            trend: null,
-            color: "bg-red-500",
-        },
+
     ]
 
     // Get only the first 3 alerts for display
     const displayAlerts = alerts.slice(0, 3);
 
     // Get only active agents for display
-    const activeAgents = agents.filter(agent => agent.status === "Active" || agent.status === "Busy").slice(0, 3);
+    const activeAgents = agents.filter(agent => agent.status === "ONLINE" || agent.status === "BUSY").slice(0, 5);
 
     return (
         <div>
@@ -282,55 +222,17 @@ export default function OperationalDashboard() {
             {/* Bottom Grid */}
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
                 {/* Verification Status */}
-                <div className="bg-white p-6 rounded-xl border border-slate-200">
-                    <h3 className="text-lg font-bold text-slate-900 mb-6">Verification Status</h3>
-                    <div className="flex items-center justify-center mb-6">
-                        <div className="relative h-40 w-40">
-                            <svg className="transform -rotate-90" viewBox="0 0 100 100">
-                                <circle cx="50" cy="50" r="40" fill="none" stroke="#e2e8f0" strokeWidth="12" />
-                                <circle cx="50" cy="50" r="40" fill="none" stroke="#10b981" strokeWidth="12" strokeDasharray="175 251" />
-                                <circle cx="50" cy="50" r="40" fill="none" stroke="#3b82f6" strokeWidth="12" strokeDasharray="75 251" strokeDashoffset="-175" />
-                                <circle cx="50" cy="50" r="40" fill="none" stroke="#f59e0b" strokeWidth="12" strokeDasharray="50 251" strokeDashoffset="-250" />
-                            </svg>
-                            <div className="absolute inset-0 flex items-center justify-center">
-                                <div className="text-center">
-                                    <div className="text-2xl font-bold text-slate-900">8</div>
-                                    <div className="text-xs text-slate-500">Total</div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    <div className="space-y-3">
-                        <div className="flex items-center justify-between text-sm">
-                            <div className="flex items-center gap-2">
-                                <div className="h-3 w-3 rounded-full bg-green-500"></div>
-                                <span className="text-slate-600">Verified</span>
-                            </div>
-                            <span className="font-semibold text-slate-900">6</span>
-                        </div>
-                        <div className="flex items-center justify-between text-sm">
-                            <div className="flex items-center gap-2">
-                                <div className="h-3 w-3 rounded-full bg-blue-500"></div>
-                                <span className="text-slate-600">Pending</span>
-                            </div>
-                            <span className="font-semibold text-slate-900">1</span>
-                        </div>
-                        <div className="flex items-center justify-between text-sm">
-                            <div className="flex items-center gap-2">
-                                <div className="h-3 w-3 rounded-full bg-orange-500"></div>
-                                <span className="text-slate-600">Failed</span>
-                            </div>
-                            <span className="font-semibold text-slate-900">1</span>
-                        </div>
-                    </div>
-                </div>
+                <VerificationStatusWidget />
 
                 {/* Skip Trace Hotspots */}
                 <div className="bg-white p-6 rounded-xl border border-slate-200">
                     <div className="flex items-center justify-between mb-4">
                         <h3 className="text-lg font-bold text-slate-900">Skip Trace Hotspots</h3>
                         <button className="text-blue-600 text-sm font-medium hover:underline flex items-center gap-1">
-                            View Map <ArrowRight className="h-4 w-4" />
+                            {/* View Map <ArrowRight className="h-4 w-4" /> */}
+                            <Link href="/skip-trace-map" className="text-blue-600 text-sm font-medium hover:underline flex items-center gap-1">
+                                View Map <ArrowRight className="h-4 w-4" />
+                            </Link>
                         </button>
                     </div>
                     <div className="h-48 bg-slate-100 rounded-lg relative overflow-hidden mb-4">
@@ -352,9 +254,9 @@ export default function OperationalDashboard() {
                     <div className="bg-white p-6 rounded-xl border border-slate-200">
                         <div className="flex items-center justify-between mb-4">
                             <h3 className="text-lg font-bold text-slate-900">Field Agents</h3>
-                            <button className="text-blue-600 text-sm font-medium hover:underline flex items-center gap-1">
+                            <Link href="/agents" className="text-blue-600 text-sm font-medium hover:underline flex items-center gap-1">
                                 View All <ArrowRight className="h-4 w-4" />
-                            </button>
+                            </Link>
                         </div>
                         <div>
                             {activeAgents.map((agent, i) => (
