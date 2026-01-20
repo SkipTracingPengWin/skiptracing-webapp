@@ -203,7 +203,7 @@ export default function AgentsPage() {
     {
       icon: UserCheck,
       label: "online",
-      value: agents.filter((a: Agent) => (a.status || "").toLowerCase() === "active").length,
+      value: agents.filter((a: Agent) => (a.status || "").toLowerCase() === "online").length,
       color: "bg-green-500",
     },
     {
