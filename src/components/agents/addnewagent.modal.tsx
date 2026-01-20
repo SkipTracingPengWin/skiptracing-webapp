@@ -65,7 +65,7 @@ const AddNewAgentModal: React.FC = () => {
     location: '',
     password: '',
     joinedDate: new Date().toISOString().split('T')[0],
-    status: 'Active',
+    status: 'ONLINE',
     cases: 0,
   });
   const [error, setError] = useState<string | null>(null);
@@ -103,7 +103,7 @@ const AddNewAgentModal: React.FC = () => {
             location: agentToEdit.location || '',
             password: '',
             joinedDate: agentToEdit.joinedDate ? agentToEdit.joinedDate.split('T')[0] : new Date().toISOString().split('T')[0],
-            status: agentToEdit.status || 'Active',
+            status: agentToEdit.status || 'ONLINE',
             cases: agentToEdit.cases || 0,
           });
         }
@@ -117,7 +117,7 @@ const AddNewAgentModal: React.FC = () => {
           location: '',
           password: '',
           joinedDate: new Date().toISOString().split('T')[0],
-          status: 'Active',
+          status: 'ONLINE',
           cases: 0,
         });
       }
@@ -138,7 +138,7 @@ const AddNewAgentModal: React.FC = () => {
         location: selectedAgent.location || '',
         password: '',
         joinedDate: selectedAgent.joinedDate ? selectedAgent.joinedDate.split('T')[0] : new Date().toISOString().split('T')[0],
-        status: selectedAgent.status || 'Active',
+        status: selectedAgent.status || 'ONLINE',
         cases: selectedAgent.cases || 0,
       });
     }

@@ -122,7 +122,7 @@ export default function DashboardPage() {
     const displayAlerts = alerts.slice(0, 3);
 
     // Get only active agents for display
-    const activeAgents = agents.filter(agent => agent.status === "Active" || agent.status === "Busy").slice(0, 3);
+    const activeAgents = agents.filter(agent => agent.status === "ONLINE" || agent.status === "BUSY").slice(0, 3);
 
     return (
         <>

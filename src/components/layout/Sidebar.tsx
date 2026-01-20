@@ -96,7 +96,9 @@ import {
   LogOut,
   ClipboardList
 } from "lucide-react";
+import toast from "react-hot-toast";
 import { useAuthStore } from "@/store/auth.store";
+import router from "next/router";
 
 // Define all possible menu items
 const allMenuItems = {
@@ -119,7 +121,8 @@ export default function Sidebar() {
 
   const handleLogout = () => {
     logout();
-    window.location.href = '/auth/login';
+    toast.success("Logged out successfully");
+    router.push('/auth/login');
   };
 
   const getDashboardLink = () => {

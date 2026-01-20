@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import toast from "react-hot-toast";
 import { Shield, Check, Eye, EyeOff, Building2, User, Mail, Lock, Briefcase, Sparkles, ArrowRight, Star } from "lucide-react";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
@@ -36,9 +37,12 @@ export default function RegisterPage() {
 
         try {
             await authService.register(formData);
+            toast.success("Registration successful! Please login.");
             router.push("/auth/login");
         } catch (err: any) {
-            setError(err.response?.data?.message || "Registration failed");
+            const message = err.response?.data?.message || "Registration failed";
+            setError(message);
+            toast.error(message);
         } finally {
             setLoading(false);
         }

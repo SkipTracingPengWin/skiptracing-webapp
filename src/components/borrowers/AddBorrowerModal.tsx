@@ -4,6 +4,7 @@ import { useBorrowerStore } from '@/store/borrowers.store';
 import { useAuthStore } from '@/store/auth.store';
 import { borrowerService } from '@/services/borrowers.services';
 import { Borrower } from '@/types/borrower.types';
+import toast from 'react-hot-toast';
 
 interface AddBorrowerModalProps {
     isOpen: boolean;
@@ -137,9 +138,11 @@ export default function AddBorrowerModal({ isOpen, onClose, borrowerId }: AddBor
             if (isEditMode && borrowerId) {
                 // Update existing borrower
                 await updateBorrower(borrowerId, borrowerData);
+                toast.success("Borrower updated successfully");
             } else {
                 // Create new borrower
                 await addBorrower(borrowerData);
+                toast.success("Borrower added successfully");
             }
 
             // Only close and reset on success
@@ -162,7 +165,9 @@ export default function AddBorrowerModal({ isOpen, onClose, borrowerId }: AddBor
             });
         } catch (error) {
             console.error(isEditMode ? "Failed to update borrower:" : "Failed to add borrower:", error);
-            alert(isEditMode ? "Failed to update borrower. Please try again." : "Failed to add borrower. Please try again.");
+            const message = isEditMode ? "Failed to update borrower. Please try again." : "Failed to add borrower. Please try again.";
+            alert(message);
+            toast.error(message);
         } finally {
             setIsSubmitting(false);
         }
@@ -173,10 +178,12 @@ export default function AddBorrowerModal({ isOpen, onClose, borrowerId }: AddBor
             setIsSubmitting(true);
             try {
                 await deleteBorrower(borrowerId);
+                toast.success("Borrower deleted successfully");
                 onClose();
             } catch (error) {
                 console.error("Failed to delete borrower:", error);
                 alert("Failed to delete borrower. Please try again.");
+                toast.error("Failed to delete borrower");
             } finally {
                 setIsSubmitting(false);
             }
