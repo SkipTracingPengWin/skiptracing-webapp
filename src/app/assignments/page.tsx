@@ -4,9 +4,10 @@ import { useState, useEffect } from "react";
 import Sidebar from "@/components/layout/Sidebar";
 import Header from "@/components/layout/Header";
 import {
-  UserCircle, MapPin, Loader2, Search, ChevronDown, Check,
+  UserCircle, MapPin, Search, ChevronDown, Check,
   MoreVertical, Edit2, Trash2, ExternalLink, Banknote, FileText, ArrowRightLeft
 } from "lucide-react";
+import LoadingSpinner from "@/components/ui/LoadingSpinner";
 import toast from "react-hot-toast";
 import { useBorrowerStore } from "@/store/borrowers.store";
 import { useAgentStore } from "@/store/agents.store";
@@ -483,10 +484,7 @@ export default function AssignmentsPage() {
 
               <div className="space-y-3 pb-8">
                 {loading && assignments.length === 0 ? (
-                  <div className="flex flex-col items-center justify-center py-20 bg-white rounded-xl border border-slate-200 border-dashed">
-                    <Loader2 className="h-8 w-8 animate-spin text-blue-600 mb-2" />
-                    <span className="text-sm text-slate-500">Loading assignments...</span>
-                  </div>
+                  <LoadingSpinner text="Loading assignments..." />
                 ) : filteredAssignments.length === 0 ? (
                   <div className="flex flex-col items-center justify-center py-20 bg-white rounded-xl border border-slate-200 border-dashed transition-all hover:bg-slate-50/50">
                     <div className="p-3 bg-slate-50 rounded-full mb-4">
@@ -541,7 +539,7 @@ export default function AssignmentsPage() {
               </div>
               <div className="space-y-1 max-h-[500px] overflow-y-auto pr-2 custom-scrollbar">
                 {loading && assignments.length === 0 ? (
-                  <div className="flex justify-center py-8"><Loader2 className="h-6 w-6 animate-spin text-slate-400" /></div>
+                  <LoadingSpinner size={24} text="Loading agents..." />
                 ) : agentsWorkload.length === 0 ? (
                   <div className="text-center py-8 text-slate-500 text-sm italic bg-slate-50 rounded-lg">
                     {searchQuery && matchingBorrowerNames.size === 0

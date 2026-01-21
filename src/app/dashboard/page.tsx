@@ -12,6 +12,7 @@ import {
     ArrowRight,
     MapPin
 } from "lucide-react";
+import LoadingSpinner from "@/components/ui/LoadingSpinner";
 import { useDashboardStatsStore } from "@/store/dashboardStats.store";
 import { useAlertStore } from "@/store/alerts.store"; // Assuming this is used elsewhere or will be
 import { useAgentStore } from "@/store/agents.store"; // Assuming this is used elsewhere or will be
@@ -78,7 +79,7 @@ function AgentItem({ name, location, cases, status }: any) {
             <div className="text-right">
                 <div className="text-sm font-semibold text-slate-900">{cases} cases</div>
                 <div className={`text-xs ${status === 'Active' ? 'text-green-600' : 'text-orange-600'}`}>
-                    <span className="inline-block h-1.5 w-1.5 rounded-full mr-1 ${status === 'Active' ? 'bg-green-600' : 'bg-orange-600'}"></span>
+                    <span className={`inline-block h-1.5 w-1.5 rounded-full mr-1 ${status === 'Active' ? 'bg-green-600' : 'bg-orange-600'}`}></span>
                     {status}
                 </div>
             </div>
@@ -88,7 +89,7 @@ function AgentItem({ name, location, cases, status }: any) {
 
 export default function DashboardPage() {
     // Using modular Zustand stores
-    const { dashboardStats, fetchStats } = useDashboardStatsStore();
+    const { dashboardStats, fetchStats, loading: statsLoading } = useDashboardStatsStore();
     const { alerts, fetchAlerts } = useAlertStore();
     const { agents, fetchAgents } = useAgentStore();
     const { recoveryTrend, fetchTrends } = useRecoveryTrendStore();
@@ -105,8 +106,8 @@ export default function DashboardPage() {
     }, [fetchStats, fetchAlerts, fetchAgents, fetchTrends, user?.role]);
 
     // Render a loading state if the primary data isn't available yet.
-    if (!dashboardStats) {
-        return <div>Loading dashboard...</div>; // Or a more sophisticated skeleton loader
+    if (statsLoading || !dashboardStats) {
+        return <LoadingSpinner text="Loading dashboard stats..." />;
     }
 
     const stats = [

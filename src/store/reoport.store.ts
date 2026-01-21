@@ -105,7 +105,9 @@ type DashboardStore = {
   totalVerifications: number;
   casesClosed: number;
   avgSuccessRate: number;
+  loading: boolean;
   setPeriod: (p: string) => void;
+  setLoading: (loading: boolean) => void;
 };
 
 export const useDashboardStore = create<DashboardStore>((set) => ({
@@ -139,6 +141,8 @@ export const useDashboardStore = create<DashboardStore>((set) => ({
   totalVerifications: 1259,
   casesClosed: 351,
   avgSuccessRate: 82,
+  loading: false,
 
   setPeriod: (p) => set({ period: p }),
+  setLoading: (loading) => set({ loading }),
 }));

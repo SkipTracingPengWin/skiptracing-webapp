@@ -1,10 +1,24 @@
 "use client";
 
+import LoadingSpinner from "@/components/ui/LoadingSpinner";
+import { useState, useEffect } from "react";
 import Sidebar from "@/components/layout/Sidebar";
 import Header from "@/components/layout/Header";
 import { MapPin, Download, Users, TrendingUp, AlertCircle } from "lucide-react";
 
+// ... (existing imports)
+
 export default function SkipTraceMapPage() {
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        // Simulate data loading
+        const timer = setTimeout(() => {
+            setLoading(false);
+        }, 1000);
+        return () => clearTimeout(timer);
+    }, []);
+
     const stats = [
         { icon: Users, label: "Top Cities", value: "4", color: "bg-blue-500" },
         { icon: TrendingUp, label: "High Priority", value: "2", color: "bg-green-500" },
@@ -25,6 +39,14 @@ export default function SkipTraceMapPage() {
         { name: "Priya Patel", loanId: "LN-2024-002", amount: "₹78,000", probability: "78%", location: "Lokre" },
         { name: "Amit Kumar", loanId: "LN-2024-003", amount: "₹320,000", probability: "85%", location: "Lokre" },
     ];
+
+    if (loading) {
+        return (
+            <div className="flex h-screen items-center justify-center bg-slate-50">
+                <LoadingSpinner text="Loading skip trace data..." />
+            </div>
+        );
+    }
 
     return (
         <div className="flex h-screen bg-slate-50">

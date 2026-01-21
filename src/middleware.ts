@@ -44,7 +44,7 @@ export function middleware(request: NextRequest) {
 
     // New Role Restrictions
     if (pathname.startsWith("/agents")) {
-        if (userRole !== Role.ADMIN && userRole !== Role.MANAGER) {
+        if (userRole !== Role.ADMIN && userRole !== Role.MANAGER && userRole !== Role.AGENT) {
             return NextResponse.redirect(new URL("/unauthorized", request.url));
         }
     }

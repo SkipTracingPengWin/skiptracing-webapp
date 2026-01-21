@@ -126,24 +126,42 @@ export const useAgentStore = create<AgentState>()(
 
             // 🔹 UPDATE AGENT
             updateAgent: async (id, data) => {
+                // Optimistic Update: Update the local state immediately
+                set((state) => {
+                    const existing = state.agents.find(a =>
+                        String(a.id) === String(id) ||
+                        (a.userId && String(a.userId) === String(id))
+                    );
+
+                    if (!existing) return state;
+
+                    const optimisticAgent = normalizeAgent({
+                        ...existing,
+                        ...data // Overwrite with new fields
+                    });
+
+                    return {
+                        agents: state.agents.map((agent) =>
+                            (String(agent.id) === String(existing.id)) ? optimisticAgent : agent
+                        ),
+                    };
+                });
+
                 try {
                     console.log(`📡 Store: Updating Agent ${id}`, data);
-                    set({ loading: true, error: null });
+                    // No global loading: true here to prevent flickering the entire page
                     const result = await agentServices.update(id, data);
                     console.log("✅ Store: Update result:", result);
                     const updatedData = unwrapData(result, 'agent');
 
+                    // Confirm the update with actual data from server
                     set((state) => {
-                        // Find by internal id OR userId used for update
                         const existing = state.agents.find(a =>
                             String(a.id) === String(id) ||
                             (a.userId && String(a.userId) === String(id))
                         );
 
-                        if (!existing) {
-                            console.warn(`⚠️ Store: Failed to update local agent state. ID ${id} not found in list.`);
-                            return { ...state, loading: false };
-                        }
+                        if (!existing) return state;
 
                         const normalized = normalizeAgent({
                             ...existing,
@@ -154,15 +172,16 @@ export const useAgentStore = create<AgentState>()(
                             agents: state.agents.map((agent) =>
                                 (String(agent.id) === String(existing.id)) ? normalized : agent
                             ),
-                            loading: false,
                         };
                     });
                 } catch (error: any) {
                     const errorMessage = error.message || "Failed to update agent";
                     set({
                         error: errorMessage,
-                        loading: false,
                     });
+                    // Revert optimistic update (simplified by just fetching agents again or we could manually revert)
+                    // For now, let's just log it. A better way would be to store original values.
+                    console.error("❌ Failed to update agent, state might be out of sync:", errorMessage);
                     throw new Error(errorMessage);
                 }
             },

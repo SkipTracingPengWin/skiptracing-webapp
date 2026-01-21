@@ -21,10 +21,11 @@ import AddBorrowerModal from "@/components/borrowers/AddBorrowerModal";
 import DeleteBorrowerModal from "@/components/borrowers/DeleteBorrowerModal";
 import ActionMenu from "@/components/borrowers/Boroweractionmodal";
 import { RiskBadge, StatusBadge, VerificationStatus } from "@/components/borrowers/badges";
+import LoadingSpinner from "@/components/ui/LoadingSpinner";
 import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from "@/components/ui/table";
 
 export default function BorrowersPage() {
-    const { borrowers, deleteBorrower, fetchBorrowers } = useBorrowerStore();
+    const { borrowers, deleteBorrower, fetchBorrowers, loading } = useBorrowerStore();
     const { user } = useAuthStore();
     const router = useRouter();
     const [isModalOpen, setIsModalOpen] = useState(false);
@@ -286,7 +287,13 @@ export default function BorrowersPage() {
                             </TableHeader>
 
                             <TableBody>
-                                {filteredBorrowers.length === 0 ? (
+                                {loading ? (
+                                    <TableRow>
+                                        <TableCell colSpan={8} className="h-96">
+                                            <LoadingSpinner text="Loading borrowers..." />
+                                        </TableCell>
+                                    </TableRow>
+                                ) : filteredBorrowers.length === 0 ? (
                                     <TableRow>
                                         <TableCell colSpan={8} className="px-6 py-12 text-center text-slate-500 italic">
                                             No borrowers match your current search and filters.

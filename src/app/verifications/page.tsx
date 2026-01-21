@@ -8,6 +8,7 @@ import VerificationResultModal from "@/components/verifications/verificationresu
 import { Verification, VerificationType } from "@/types/verification.types";
 import { useVerificationStore } from "@/store/verifications.store";
 import { cn } from "@/lib/utils";
+import LoadingSpinner from "@/components/ui/LoadingSpinner";
 import {
     CreditCard,
     Smartphone,
@@ -247,11 +248,8 @@ export default function VerificationsPage() {
                                 <tbody className="divide-y divide-slate-100">
                                     {isLoading && verifications.length === 0 ? (
                                         <tr>
-                                            <td colSpan={5} className="px-6 py-12 text-center text-slate-500">
-                                                <div className="flex flex-col items-center gap-2">
-                                                    <Loader2 className="h-6 w-6 animate-spin text-blue-500" />
-                                                    <span className="text-sm font-medium">Loading verifications...</span>
-                                                </div>
+                                            <td colSpan={5} className="px-6 py-12">
+                                                <LoadingSpinner size={32} text="Loading verifications..." />
                                             </td>
                                         </tr>
                                     ) : filteredVerifications.length === 0 ? (
