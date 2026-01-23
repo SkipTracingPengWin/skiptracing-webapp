@@ -18,6 +18,7 @@ import {
   ClipboardList,
   Menu,
   X,
+  Send,
 } from "lucide-react";
 import toast from "react-hot-toast";
 import { useAuthStore } from "@/store/auth.store";
@@ -26,6 +27,7 @@ import router from "next/router";
 // Define all possible menu items
 const allMenuItems = {
   dashboard: { icon: LayoutDashboard, label: "Dashboard", href: "/dashboard" },
+  alerts: { icon: Send, label: "Send Alerts", href: "/admin/alerts" },
   borrowers: { icon: Users, label: "Borrowers", href: "/borrowers" },
   verifications: { icon: Shield, label: "Verifications", href: "/verifications" },
   assignments: { icon: ClipboardList, label: "Assignments", href: "/assignments" },
@@ -76,6 +78,7 @@ export default function Sidebar() {
       case "ADMIN":
         return [
           dashboardItem,
+          allMenuItems.alerts,
           allMenuItems.borrowers,
           allMenuItems.verifications,
           allMenuItems.assignments,
@@ -176,8 +179,8 @@ export default function Sidebar() {
                 key={item.label}
                 href={item.href}
                 className={`flex items-center gap-3 px-4 py-3 mx-2 rounded-lg transition-colors ${isActive
-                    ? "bg-blue-50 text-blue-600"
-                    : "text-slate-600 hover:bg-slate-50"
+                  ? "bg-blue-50 text-blue-600"
+                  : "text-slate-600 hover:bg-slate-50"
                   }`}
               >
                 <Icon className="h-5 w-5" />

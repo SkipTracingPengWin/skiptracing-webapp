@@ -6,9 +6,9 @@ import { alertService } from '@/services/alert.services';
 interface AlertState {
     alerts: Alert[];
     fetchAlerts: () => Promise<void>;
-    markAlertAsRead: (id: number) => Promise<void>;
+    markAlertAsRead: (id: string | number) => Promise<void>;
     addAlert: (alert: Partial<Alert>) => Promise<void>;
-    deleteAlert: (id: number) => Promise<void>;
+    deleteAlert: (id: string | number) => Promise<void>;
 }
 
 export const useAlertStore = create<AlertState>()(

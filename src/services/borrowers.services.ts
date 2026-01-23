@@ -129,6 +129,16 @@ Message: ${errorMsg}
 
             throw error;
         }
+    },
+
+    fetchOsmLocation: async (id: string | number) => {
+        try {
+            const response = await api.post(`/borrowers/${id}/fetch-osm-location`);
+            return response.data;
+        } catch (error: any) {
+            console.error(`❌ Error fetching OSM location for ID ${id}:`, error.message);
+            throw error;
+        }
     }
 };
 

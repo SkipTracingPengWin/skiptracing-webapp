@@ -25,7 +25,6 @@ export interface RecoveryAction {
   executedAt?: string | Date;
   executedBy?: string;
   createdAt: string | Date;
-
   // Client-side display fields (populated from relationships)
   borrowerName?: string;
 }

@@ -12,12 +12,12 @@ export const alertService = {
         return response.data;
     },
 
-    update: async (id: number, data: Partial<Alert>) => {
+    update: async (id: string | number, data: Partial<Alert>) => {
         const response = await api.put(`/alerts/${id}`, data);
         return response.data;
     },
 
-    delete: async (id: number) => {
+    delete: async (id: string | number) => {
         const response = await api.delete(`/alerts/${id}`);
         return response.data;
     }

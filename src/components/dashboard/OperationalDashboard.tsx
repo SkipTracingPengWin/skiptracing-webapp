@@ -4,6 +4,7 @@ import VerificationStatusWidget from "@/components/dashboard/VerificationStatusW
 import StatsCard from "@/components/dashboard/StatsCard";
 import AlertItem from "@/components/dashboard/AlertItem";
 import AgentItem from "@/components/dashboard/AgentItem";
+import LocationMap from "@/components/maps/LocationMap";
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
@@ -205,18 +206,33 @@ export default function OperationalDashboard() {
                     </div>
                 </div>
 
-                {/* Active Alerts */}
-                <div className="bg-white p-6 rounded-xl border border-slate-200">
-                    <div className="flex items-center justify-between mb-4">
-                        <h3 className="text-lg font-bold text-slate-900">Active Alerts</h3>
-                        <span className="text-xs bg-red-100 text-red-600 px-2 py-1 rounded-full font-semibold">3 Alerts</span>
+                {/* Field Agents - Only visible to ADMIN and MANAGER */}
+                {(user?.role === "ADMIN" || user?.role === "MANAGER") ? (
+                    <div className="bg-white p-6 rounded-xl border border-slate-200 h-full">
+                        <div className="flex items-center justify-between mb-4">
+                            <h3 className="text-lg font-bold text-slate-900">Field Agents</h3>
+                            <Link href="/agents" className="text-blue-600 text-sm font-medium hover:underline flex items-center gap-1">
+                                View All <ArrowRight className="h-4 w-4" />
+                            </Link>
+                        </div>
+                        <div className="space-y-3">
+                            {activeAgents.length > 0 ? (
+                                activeAgents.map((agent, i) => (
+                                    <AgentItem key={i} {...agent} />
+                                ))
+                            ) : (
+                                <div className="text-sm text-slate-500 text-center py-8">No active agents</div>
+                            )}
+                        </div>
                     </div>
-                    <div>
-                        {displayAlerts.map((alert, i) => (
-                            <AlertItem key={i} {...alert} />
-                        ))}
+                ) : (
+                    // Placeholder or alternative content for non-admins if needed, 
+                    // or we could make the chart full width. 
+                    // For now, keeping the grid structure.
+                    <div className="bg-slate-50 rounded-xl border border-slate-100 h-full flex items-center justify-center text-slate-400">
+                        <span className="text-sm">Restricted Access</span>
                     </div>
-                </div>
+                )}
             </div>
 
             {/* Bottom Grid */}
@@ -225,46 +241,26 @@ export default function OperationalDashboard() {
                 <VerificationStatusWidget />
 
                 {/* Skip Trace Hotspots */}
-                <div className="bg-white p-6 rounded-xl border border-slate-200">
+                {/* Skip Trace Hotspots */}
+                <div className="bg-white p-6 rounded-xl border border-slate-200 lg:col-span-2">
                     <div className="flex items-center justify-between mb-4">
                         <h3 className="text-lg font-bold text-slate-900">Skip Trace Hotspots</h3>
-                        <button className="text-blue-600 text-sm font-medium hover:underline flex items-center gap-1">
-                            {/* View Map <ArrowRight className="h-4 w-4" /> */}
-                            <Link href="/skip-trace-map" className="text-blue-600 text-sm font-medium hover:underline flex items-center gap-1">
-                                View Map <ArrowRight className="h-4 w-4" />
-                            </Link>
-                        </button>
+                        <Link href="/skip-trace-map" className="text-blue-600 text-sm font-medium hover:underline flex items-center gap-1">
+                            View Map <ArrowRight className="h-4 w-4" />
+                        </Link>
                     </div>
-                    <div className="h-48 bg-slate-100 rounded-lg relative overflow-hidden mb-4">
-                        <div className="absolute inset-0 flex items-center justify-center">
-                            <MapPin className="h-12 w-12 text-orange-500 animate-bounce" />
-                        </div>
-                        <div className="absolute top-4 right-4 bg-white px-3 py-1 rounded-full shadow-md">
-                            <span className="text-xs font-semibold text-slate-700">Mumbai</span>
-                        </div>
+                    <div className="h-48 bg-slate-100 rounded-lg relative overflow-hidden mb-4 z-0">
+                        <LocationMap
+                            latitude={19.0760}
+                            longitude={72.8777}
+                            displayName="Mumbai Hotspot"
+                        />
                     </div>
                     <div className="flex items-center justify-between text-sm">
                         <span className="text-slate-600">Total Signals</span>
                         <span className="font-semibold text-slate-900">254 cases</span>
                     </div>
                 </div>
-
-                {/* Field Agents - Only visible to ADMIN and MANAGER */}
-                {(user?.role === "ADMIN" || user?.role === "MANAGER") && (
-                    <div className="bg-white p-6 rounded-xl border border-slate-200">
-                        <div className="flex items-center justify-between mb-4">
-                            <h3 className="text-lg font-bold text-slate-900">Field Agents</h3>
-                            <Link href="/agents" className="text-blue-600 text-sm font-medium hover:underline flex items-center gap-1">
-                                View All <ArrowRight className="h-4 w-4" />
-                            </Link>
-                        </div>
-                        <div>
-                            {activeAgents.map((agent, i) => (
-                                <AgentItem key={i} {...agent} />
-                            ))}
-                        </div>
-                    </div>
-                )}
             </div>
         </div>
     );

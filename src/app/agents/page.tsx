@@ -237,20 +237,20 @@ export default function AgentsPage() {
         },
         {
             icon: UserCheck,
-            label: "Online",
-            value: agents.filter((a: Agent) => (a.status || "").toUpperCase() === "ONLINE").length,
+            label: "Active",
+            value: agents.filter((a: Agent) => (a.status || "").toLowerCase() === "active").length,
             color: "bg-green-500",
         },
         {
             icon: Clock,
             label: "Busy",
-            value: agents.filter((a: Agent) => (a.status || "").toUpperCase() === "BUSY").length,
+            value: agents.filter((a: Agent) => (a.status || "").toLowerCase() === "busy").length,
             color: "bg-orange-500",
         },
         {
             icon: UserX,
             label: "Offline",
-            value: agents.filter((a: Agent) => (a.status || "").toUpperCase() === "OFFLINE").length,
+            value: agents.filter((a: Agent) => (a.status || "").toLowerCase() === "offline").length,
             color: "bg-slate-400",
         },
     ];
@@ -312,10 +312,9 @@ export default function AgentsPage() {
                             className="px-4 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none text-sm bg-slate-50/50 min-w-[140px]"
                         >
                             <option value="All">All Statuses</option>
-                            <option value="ONLINE">Online</option>
-                            <option value="BUSY">Busy</option>
-                            <option value="LEAVE">On Leave</option>
-                            <option value="OFFLINE">Offline</option>
+                            <option value="Active">Active</option>
+                            <option value="Busy">Busy</option>
+                            <option value="Offline">Offline</option>
                         </select>
                     </div>
 

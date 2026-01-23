@@ -1,11 +1,15 @@
 export interface Alert {
-    id: number;
+    id: string | number;
     title: string;
-    description: string;
+    message: string;
     type: "warning" | "danger" | "info" | "success";
-    action: string;
-    timestamp: string;
-    read: boolean;
+    action?: string;
+    timestamp?: string; // Backend might not send this or send createdAt
+    read?: boolean;
+    agentId?: string;
+    borrowerId?: string;
+    adminId?: string;
+    createdAt?: string;
 }
 
 export type AlertType = "warning" | "danger" | "info" | "success";

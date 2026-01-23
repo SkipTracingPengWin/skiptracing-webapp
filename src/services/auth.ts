@@ -105,5 +105,25 @@ export const authService = {
             console.error("Failed to change password:", errorMsg);
             throw error;
         }
+    },
+
+    resetPassword: async (data: { email: string; newPassword: string }) => {
+        try {
+            const response = await api.put("/auth/change-password", data);
+            return response.data;
+        } catch (error: any) {
+            console.error("Failed to reset password:", error);
+            throw error;
+        }
+    },
+
+    updateProfile: async (data: { name?: string; email?: string }) => {
+        try {
+            const response = await api.put("/auth/profile", data);
+            return response.data;
+        } catch (error: any) {
+            console.error("Failed to update profile:", error);
+            throw error;
+        }
     }
 };

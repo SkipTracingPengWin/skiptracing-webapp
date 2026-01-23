@@ -16,6 +16,12 @@ export default function LoginPage() {
     const [password, setPassword] = useState("");
     const [error, setError] = useState("");
     const [loading, setLoading] = useState(false);
+
+    // Forgot Password State
+    const [showForgotPassword, setShowForgotPassword] = useState(false);
+    const [resetEmail, setResetEmail] = useState("");
+    const [newPassword, setNewPassword] = useState("");
+
     const router = useRouter();
 
     const { login } = useAuthStore();
@@ -55,6 +61,27 @@ export default function LoginPage() {
         } catch (err: any) {
             console.error("Login error:", err);
             const message = err.message || "Login failed. Please try again.";
+            setError(message);
+            toast.error(message);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const handleForgotPassword = async (e: React.FormEvent) => {
+        e.preventDefault();
+        setError("");
+        setLoading(true);
+
+        try {
+            await authService.resetPassword({ email: resetEmail, newPassword });
+            toast.success("Password reset successful! Please login with your new password.");
+            setShowForgotPassword(false);
+            setResetEmail("");
+            setNewPassword("");
+        } catch (err: any) {
+            console.error("Reset password error:", err);
+            const message = err.response?.data?.message || err.message || "Failed to reset password.";
             setError(message);
             toast.error(message);
         } finally {
@@ -155,66 +182,145 @@ export default function LoginPage() {
                         </div>
                     )}
 
-                    <form className="space-y-6" onSubmit={handleLogin}>
-                        {/* Email Field */}
-                        <div className="group">
-                            <label className="block text-sm font-bold text-slate-900 mb-2.5 tracking-wide">Work Email Address</label>
-                            <div className="relative">
-                                <input
-                                    id="email"
-                                    type="email"
-                                    value={email}
-                                    onChange={(e) => setEmail(e.target.value)}
-                                    placeholder="john@company.com"
-                                    className="w-full pl-14 pr-5 py-4 bg-white/70 backdrop-blur-sm border-2 border-slate-200/60 rounded-2xl focus:ring-4 focus:ring-blue-500/20 focus:border-blue-500/70 shadow-lg transition-all duration-300 group-hover:border-slate-300 hover:shadow-xl text-lg placeholder:text-slate-400"
-                                    required
-                                />
-                                <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none group-focus-within:text-blue-600">
-                                    <Mail className="h-6 w-6 text-slate-400 group-focus-within:text-blue-600 transition-colors" />
+                    {/* Conditionally render Login or Forgot Password Form */}
+                    {!showForgotPassword ? (
+                        <form className="space-y-6" onSubmit={handleLogin}>
+                            {/* Email Field */}
+                            <div className="group">
+                                <label className="block text-sm font-bold text-slate-900 mb-2.5 tracking-wide">Work Email Address</label>
+                                <div className="relative">
+                                    <input
+                                        id="email"
+                                        type="email"
+                                        value={email}
+                                        onChange={(e) => setEmail(e.target.value)}
+                                        placeholder="john@company.com"
+                                        className="w-full pl-14 pr-5 py-4 bg-white/70 backdrop-blur-sm border-2 border-slate-200/60 rounded-2xl focus:ring-4 focus:ring-blue-500/20 focus:border-blue-500/70 shadow-lg transition-all duration-300 group-hover:border-slate-300 hover:shadow-xl text-lg placeholder:text-slate-400"
+                                        required
+                                    />
+                                    <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none group-focus-within:text-blue-600">
+                                        <Mail className="h-6 w-6 text-slate-400 group-focus-within:text-blue-600 transition-colors" />
+                                    </div>
                                 </div>
                             </div>
-                        </div>
 
-                        {/* Password Field */}
-                        <div className="group">
-                            <div className="flex items-center justify-between mb-2.5">
-                                <label className="text-sm font-bold text-slate-900 tracking-wide">Password</label>
-                                <Link href="/forgot-password" className="text-sm font-semibold text-blue-600 hover:text-blue-700 transition-colors group-hover:underline flex items-center gap-1">
-                                    Forgot Password?
-                                </Link>
-                            </div>
-                            <div className="relative">
-                                <input
-                                    id="password"
-                                    type={showPassword ? "text" : "password"}
-                                    value={password}
-                                    onChange={(e) => setPassword(e.target.value)}
-                                    placeholder="Enter your password"
-                                    className="w-full pl-14 pr-14 py-4 bg-white/70 backdrop-blur-sm border-2 border-slate-200/60 rounded-2xl focus:ring-4 focus:ring-blue-500/20 focus:border-blue-500/70 shadow-lg transition-all duration-300 group-hover:border-slate-300 hover:shadow-xl text-lg placeholder:text-slate-400"
-                                    required
-                                />
-                                <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none group-focus-within:text-blue-600">
-                                    <Lock className="h-6 w-6 text-slate-400 group-focus-within:text-blue-600 transition-colors" />
+                            {/* Password Field */}
+                            <div className="group">
+                                <div className="flex items-center justify-between mb-2.5">
+                                    <label className="text-sm font-bold text-slate-900 tracking-wide">Password</label>
+                                    <button
+                                        type="button"
+                                        onClick={() => {
+                                            setShowForgotPassword(true);
+                                            setError("");
+                                        }}
+                                        className="text-sm font-semibold text-blue-600 hover:text-blue-700 transition-colors group-hover:underline flex items-center gap-1"
+                                    >
+                                        Forgot Password?
+                                    </button>
                                 </div>
+                                <div className="relative">
+                                    <input
+                                        id="password"
+                                        type={showPassword ? "text" : "password"}
+                                        value={password}
+                                        onChange={(e) => setPassword(e.target.value)}
+                                        placeholder="Enter your password"
+                                        className="w-full pl-14 pr-14 py-4 bg-white/70 backdrop-blur-sm border-2 border-slate-200/60 rounded-2xl focus:ring-4 focus:ring-blue-500/20 focus:border-blue-500/70 shadow-lg transition-all duration-300 group-hover:border-slate-300 hover:shadow-xl text-lg placeholder:text-slate-400"
+                                        required
+                                    />
+                                    <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none group-focus-within:text-blue-600">
+                                        <Lock className="h-6 w-6 text-slate-400 group-focus-within:text-blue-600 transition-colors" />
+                                    </div>
+                                    <button
+                                        type="button"
+                                        onClick={() => setShowPassword(!showPassword)}
+                                        className="absolute inset-y-0 right-0 pr-4 flex items-center text-slate-400 hover:text-slate-700 focus:outline-none transition-colors"
+                                    >
+                                        {showPassword ? <EyeOff className="h-6 w-6" /> : <Eye className="h-6 w-6" />}
+                                    </button>
+                                </div>
+                            </div>
+
+                            <button
+                                type="submit"
+                                disabled={loading}
+                                className="group w-full bg-gradient-to-r from-blue-600 to-indigo-700 hover:from-blue-700 hover:to-indigo-800 text-white font-black py-5 rounded-2xl transition-all duration-300 shadow-2xl hover:shadow-3xl hover:-translate-y-1 disabled:opacity-60 disabled:cursor-not-allowed disabled:hover:shadow-xl flex items-center justify-center gap-3 text-lg backdrop-blur-sm border border-white/20"
+                            >
+                                <span>{loading ? "Signing In..." : "Sign In"}</span>
+                                <ArrowRight className={`h-6 w-6 transition-transform ${loading ? '' : 'group-hover:translate-x-1'}`} />
+                            </button>
+                        </form>
+                    ) : (
+                        <form className="space-y-6" onSubmit={handleForgotPassword}>
+                            {/* Email Field */}
+                            <div className="group">
+                                <label className="block text-sm font-bold text-slate-900 mb-2.5 tracking-wide">Work Email Address</label>
+                                <div className="relative">
+                                    <input
+                                        id="resetEmail"
+                                        type="email"
+                                        value={resetEmail}
+                                        onChange={(e) => setResetEmail(e.target.value)}
+                                        placeholder="john@company.com"
+                                        className="w-full pl-14 pr-5 py-4 bg-white/70 backdrop-blur-sm border-2 border-slate-200/60 rounded-2xl focus:ring-4 focus:ring-blue-500/20 focus:border-blue-500/70 shadow-lg transition-all duration-300 group-hover:border-slate-300 hover:shadow-xl text-lg placeholder:text-slate-400"
+                                        required
+                                    />
+                                    <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none group-focus-within:text-blue-600">
+                                        <Mail className="h-6 w-6 text-slate-400 group-focus-within:text-blue-600 transition-colors" />
+                                    </div>
+                                </div>
+                            </div>
+
+                            {/* New Password Field */}
+                            <div className="group">
+                                <label className="block text-sm font-bold text-slate-900 mb-2.5 tracking-wide">New Password</label>
+                                <div className="relative">
+                                    <input
+                                        id="newPassword"
+                                        type={showPassword ? "text" : "password"}
+                                        value={newPassword}
+                                        onChange={(e) => setNewPassword(e.target.value)}
+                                        placeholder="Enter new password"
+                                        className="w-full pl-14 pr-14 py-4 bg-white/70 backdrop-blur-sm border-2 border-slate-200/60 rounded-2xl focus:ring-4 focus:ring-blue-500/20 focus:border-blue-500/70 shadow-lg transition-all duration-300 group-hover:border-slate-300 hover:shadow-xl text-lg placeholder:text-slate-400"
+                                        required
+                                    />
+                                    <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none group-focus-within:text-blue-600">
+                                        <Lock className="h-6 w-6 text-slate-400 group-focus-within:text-blue-600 transition-colors" />
+                                    </div>
+                                    <button
+                                        type="button"
+                                        onClick={() => setShowPassword(!showPassword)}
+                                        className="absolute inset-y-0 right-0 pr-4 flex items-center text-slate-400 hover:text-slate-700 focus:outline-none transition-colors"
+                                    >
+                                        {showPassword ? <EyeOff className="h-6 w-6" /> : <Eye className="h-6 w-6" />}
+                                    </button>
+                                </div>
+                            </div>
+
+                            <button
+                                type="submit"
+                                disabled={loading}
+                                className="group w-full bg-gradient-to-r from-blue-600 to-indigo-700 hover:from-blue-700 hover:to-indigo-800 text-white font-black py-5 rounded-2xl transition-all duration-300 shadow-2xl hover:shadow-3xl hover:-translate-y-1 disabled:opacity-60 disabled:cursor-not-allowed disabled:hover:shadow-xl flex items-center justify-center gap-3 text-lg backdrop-blur-sm border border-white/20"
+                            >
+                                <span>{loading ? "Resetting..." : "Reset Password"}</span>
+                                <ArrowRight className={`h-6 w-6 transition-transform ${loading ? '' : 'group-hover:translate-x-1'}`} />
+                            </button>
+
+                            <div className="text-center">
                                 <button
                                     type="button"
-                                    onClick={() => setShowPassword(!showPassword)}
-                                    className="absolute inset-y-0 right-0 pr-4 flex items-center text-slate-400 hover:text-slate-700 focus:outline-none transition-colors"
+                                    onClick={() => {
+                                        setShowForgotPassword(false);
+                                        setError("");
+                                    }}
+                                    className="text-sm font-semibold text-slate-600 hover:text-blue-600 transition-colors"
                                 >
-                                    {showPassword ? <EyeOff className="h-6 w-6" /> : <Eye className="h-6 w-6" />}
+                                    Back to Login
                                 </button>
                             </div>
-                        </div>
-
-                        <button
-                            type="submit"
-                            disabled={loading}
-                            className="group w-full bg-gradient-to-r from-blue-600 to-indigo-700 hover:from-blue-700 hover:to-indigo-800 text-white font-black py-5 rounded-2xl transition-all duration-300 shadow-2xl hover:shadow-3xl hover:-translate-y-1 disabled:opacity-60 disabled:cursor-not-allowed disabled:hover:shadow-xl flex items-center justify-center gap-3 text-lg backdrop-blur-sm border border-white/20"
-                        >
-                            <span>{loading ? "Signing In..." : "Sign In"}</span>
-                            <ArrowRight className={`h-6 w-6 transition-transform ${loading ? '' : 'group-hover:translate-x-1'}`} />
-                        </button>
-                    </form>
+                        </form>
+                    )}
 
                     <div className="text-center pt-8 border-t border-slate-200/50">
                         <p className="text-sm text-slate-600 font-medium">
