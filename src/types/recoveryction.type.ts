@@ -21,11 +21,10 @@ export interface RecoveryAction {
   type: RecoveryActionType | string;
   priority?: string;
   status: RecoveryActionStatus | string;
-  note?: string;
+  notes?: string;
   executedAt?: string | Date;
   executedBy?: string;
   createdAt: string | Date;
-
   // Client-side display fields (populated from relationships)
   borrowerName?: string;
 }

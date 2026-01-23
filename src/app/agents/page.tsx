@@ -209,32 +209,32 @@ export default function AgentsPage() {
         return matchesSearch && matchesStatus;
     });
 
-  const stats = [
-    {
-      icon: Users,
-      label: "Total Agents",
-      value: agents.length,
-      color: "bg-blue-500",
-    },
-    {
-      icon: UserCheck,
-      label: "Active",
-      value: agents.filter((a: Agent) => (a.status || "").toLowerCase() === "active").length,
-      color: "bg-green-500",
-    },
-    {
-      icon: Clock,
-      label: "Busy",
-      value: agents.filter((a: Agent) => (a.status || "").toLowerCase() === "busy").length,
-      color: "bg-orange-500",
-    },
-    {
-      icon: UserX,
-      label: "Offline",
-      value: agents.filter((a: Agent) => (a.status || "").toLowerCase() === "offline").length,
-      color: "bg-slate-400",
-    },
-  ];
+    const stats = [
+        {
+            icon: Users,
+            label: "Total Agents",
+            value: agents.length,
+            color: "bg-blue-500",
+        },
+        {
+            icon: UserCheck,
+            label: "Online",
+            value: agents.filter((a: Agent) => (a.status || "").toLowerCase() === "online").length,
+            color: "bg-green-500",
+        },
+        {
+            icon: Clock,
+            label: "Busy",
+            value: agents.filter((a: Agent) => (a.status || "").toLowerCase() === "busy").length,
+            color: "bg-orange-500",
+        },
+        {
+            icon: UserX,
+            label: "Offline",
+            value: agents.filter((a: Agent) => (a.status || "").toLowerCase() === "offline").length,
+            color: "bg-slate-400",
+        },
+    ];
 
     return (
         <div className="flex h-screen bg-slate-50 overflow-hidden">
@@ -276,28 +276,28 @@ export default function AgentsPage() {
                         ))}
                     </div>
 
-          {/* Filters Bar */}
-          <div className="bg-white p-4 rounded-xl border border-slate-200 mb-6 flex flex-col sm:flex-row gap-4">
-            <div className="relative flex-1">
-              <input
-                type="text"
-                placeholder="Search by name, email, location or phone..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-full pl-4 pr-4 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none text-sm bg-slate-50/50"
-              />
-            </div>
-            <select
-              value={statusFilter}
-              onChange={(e) => setStatusFilter(e.target.value)}
-              className="px-4 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none text-sm bg-slate-50/50 min-w-[140px]"
-            >
-              <option value="All">All Statuses</option>
-              <option value="Active">Active</option>
-              <option value="Busy">Busy</option>
-              <option value="Offline">Offline</option>
-            </select>
-          </div>
+                    {/* Filters Bar */}
+                    <div className="bg-white p-4 rounded-xl border border-slate-200 mb-6 flex flex-col sm:flex-row gap-4">
+                        <div className="relative flex-1">
+                            <input
+                                type="text"
+                                placeholder="Search by name, email, location or phone..."
+                                value={searchTerm}
+                                onChange={(e) => setSearchTerm(e.target.value)}
+                                className="w-full pl-4 pr-4 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none text-sm bg-slate-50/50"
+                            />
+                        </div>
+                        <select
+                            value={statusFilter}
+                            onChange={(e) => setStatusFilter(e.target.value)}
+                            className="px-4 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none text-sm bg-slate-50/50 min-w-[140px]"
+                        >
+                            <option value="All">All Statuses</option>
+                            <option value="Online">Online</option>
+                            <option value="Busy">Busy</option>
+                            <option value="Offline">Offline</option>
+                        </select>
+                    </div>
 
                     {/* Agent Cards Grid */}
                     {filteredAgents.length > 0 ? (

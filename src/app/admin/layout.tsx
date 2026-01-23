@@ -1,0 +1,22 @@
+"use client";
+
+import Sidebar from "@/components/layout/Sidebar";
+import Header from "@/components/layout/Header";
+
+export default function AdminLayout({
+    children,
+}: {
+    children: React.ReactNode;
+}) {
+    return (
+        <div className="flex h-screen bg-slate-50">
+            <Sidebar />
+            <div className="flex-1 ml-0 md:ml-64 flex flex-col overflow-hidden">
+                <Header />
+                <main className="flex-1 overflow-y-auto p-6">
+                    {children}
+                </main>
+            </div>
+        </div>
+    );
+}

@@ -1,10 +1,11 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Mail, Shield, MapPin, Phone, Calendar, Lock } from "lucide-react";
+import { Mail, Shield, MapPin, Phone, Calendar, Lock, X } from "lucide-react";
 import Header from "@/components/layout/Header";
 import Sidebar from "@/components/layout/Sidebar";
 import { authService } from "@/services/auth";
+import toast from "react-hot-toast";
 
 interface UserProfile {
     id: string;
@@ -18,6 +19,12 @@ interface UserProfile {
 export default function ProfilePage() {
     const [profile, setProfile] = useState<UserProfile | null>(null);
     const [loading, setLoading] = useState(true);
+
+    // Edit Profile State
+    const [isEditing, setIsEditing] = useState(false);
+    const [editFormData, setEditFormData] = useState({ name: "", email: "" });
+    const [isUpdating, setIsUpdating] = useState(false);
+
     const [passwordData, setPasswordData] = useState({ currentPassword: "", newPassword: "", confirmPassword: "" });
     const [passwordMessage, setPasswordMessage] = useState({ type: "", text: "" });
     const [isPasswordLoading, setIsPasswordLoading] = useState(false);
@@ -44,6 +51,33 @@ export default function ProfilePage() {
         fetchProfile();
     }, []);
 
+    // Prefill form when opening modal
+    useEffect(() => {
+        if (profile) {
+            setEditFormData({
+                name: profile.name || "",
+                email: profile.email || ""
+            });
+        }
+    }, [profile]);
+
+    const handleUpdateProfile = async (e: React.FormEvent) => {
+        e.preventDefault();
+        setIsUpdating(true);
+        try {
+            const updatedUser = await authService.updateProfile(editFormData);
+            setProfile(prev => prev ? { ...prev, ...updatedUser } : updatedUser);
+            setIsEditing(false);
+            toast.success("Profile updated successfully");
+        } catch (error: any) {
+            console.error("Failed to update profile:", error);
+            const msg = error.response?.data?.message || "Failed to update profile";
+            toast.error(msg);
+        } finally {
+            setIsUpdating(false);
+        }
+    };
+
     const handleChangePassword = async (e: React.FormEvent) => {
         e.preventDefault();
         setPasswordMessage({ type: "", text: "" });
@@ -56,6 +90,7 @@ export default function ProfilePage() {
         try {
             setIsPasswordLoading(true);
             await authService.changePassword({
+                email: profile?.email,
                 currentPassword: passwordData.currentPassword,
                 newPassword: passwordData.newPassword
             });
@@ -91,7 +126,10 @@ export default function ProfilePage() {
                                         <h2 className="text-2xl font-bold text-slate-900">{profile?.name || "Loading..."}</h2>
                                         <p className="text-slate-500">{profile?.role || "User Role"}</p>
                                     </div>
-                                    <button className="mt-4 md:mt-0 md:ml-auto px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 transition-colors w-full md:w-auto">
+                                    <button
+                                        onClick={() => setIsEditing(true)}
+                                        className="mt-4 md:mt-0 md:ml-auto px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 transition-colors w-full md:w-auto"
+                                    >
                                         Edit Profile
                                     </button>
                                 </div>
@@ -104,14 +142,14 @@ export default function ProfilePage() {
                                                 <Mail className="h-5 w-5 text-slate-400" />
                                                 <span>{profile?.email || "user@example.com"}</span>
                                             </div>
-                                            <div className="flex items-center gap-3 text-slate-600">
+                                            {/* <div className="flex items-center gap-3 text-slate-600">
                                                 <Phone className="h-5 w-5 text-slate-400" />
                                                 <span>+1 (555) 123-4567</span>
-                                            </div>
-                                            <div className="flex items-center gap-3 text-slate-600">
+                                            </div> */}
+                                            {/* <div className="flex items-center gap-3 text-slate-600">
                                                 <MapPin className="h-5 w-5 text-slate-400" />
                                                 <span>San Francisco, CA</span>
-                                            </div>
+                                            </div> */}
                                         </div>
                                     </div>
 
@@ -196,7 +234,7 @@ export default function ProfilePage() {
                         )}
 
                         {/* Activity or Stats Section (Optional but adds "Style") */}
-                        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                        {/* <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                             <div className="bg-white p-6 rounded-xl shadow-sm border border-slate-200">
                                 <div className="text-sm font-medium text-slate-500 mb-1">Total Actions</div>
                                 <div className="text-2xl font-bold text-slate-900">1,234</div>
@@ -209,11 +247,70 @@ export default function ProfilePage() {
                                 <div className="text-sm font-medium text-slate-500 mb-1">Efficiency Score</div>
                                 <div className="text-2xl font-bold text-green-600">98%</div>
                             </div>
-                        </div>
+                        </div> */}
 
                     </div>
                 </main>
             </div>
+            {/* Edit Profile Modal */}
+            {isEditing && (
+                <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 animate-in fade-in duration-200">
+                    <div className="bg-white rounded-2xl shadow-xl w-full max-w-md overflow-hidden animate-in zoom-in-95 duration-200">
+                        <div className="px-6 py-4 border-b border-slate-100 flex justify-between items-center">
+                            <h3 className="text-lg font-bold text-slate-800">Edit Profile</h3>
+                            <button
+                                onClick={() => setIsEditing(false)}
+                                className="text-slate-400 hover:text-slate-600 transition-colors"
+                            >
+                                <X className="h-5 w-5" />
+                            </button>
+                        </div>
+
+                        <form onSubmit={handleUpdateProfile} className="p-6 space-y-4">
+                            <div>
+                                <label className="block text-sm font-medium text-slate-700 mb-1">Full Name</label>
+                                <input
+                                    type="text"
+                                    value={editFormData.name}
+                                    onChange={(e) => setEditFormData({ ...editFormData, name: e.target.value })}
+                                    className="w-full px-4 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none transition-all"
+                                    placeholder="Enter your name"
+                                    required
+                                />
+                            </div>
+
+                            <div>
+                                <label className="block text-sm font-medium text-slate-700 mb-1">Email Address</label>
+                                <input
+                                    type="email"
+                                    value={editFormData.email}
+                                    onChange={(e) => setEditFormData({ ...editFormData, email: e.target.value })}
+                                    className="w-full px-4 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none transition-all"
+                                    placeholder="name@company.com"
+                                    required
+                                />
+                            </div>
+
+                            <div className="flex gap-3 pt-2">
+                                <button
+                                    type="button"
+                                    onClick={() => setIsEditing(false)}
+                                    className="flex-1 px-4 py-2 border border-slate-200 text-slate-600 font-medium rounded-lg hover:bg-slate-50 transition-colors"
+                                >
+                                    Cancel
+                                </button>
+                                <button
+                                    type="submit"
+                                    disabled={isUpdating}
+                                    className="flex-1 px-4 py-2 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
+                                >
+                                    {isUpdating ? "Saving..." : "Save Changes"}
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            )}
         </div>
     );
 }

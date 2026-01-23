@@ -1,30 +1,91 @@
 "use client";
 
+import { useState, useEffect } from "react";
 import Sidebar from "@/components/layout/Sidebar";
 import Header from "@/components/layout/Header";
-import { MapPin, Download, Users, TrendingUp, AlertCircle } from "lucide-react";
+import { MapPin, Download, Users, TrendingUp, AlertCircle, RefreshCw } from "lucide-react";
+import dynamic from "next/dynamic";
+import { borrowerService } from "@/services/borrowers.services";
+import { Borrower } from "@/types/borrower.types";
+
+const LocationMap = dynamic(
+    () => import('@/components/maps/LocationMap'),
+    {
+        ssr: false,
+        loading: () => <div className="h-full w-full bg-slate-100 animate-pulse rounded-lg flex items-center justify-center text-slate-400">Loading Map...</div>
+    }
+);
 
 export default function SkipTraceMapPage() {
+    const [borrowers, setBorrowers] = useState<Borrower[]>([]);
+    const [selectedBorrowerId, setSelectedBorrowerId] = useState<string | null>(null);
+    const [locationData, setLocationData] = useState<{ lat: number; lon: number; display_name?: string } | null>(null);
+    const [isLoading, setIsLoading] = useState(false);
+    const [isLocating, setIsLocating] = useState(false);
+    const [errorMsg, setErrorMsg] = useState<string | null>(null);
+
+    // Stats (Mock for now, could be dynamic later)
     const stats = [
-        { icon: Users, label: "Top Cities", value: "4", color: "bg-blue-500" },
-        { icon: TrendingUp, label: "High Priority", value: "2", color: "bg-green-500" },
-        { icon: AlertCircle, label: "Crime Risk", value: "1", color: "bg-red-500" },
-        { icon: MapPin, label: "Avg Traced by", value: "83%", color: "bg-orange-500" },
+        { icon: Users, label: "Total Borrowers", value: borrowers.length.toString(), color: "bg-blue-500" },
+        { icon: TrendingUp, label: "Active Traces", value: "2", color: "bg-green-500" },
+        { icon: AlertCircle, label: "High Risk", value: borrowers.filter(b => b.risk === 'high').length.toString(), color: "bg-red-500" },
+        { icon: MapPin, label: "Located", value: "12", color: "bg-orange-500" },
     ];
 
-    const hotspots = [
-        { city: "Mumbai", count: 124, percentage: 30 },
-        { city: "Delhi", count: 101, percentage: 25 },
-        { city: "Bangalore", count: 86, percentage: 21 },
-        { city: "Chennai", count: 56, percentage: 14 },
-        { city: "Hyderabad", count: 42, percentage: 10 },
-    ];
+    const fetchBorrowers = async () => {
+        setIsLoading(true);
+        try {
+            const data = await borrowerService.getAll();
+            // Normalize IDs to string for consistency
+            const normalized = Array.isArray(data) ? data.map((b: any) => ({ ...b, id: String(b.id || b._id) })) : [];
+            setBorrowers(normalized);
+        } catch (error) {
+            console.error("Failed to fetch borrowers", error);
+        } finally {
+            setIsLoading(false);
+        }
+    };
 
-    const candidates = [
-        { name: "Rahul Sharma", loanId: "LN-2024-001", amount: "₹125,000", probability: "92%", location: "Lokre" },
-        { name: "Priya Patel", loanId: "LN-2024-002", amount: "₹78,000", probability: "78%", location: "Lokre" },
-        { name: "Amit Kumar", loanId: "LN-2024-003", amount: "₹320,000", probability: "85%", location: "Lokre" },
-    ];
+    useEffect(() => {
+        fetchBorrowers();
+    }, []);
+
+    const handleSelectBorrower = async (id: string, name: string) => {
+        setSelectedBorrowerId(id);
+        setIsLocating(true);
+        setErrorMsg(null);
+        setLocationData(null); // Reset previous location
+
+        try {
+            const data = await borrowerService.fetchOsmLocation(id);
+            console.log("Location fetched:", data);
+
+            let loc = data;
+            if (Array.isArray(data) && data.length > 0) {
+                loc = data[0];
+            }
+
+            if (loc && (loc.lat || loc.latitude) && (loc.lon || loc.longitude)) {
+                setLocationData({
+                    lat: parseFloat(loc.lat || loc.latitude),
+                    lon: parseFloat(loc.lon || loc.longitude),
+                    display_name: loc.display_name || loc.address || `Location for ${name}`
+                });
+            } else {
+                setErrorMsg("Could not determine coordinates for this borrower.");
+            }
+        } catch (error: any) {
+            console.error("Failed to fetch location:", error);
+            // Handle 404 specifically if needed, though the service likely threw it
+            if (error.response?.status === 404) {
+                setErrorMsg("Location data not found for this borrower (404).");
+            } else {
+                setErrorMsg("Failed to fetch location from server.");
+            }
+        } finally {
+            setIsLocating(false);
+        }
+    };
 
     return (
         <div className="flex h-screen bg-slate-50">
@@ -39,11 +100,15 @@ export default function SkipTraceMapPage() {
                         <div className="flex items-center justify-between">
                             <div>
                                 <h1 className="text-2xl font-bold text-slate-900">Skip Trace Map</h1>
-                                <p className="text-sm text-slate-600 mt-1">Visualize skip-trace probability heatmap</p>
+                                <p className="text-sm text-slate-600 mt-1">Visualize skip-trace probability and locating borrowers</p>
                             </div>
                             <div className="flex items-center gap-3">
-                                <button className="flex items-center gap-2 px-4 py-2 border border-slate-200 rounded-lg hover:bg-slate-50 transition-colors">
-                                    <span className="text-sm font-medium">Learn</span>
+                                <button
+                                    onClick={fetchBorrowers}
+                                    className="flex items-center gap-2 px-4 py-2 border border-slate-200 rounded-lg hover:bg-slate-50 transition-colors"
+                                >
+                                    <RefreshCw className={`h-4 w-4 ${isLoading ? 'animate-spin' : ''}`} />
+                                    <span className="text-sm font-medium">Refresh List</span>
                                 </button>
                                 <button className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
                                     <Download className="h-4 w-4" />
@@ -75,144 +140,79 @@ export default function SkipTraceMapPage() {
 
                     {/* Main Content Grid */}
                     <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
-                        {/* Filters Sidebar */}
-                        <div className="bg-white p-6 rounded-xl border border-slate-200">
-                            <h2 className="text-lg font-bold text-slate-900 mb-4">Filters</h2>
+                        {/* List - Replaces Filters Sidebar for now, or we can combine */}
+                        <div className="bg-white p-6 rounded-xl border border-slate-200 h-[600px] flex flex-col">
+                            <h2 className="text-lg font-bold text-slate-900 mb-4">Select Borrower</h2>
 
-                            <div className="space-y-4">
-                                {/* Search */}
-                                <div>
-                                    <label className="text-sm font-medium text-slate-700 mb-2 block">Search</label>
-                                    <input
-                                        type="text"
-                                        placeholder="LN-2024-001 (Rahul)..."
-                                        className="w-full px-3 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none text-sm"
-                                    />
-                                </div>
-
-                                {/* Risk Level */}
-                                <div>
-                                    <label className="text-sm font-medium text-slate-700 mb-2 block">Risk Level</label>
-                                    <select className="w-full px-3 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none text-sm">
-                                        <option>All Levels</option>
-                                        <option>Critical</option>
-                                        <option>High</option>
-                                        <option>Medium</option>
-                                        <option>Low</option>
-                                    </select>
-                                </div>
-
-                                {/* Map Probability */}
-                                <div>
-                                    <label className="text-sm font-medium text-slate-700 mb-2 block">Map Probability</label>
-                                    <div className="flex items-center justify-between text-sm text-slate-600 mb-2">
-                                        <span>0%</span>
-                                        <span className="text-orange-600 font-semibold">30%</span>
-                                    </div>
-                                    <input
-                                        type="range"
-                                        min="0"
-                                        max="100"
-                                        defaultValue="30"
-                                        className="w-full"
-                                    />
-                                </div>
-
-                                {/* Hotspots */}
-                                <div>
-                                    <label className="text-sm font-medium text-slate-700 mb-2 block">Hotspots</label>
-                                    <div className="space-y-2">
-                                        {hotspots.map((hotspot, i) => (
-                                            <div key={i} className="flex items-center justify-between p-2 hover:bg-slate-50 rounded-lg transition-colors cursor-pointer">
-                                                <div className="flex items-center gap-2">
-                                                    <MapPin className="h-4 w-4 text-orange-500" />
-                                                    <span className="text-sm text-slate-700">{hotspot.city}</span>
-                                                </div>
-                                                <span className="text-xs font-semibold text-orange-600">{hotspot.count}</span>
+                            <div className="overflow-y-auto flex-1 space-y-2 pr-2">
+                                {isLoading ? (
+                                    <p className="text-center text-slate-500 py-4">Loading borrowers...</p>
+                                ) : borrowers.length === 0 ? (
+                                    <p className="text-center text-slate-500 py-4">No borrowers found.</p>
+                                ) : (
+                                    borrowers.map((b) => (
+                                        <div
+                                            key={b.id}
+                                            onClick={() => handleSelectBorrower(String(b.id), b.name)}
+                                            className={`p-3 rounded-lg border cursor-pointer transition-colors ${selectedBorrowerId === String(b.id)
+                                                    ? "bg-blue-50 border-blue-500"
+                                                    : "border-slate-100 hover:bg-slate-50"
+                                                }`}
+                                        >
+                                            <p className="font-semibold text-slate-900 text-sm">{b.name}</p>
+                                            <p className="text-xs text-slate-500 truncate">{b.email || b.phone || "No contact info"}</p>
+                                            <div className="flex items-center gap-1 mt-1">
+                                                <MapPin className="w-3 h-3 text-slate-400" />
+                                                <span className="text-xs text-slate-400 truncate">{b.location || "Unknown"}</span>
                                             </div>
-                                        ))}
-                                    </div>
-                                </div>
+                                        </div>
+                                    ))
+                                )}
                             </div>
                         </div>
 
-                        {/* Map and Candidates */}
+                        {/* Map Area */}
                         <div className="lg:col-span-3 space-y-6">
-                            {/* Map */}
-                            <div className="bg-white p-6 rounded-xl border border-slate-200">
-                                <div className="h-96 bg-slate-100 rounded-lg relative overflow-hidden mb-4">
-                                    {/* Placeholder for map */}
-                                    <div className="absolute inset-0 flex items-center justify-center">
-                                        <div className="text-center">
-                                            <MapPin className="h-16 w-16 text-orange-500 mx-auto mb-2" />
-                                            <p className="text-slate-600 font-medium">Interactive Map View</p>
-                                            <p className="text-sm text-slate-500">Skip trace locations and hotspots</p>
-                                        </div>
-                                    </div>
-
-                                    {/* Map markers simulation */}
-                                    <div className="absolute top-1/4 left-1/3">
-                                        <div className="h-8 w-8 bg-orange-500 rounded-full flex items-center justify-center shadow-lg animate-pulse">
-                                            <MapPin className="h-5 w-5 text-white" />
-                                        </div>
-                                    </div>
-                                    <div className="absolute top-1/2 right-1/3">
-                                        <div className="h-8 w-8 bg-red-500 rounded-full flex items-center justify-center shadow-lg animate-pulse">
-                                            <MapPin className="h-5 w-5 text-white" />
-                                        </div>
-                                    </div>
-                                    <div className="absolute bottom-1/3 left-1/2">
-                                        <div className="h-8 w-8 bg-blue-500 rounded-full flex items-center justify-center shadow-lg animate-pulse">
-                                            <MapPin className="h-5 w-5 text-white" />
-                                        </div>
-                                    </div>
-
-                                    {/* Legend */}
-                                    <div className="absolute bottom-4 left-4 bg-white p-3 rounded-lg shadow-md">
-                                        <div className="text-xs font-semibold text-slate-700 mb-2">Legend</div>
-                                        <div className="space-y-1">
-                                            <div className="flex items-center gap-2">
-                                                <div className="h-3 w-3 rounded-full bg-orange-500"></div>
-                                                <span className="text-xs text-slate-600">Untraced</span>
-                                            </div>
-                                            <div className="flex items-center gap-2">
-                                                <div className="h-3 w-3 rounded-full bg-blue-500"></div>
-                                                <span className="text-xs text-slate-600">Borrowed</span>
-                                            </div>
-                                            <div className="flex items-center gap-2">
-                                                <div className="h-3 w-3 rounded-full bg-red-500"></div>
-                                                <span className="text-xs text-slate-600">Reject</span>
+                            <div className="bg-white p-6 rounded-xl border border-slate-200 h-[600px] flex flex-col">
+                                <h2 className="text-lg font-bold text-slate-900 mb-4">
+                                    {locationData ? "Location Map" : "Interactive Map"}
+                                </h2>
+                                <div className="flex-1 bg-slate-100 rounded-lg relative overflow-hidden border border-slate-200">
+                                    {isLocating ? (
+                                        <div className="absolute inset-0 flex items-center justify-center bg-white/80 z-10">
+                                            <div className="flex flex-col items-center gap-3">
+                                                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-orange-500"></div>
+                                                <p className="text-slate-600 font-medium">Fetching Coordinates...</p>
                                             </div>
                                         </div>
-                                    </div>
-                                </div>
-                            </div>
-
-                            {/* Candidate Addresses */}
-                            <div className="bg-white p-6 rounded-xl border border-slate-200">
-                                <h2 className="text-lg font-bold text-slate-900 mb-4">Candidate Addresses</h2>
-                                <div className="space-y-3">
-                                    {candidates.map((candidate, i) => (
-                                        <div key={i} className="flex items-center justify-between p-4 border border-slate-200 rounded-lg hover:shadow-md transition-shadow">
-                                            <div className="flex items-center gap-4">
-                                                <div className="h-10 w-10 bg-orange-500 rounded-full flex items-center justify-center">
-                                                    <span className="text-white font-semibold text-sm">{i + 1}</span>
-                                                </div>
-                                                <div>
-                                                    <div className="font-semibold text-slate-900">{candidate.name}</div>
-                                                    <div className="text-sm text-slate-600">{candidate.loanId} • {candidate.amount}</div>
-                                                </div>
+                                    ) : locationData ? (
+                                        <>
+                                            <div className="absolute top-0 left-0 right-0 p-2 bg-white/90 z-[1000] border-b text-center text-sm font-medium text-slate-700">
+                                                {locationData.display_name}
                                             </div>
-                                            <div className="text-right">
-                                                <div className="text-sm font-semibold text-orange-600">{candidate.probability}</div>
-                                                <div className="text-xs text-slate-500">probability</div>
-                                            </div>
-                                            <div className="flex items-center gap-1 text-slate-600">
-                                                <MapPin className="h-4 w-4" />
-                                                <span className="text-sm">{candidate.location}</span>
+                                            <LocationMap
+                                                latitude={locationData.lat}
+                                                longitude={locationData.lon}
+                                                displayName={locationData.display_name}
+                                            />
+                                        </>
+                                    ) : (
+                                        <div className="absolute inset-0 flex items-center justify-center text-center p-6">
+                                            <div>
+                                                {errorMsg ? (
+                                                    <div className="text-red-500 mb-2 flex flex-col items-center">
+                                                        <AlertCircle className="w-10 h-10 mb-2" />
+                                                        <p className="font-semibold">{errorMsg}</p>
+                                                    </div>
+                                                ) : (
+                                                    <MapPin className="h-16 w-16 text-slate-300 mx-auto mb-2" />
+                                                )}
+                                                <p className="text-slate-500">
+                                                    {errorMsg ? "Please try another borrower or check the address." : "Select a borrower from the list to view their location."}
+                                                </p>
                                             </div>
                                         </div>
-                                    ))}
+                                    )}
                                 </div>
                             </div>
                         </div>
