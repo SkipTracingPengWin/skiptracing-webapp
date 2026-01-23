@@ -181,6 +181,7 @@ export default function RecoveryActionsPage() {
                                         <tr>
                                             <th className="px-6 py-3 text-left text-xs font-semibold text-slate-600 uppercase">Type</th>
                                             <th className="px-6 py-3 text-left text-xs font-semibold text-slate-600 uppercase">Borrower</th>
+                                            <th className="px-6 py-3 text-left text-xs font-semibold text-slate-600 uppercase">Priority</th>
                                             <th className="px-6 py-3 text-left text-xs font-semibold text-slate-600 uppercase">Executed At</th>
                                             <th className="px-6 py-3 text-left text-xs font-semibold text-slate-600 uppercase">Status</th>
                                             <th className="px-6 py-3 text-left text-xs font-semibold text-slate-600 uppercase">Created</th>
@@ -203,6 +204,14 @@ export default function RecoveryActionsPage() {
                                                     </td>
 
                                                     <td className="px-6 py-4 text-sm">{action.borrowerName || "Unknown"}</td>
+                                                    <td className="px-6 py-4">
+                                                        <span className={`px-2 py-1 rounded-full text-xs font-semibold ${action.priority === "HIGH" ? "bg-red-100 text-red-700" :
+                                                                action.priority === "MEDIUM" ? "bg-yellow-100 text-yellow-700" :
+                                                                    "bg-blue-100 text-blue-700"
+                                                            }`}>
+                                                            {action.priority || "MEDIUM"}
+                                                        </span>
+                                                    </td>
 
                                                     <td className="px-6 py-4 text-sm flex items-center gap-2">
                                                         {action.executedAt ? (

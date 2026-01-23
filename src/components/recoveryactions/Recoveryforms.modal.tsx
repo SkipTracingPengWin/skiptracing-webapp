@@ -103,9 +103,10 @@ export default function ActionModal({
         borrowerId: "",
         type: "",
         status: "PENDING",
+        priority: "MEDIUM",
         executedAt: "",
         executedBy: "",
-        note: "",
+        notes: "",
     });
 
     useEffect(() => {
@@ -121,9 +122,10 @@ export default function ActionModal({
                 borrowerId: "",
                 type: "",
                 status: "PENDING",
+                priority: "MEDIUM",
                 executedAt: "",
                 executedBy: "",
-                note: "",
+                notes: "",
             });
         }
     }, [isOpen]);
@@ -149,8 +151,9 @@ export default function ActionModal({
                 borrowerId: formData.borrowerId,
                 type: formData.type,
                 status: formData.status,
+                priority: formData.priority,
                 executedBy: formData.executedBy,
-                note: formData.note,
+                notes: formData.notes,
             };
 
             // Only add executedAt if it has a value
@@ -186,6 +189,12 @@ export default function ActionModal({
         { value: RecoveryActionStatus.SENT, name: "Sent" },
         { value: RecoveryActionStatus.FAILED, name: "Failed" },
         { value: RecoveryActionStatus.COMPLETED, name: "Completed" },
+    ];
+
+    const priorityOptions = [
+        { value: "HIGH", name: "High" },
+        { value: "MEDIUM", name: "Medium" },
+        { value: "LOW", name: "Low" },
     ];
 
     return (
@@ -242,6 +251,16 @@ export default function ActionModal({
                         isRequired
                     />
 
+                    {/* Priority (Required) */}
+                    <SelectField
+                        label="Priority"
+                        name="priority"
+                        options={priorityOptions}
+                        value={formData.priority}
+                        onChange={handleChange}
+                        isRequired
+                    />
+
                     {/* Execution Date & Time (Optional) */}
                     <DateTimeField
                         label="Execution Date & Time (optional)"
@@ -259,12 +278,12 @@ export default function ActionModal({
                         onChange={handleChange}
                     />
 
-                    {/* Note (Optional) */}
+                    {/* Notes (Optional) */}
                     <TextAreaField
-                        label="Note (optional)"
-                        name="note"
+                        label="Notes (optional)"
+                        name="notes"
                         placeholder="Additional details about the action"
-                        value={formData.note}
+                        value={formData.notes}
                         onChange={handleChange}
                     />
 

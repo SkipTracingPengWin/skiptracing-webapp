@@ -105,8 +105,12 @@ export const useRecoveryActionsStore = create<RecoveryActionsState>()(
           payload.executedAt = actionData.executedAt;
         }
 
-        if (actionData.note) {
-          payload.note = actionData.note;
+        if (actionData.priority) {
+          payload.priority = actionData.priority;
+        }
+
+        if (actionData.notes) {
+          payload.notes = actionData.notes;
         }
 
         if (actionData.executedBy) {
