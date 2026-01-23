@@ -5,15 +5,70 @@ export const agentServices = {
     getAll: async () => {
         try {
             const response = await api.get(`/agents`);
-            console.log("📊 Fetched Agents RAW Data:", JSON.stringify(response.data, null, 2));
-            return response.data;
+            return agentServices._mapFromBackend(response.data);
         } catch (error: any) {
             console.error("❌ Error in getAll agents:", error.message);
             throw error;
         }
     },
+    /**
+     * Maps frontend terminology to backend terminology
+     */
+    _mapToBackend: (data: any) => {
+        const mapped = { ...data };
+        if (mapped.status === 'LEAVE') {
+            mapped.status = 'ON_BREAK';
+        }
+        return mapped;
+    },
+
+    /**
+     * Maps backend terminology back to frontend terminology
+     */
+    _mapFromBackend: (data: any) => {
+        if (!data) return data;
+
+        // Handle array of agents
+        if (data.agents && Array.isArray(data.agents)) {
+            return {
+                ...data,
+                agents: data.agents.map((a: any) => ({
+                    ...a,
+                    status: a.status === 'ON_BREAK' ? 'LEAVE' : a.status
+                }))
+            };
+        }
+
+        // Handle single agent (might be nested under 'agent' or in the root)
+        const processAgent = (a: any) => {
+            if (!a) return a;
+            return {
+                ...a,
+                status: a.status === 'ON_BREAK' ? 'LEAVE' : a.status
+            };
+        };
+
+        if (data.agent) {
+            return {
+                ...data,
+                agent: processAgent(data.agent)
+            };
+        }
+
+        // If it's the agent object itself
+        if (data.id || data._id) {
+            return processAgent(data);
+        }
+
+        return data;
+    },
+
     _sanitizeData: (data: any) => {
-        const sanitized = { ...data };
+        // First map terminology
+        let sanitized = agentServices._mapToBackend(data);
+
+        // Then perform standard sanitization
+        sanitized = { ...sanitized };
 
         // Remove internal IDs - backend doesn't want them in the body
         delete sanitized.id;
@@ -48,7 +103,6 @@ export const agentServices = {
                 delete sanitized[key];
             }
             // Only delete empty strings if they are NOT required fields we want to pass
-            // For now, let's stick to deleting truly empty values
             if (sanitized[key] === '') {
                 delete sanitized[key];
             }
@@ -61,8 +115,7 @@ export const agentServices = {
         try {
             const response = await api.get(`/agents/${id}`);
             console.log("🚀 Fetched Agent with ID:", id);
-            console.log("📊 Fetched Agent RAW Data:", JSON.stringify(response.data, null, 2));
-            return response.data;
+            return agentServices._mapFromBackend(response.data);
         } catch (error: any) {
             console.error(`❌ Error in getById for Agent ID ${id}:`, error.message);
             throw error;
@@ -74,17 +127,13 @@ export const agentServices = {
             console.log("🚀 Creating Agent with payload:", JSON.stringify(sanitizedData, null, 2));
             const response = await api.post(`/agents`, sanitizedData);
             console.log("✅ Agent Create successful:", response.data);
-            return response.data;
+            return agentServices._mapFromBackend(response.data);
         } catch (error: any) {
             const errorData = error.response?.data;
             const errorMsg = errorData?.message || errorData?.error || error.message;
             console.error("❌ Agent Create failed. Details:", JSON.stringify({
                 status: error.response?.status,
                 data: error.response?.data,
-                message: error.message,
-                url: error.config?.url,
-                method: error.config?.method,
-                payload: error.config?.data
             }, null, 2));
             throw new Error(errorMsg);
         }
@@ -98,19 +147,17 @@ export const agentServices = {
             const sanitizedData = agentServices._sanitizeData(data);
 
             console.log(`📡 Updating Agent with Profile ID: ${id}`);
-            console.log(`🚀 URL: PUT /agents/${id}`);
             console.log(`🚀 Payload (body):`, JSON.stringify(sanitizedData, null, 2));
 
             // CORRECT API: PUT /agents/{agentId} with body containing only updated fields
             const response = await api.put(`/agents/${id}`, sanitizedData);
 
             console.log(`✅ Agent ${id} Update successful:`, response.data);
-            return response.data;
+            return agentServices._mapFromBackend(response.data);
         } catch (error: any) {
             const errorMsg = error.response?.data?.message || error.message;
             const status = error.response?.status;
             console.error(`❌ Agent Update Error [ID: ${id}] - Status: ${status}:`, errorMsg);
-            console.error(`   Full error:`, error.response?.data);
             throw new Error(errorMsg);
         }
     },

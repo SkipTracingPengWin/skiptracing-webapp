@@ -16,6 +16,7 @@ const initialDashboardStats: DashboardStats = {
 
 interface DashboardStatsState {
     dashboardStats: DashboardStats;
+    loading: boolean;
     fetchStats: () => Promise<void>;
     updateDashboardStats: (updates: Partial<DashboardStats>) => void;
 }
@@ -24,21 +25,26 @@ export const useDashboardStatsStore = create<DashboardStatsState>()(
     devtools(
         (set) => ({
             dashboardStats: initialDashboardStats,
+            loading: false,
 
             fetchStats: async () => {
+                set({ loading: true });
                 try {
                     const data = await dashboardService.getStats();
-                    set({ dashboardStats: data });
+                    set({ dashboardStats: data, loading: false });
                 } catch (error) {
                     console.error('Failed to fetch dashboard stats:', error);
+                    set({ loading: false });
                 }
             },
             updateDashboardStats: async (updates) => {
+                set({ loading: true });
                 try {
                     const updatedData = await dashboardService.updateStats(updates);
-                    set({ dashboardStats: updatedData });
+                    set({ dashboardStats: updatedData, loading: false });
                 } catch (error) {
                     console.error('Failed to update dashboard stats:', error);
+                    set({ loading: false });
                 }
             },
         }),

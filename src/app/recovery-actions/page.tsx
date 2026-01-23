@@ -4,6 +4,7 @@ import Sidebar from "@/components/layout/Sidebar";
 import Header from "@/components/layout/Header";
 import { useRecoveryActionsStore } from "@/store/recoveryactionsStore";
 import { useAuthStore } from "@/store/auth.store";
+import LoadingSpinner from "@/components/ui/LoadingSpinner";
 import { MessageSquare, Phone, MapPin, FileText, Plus, Calendar, MoreVertical } from "lucide-react";
 import { useState, useEffect } from "react";
 import ActionModal from "@/components/recoveryactions/Recoveryforms.modal";
@@ -170,8 +171,8 @@ export default function RecoveryActionsPage() {
                     {/* TABLE */}
                     <div className="bg-white rounded-xl border border-slate-200 overflow-hidden shadow-sm">
                         {isLoading ? (
-                            <div className="px-6 py-12 text-center text-slate-600">
-                                Loading actions...
+                            <div className="px-6 py-12">
+                                <LoadingSpinner text="Loading recovery actions..." />
                             </div>
                         ) : (
                             <div className="overflow-x-auto">

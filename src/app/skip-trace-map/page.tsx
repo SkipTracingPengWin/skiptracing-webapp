@@ -1,30 +1,10 @@
 "use client";
 
-import { useState, useEffect } from "react";
 import Sidebar from "@/components/layout/Sidebar";
 import Header from "@/components/layout/Header";
-import { MapPin, Download, Users, TrendingUp, AlertCircle, RefreshCw } from "lucide-react";
-import dynamic from "next/dynamic";
-import { borrowerService } from "@/services/borrowers.services";
-import { Borrower } from "@/types/borrower.types";
-
-const LocationMap = dynamic(
-    () => import('@/components/maps/LocationMap'),
-    {
-        ssr: false,
-        loading: () => <div className="h-full w-full bg-slate-100 animate-pulse rounded-lg flex items-center justify-center text-slate-400">Loading Map...</div>
-    }
-);
+import { MapPin, Download, Users, TrendingUp, AlertCircle } from "lucide-react";
 
 export default function SkipTraceMapPage() {
-    const [borrowers, setBorrowers] = useState<Borrower[]>([]);
-    const [selectedBorrowerId, setSelectedBorrowerId] = useState<string | null>(null);
-    const [locationData, setLocationData] = useState<{ lat: number; lon: number; display_name?: string } | null>(null);
-    const [isLoading, setIsLoading] = useState(false);
-    const [isLocating, setIsLocating] = useState(false);
-    const [errorMsg, setErrorMsg] = useState<string | null>(null);
-
-    // Stats (Mock for now, could be dynamic later)
     const stats = [
         { icon: Users, label: "Total Borrowers", value: borrowers.length.toString(), color: "bg-blue-500" },
         { icon: TrendingUp, label: "Active Traces", value: "2", color: "bg-green-500" },
@@ -32,60 +12,19 @@ export default function SkipTraceMapPage() {
         { icon: MapPin, label: "Located", value: "12", color: "bg-orange-500" },
     ];
 
-    const fetchBorrowers = async () => {
-        setIsLoading(true);
-        try {
-            const data = await borrowerService.getAll();
-            // Normalize IDs to string for consistency
-            const normalized = Array.isArray(data) ? data.map((b: any) => ({ ...b, id: String(b.id || b._id) })) : [];
-            setBorrowers(normalized);
-        } catch (error) {
-            console.error("Failed to fetch borrowers", error);
-        } finally {
-            setIsLoading(false);
-        }
-    };
+    const hotspots = [
+        { city: "Mumbai", count: 124, percentage: 30 },
+        { city: "Delhi", count: 101, percentage: 25 },
+        { city: "Bangalore", count: 86, percentage: 21 },
+        { city: "Chennai", count: 56, percentage: 14 },
+        { city: "Hyderabad", count: 42, percentage: 10 },
+    ];
 
-    useEffect(() => {
-        fetchBorrowers();
-    }, []);
-
-    const handleSelectBorrower = async (id: string, name: string) => {
-        setSelectedBorrowerId(id);
-        setIsLocating(true);
-        setErrorMsg(null);
-        setLocationData(null); // Reset previous location
-
-        try {
-            const data = await borrowerService.fetchOsmLocation(id);
-            console.log("Location fetched:", data);
-
-            let loc = data;
-            if (Array.isArray(data) && data.length > 0) {
-                loc = data[0];
-            }
-
-            if (loc && (loc.lat || loc.latitude) && (loc.lon || loc.longitude)) {
-                setLocationData({
-                    lat: parseFloat(loc.lat || loc.latitude),
-                    lon: parseFloat(loc.lon || loc.longitude),
-                    display_name: loc.display_name || loc.address || `Location for ${name}`
-                });
-            } else {
-                setErrorMsg("Could not determine coordinates for this borrower.");
-            }
-        } catch (error: any) {
-            console.error("Failed to fetch location:", error);
-            // Handle 404 specifically if needed, though the service likely threw it
-            if (error.response?.status === 404) {
-                setErrorMsg("Location data not found for this borrower (404).");
-            } else {
-                setErrorMsg("Failed to fetch location from server.");
-            }
-        } finally {
-            setIsLocating(false);
-        }
-    };
+    const candidates = [
+        { name: "Rahul Sharma", loanId: "LN-2024-001", amount: "₹125,000", probability: "92%", location: "Lokre" },
+        { name: "Priya Patel", loanId: "LN-2024-002", amount: "₹78,000", probability: "78%", location: "Lokre" },
+        { name: "Amit Kumar", loanId: "LN-2024-003", amount: "₹320,000", probability: "85%", location: "Lokre" },
+    ];
 
     return (
         <div className="flex h-screen bg-slate-50">
@@ -155,8 +94,8 @@ export default function SkipTraceMapPage() {
                                             key={b.id}
                                             onClick={() => handleSelectBorrower(String(b.id), b.name)}
                                             className={`p-3 rounded-lg border cursor-pointer transition-colors ${selectedBorrowerId === String(b.id)
-                                                    ? "bg-blue-50 border-blue-500"
-                                                    : "border-slate-100 hover:bg-slate-50"
+                                                ? "bg-blue-50 border-blue-500"
+                                                : "border-slate-100 hover:bg-slate-50"
                                                 }`}
                                         >
                                             <p className="font-semibold text-slate-900 text-sm">{b.name}</p>

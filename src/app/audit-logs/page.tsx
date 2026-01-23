@@ -8,6 +8,7 @@ import { useEffect, useState, useMemo } from "react";
 import { format } from "date-fns";
 import { AuditModule, AuditLog } from "@/types/audit.types";
 import LogDetailsModal from "@/components/auditlogs/LogDetailsModal";
+import LoadingSpinner from "@/components/ui/LoadingSpinner";
 import { Eye } from "lucide-react";
 import {
     Table,
@@ -250,11 +251,8 @@ export default function AuditLogsPage() {
                                 <TableBody>
                                     {loading ? (
                                         <TableRow>
-                                            <TableCell colSpan={7} className="px-6 py-16 text-center">
-                                                <div className="flex flex-col items-center justify-center">
-                                                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mb-3"></div>
-                                                    <p className="text-slate-500">Loading audit logs...</p>
-                                                </div>
+                                            <TableCell colSpan={7} className="h-64">
+                                                <LoadingSpinner text="Loading audit logs..." />
                                             </TableCell>
                                         </TableRow>
                                     ) : filteredLogs.length > 0 ? (

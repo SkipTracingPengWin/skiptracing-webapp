@@ -15,4 +15,4 @@ export interface Agent {
     password?: string;
 }
 
-export type AgentStatus = "ONLINE" | "BUSY" | "OFFLINE" | "LEAVE";
+export type AgentStatus = "Active" | "Busy" | "Offline" | "On Leave";

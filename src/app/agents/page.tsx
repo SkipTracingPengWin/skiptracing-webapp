@@ -19,7 +19,8 @@ import {
 import { useAgentStore } from "@/store/agents.store";
 import { useAuthStore } from "@/store/auth.store";
 import AddNewAgentModal from "@/components/agents/addnewagent.modal";
-import { Agent } from "@/types";
+import LoadingSpinner from "@/components/ui/LoadingSpinner";
+import { Agent, AgentStatus } from "@/types";
 
 // Agent Card Component
 interface AgentCardProps {
@@ -31,12 +32,15 @@ function AgentCard({ agent }: AgentCardProps) {
     const { openModal, updateAgent } = useAgentStore();
     const { user } = useAuthStore();
     const isAdminOrManager = user?.role === 'ADMIN' || user?.role === 'MANAGER';
+    const isAgent = user?.role === 'AGENT';
+    // Show actions if admin/manager OR if it's the agent themselves (which page.tsx filters for)
+    const showActions = isAdminOrManager || isAgent;
 
     const statusStyles: Record<string, { bg: string; text: string; dot: string; hover: string }> = {
         ONLINE: { bg: "bg-green-50", text: "text-green-700", dot: "bg-green-500", hover: "hover:bg-green-100" },
-        BUSY: { bg: "bg-orange-50", text: "text-orange-700", dot: "bg-orange-500", hover: "hover:bg-orange-100" },
         OFFLINE: { bg: "bg-slate-50", text: "text-slate-600", dot: "bg-slate-400", hover: "hover:bg-slate-100" },
-        ON_BREAK: { bg: "bg-blue-50", text: "text-blue-700", dot: "bg-blue-500", hover: "hover:bg-blue-100" },
+        BUSY: { bg: "bg-orange-50", text: "text-orange-700", dot: "bg-orange-500", hover: "hover:bg-orange-100" },
+        LEAVE: { bg: "bg-red-50", text: "text-red-700", dot: "bg-red-500", hover: "hover:bg-red-100" },
     };
 
     const currentStatus = (agent.status || "OFFLINE").toUpperCase();
@@ -68,16 +72,18 @@ function AgentCard({ agent }: AgentCardProps) {
                     </div>
                 </div>
                 <div className="relative">
-                    <button
-                        onClick={() => setIsMenuOpen(!isMenuOpen)}
-                        className="p-2 hover:bg-slate-50 rounded-lg transition-colors"
-                    >
-                        <MoreVertical className="h-5 w-5 text-slate-400" />
-                    </button>
+                    {showActions && (
+                        <button
+                            onClick={() => setIsMenuOpen(!isMenuOpen)}
+                            className="p-2 hover:bg-slate-50 rounded-lg transition-colors"
+                        >
+                            <MoreVertical className="h-5 w-5 text-slate-400" />
+                        </button>
+                    )}
 
                     {isMenuOpen && (
                         <div className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-xl border border-slate-100 z-50 py-1">
-                            {isAdminOrManager && (
+                            {showActions && (
                                 <button
                                     onClick={() => {
                                         console.log("✏️ Editing agent:", agent.id);
@@ -86,7 +92,7 @@ function AgentCard({ agent }: AgentCardProps) {
                                     }}
                                     className="w-full px-4 py-2 text-left text-sm text-slate-700 hover:bg-slate-50 flex items-center gap-2"
                                 >
-                                    <Edit className="h-4 w-4" /> Edit Agent
+                                    <Edit className="h-4 w-4" /> {isAgent ? "Update" : "Edit Agent"}
                                 </button>
                             )}
                             {isAdminOrManager && (
@@ -124,11 +130,19 @@ function AgentCard({ agent }: AgentCardProps) {
                 <div className="flex items-center gap-2">
                     <button
                         onClick={() => {
-                            const newStatus = currentStatus === "OFFLINE" ? "ONLINE" : "OFFLINE";
-                            updateAgent(agent.id, { status: newStatus });
+                            if (!showActions) return;
+
+                            const statuses: AgentStatus[] = ["ONLINE", "OFFLINE", "BUSY", "LEAVE"];
+                            const currentIndex = statuses.indexOf(currentStatus as AgentStatus);
+                            // If currentStatus is not in the list (e.g. invalid), default to index 0 (ONLINE)
+                            const validIndex = currentIndex === -1 ? 0 : currentIndex;
+                            const nextStatus = statuses[(validIndex + 1) % statuses.length];
+
+                            updateAgent(agent.id, { status: nextStatus });
                         }}
-                        className={`flex items-center gap-2 px-3 py-1.5 ${style.bg} ${style.hover} ${style.text} rounded-full transition-all duration-300 group/status shadow-sm border border-transparent hover:border-slate-200 active:scale-95`}
-                        title={`Click to go ${currentStatus === "OFFLINE" ? "online" : "offline"}`}
+                        className={`flex items-center gap-2 px-3 py-1.5 ${style.bg} ${style.hover} ${style.text} rounded-full transition-all duration-300 group/status shadow-sm border border-transparent hover:border-slate-200 active:scale-95 ${!showActions ? 'opacity-70 cursor-not-allowed pointer-events-none' : ''}`}
+                        title={showActions ? `Current status: ${currentStatus.replace("_", " ")}. Click to change.` : "Status is managed by admin"}
+                        disabled={!showActions}
                     >
                         <div className="relative flex items-center justify-center">
                             {currentStatus === "ONLINE" && (
@@ -177,13 +191,13 @@ export default function AgentsPage() {
     const [statusFilter, setStatusFilter] = useState("All");
 
     // Zustand Store
-    const { agents, fetchAgents, openModal } = useAgentStore();
+    const { agents, fetchAgents, openModal, loading } = useAgentStore();
 
     const { user } = useAuthStore();
     const isAdminOrManager = user?.role === 'ADMIN' || user?.role === 'MANAGER';
 
     useEffect(() => {
-        if (user?.role === "ADMIN" || user?.role === "MANAGER") {
+        if (user?.role === "ADMIN" || user?.role === "MANAGER" || user?.role === "AGENT") {
             fetchAgents();
         }
     }, [fetchAgents, user?.role]);
@@ -206,6 +220,11 @@ export default function AgentsPage() {
             statusFilter === "All" ||
             status.toLowerCase() === statusFilter.toLowerCase();
 
+        // Return only the logged-in agent's card if doing restricted view
+        if (user?.role === "AGENT") {
+            return matchesSearch && matchesStatus && agent.userId === user.id;
+        }
+
         return matchesSearch && matchesStatus;
     });
 
@@ -218,8 +237,8 @@ export default function AgentsPage() {
         },
         {
             icon: UserCheck,
-            label: "Online",
-            value: agents.filter((a: Agent) => (a.status || "").toLowerCase() === "online").length,
+            label: "Active",
+            value: agents.filter((a: Agent) => (a.status || "").toLowerCase() === "active").length,
             color: "bg-green-500",
         },
         {
@@ -293,14 +312,16 @@ export default function AgentsPage() {
                             className="px-4 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none text-sm bg-slate-50/50 min-w-[140px]"
                         >
                             <option value="All">All Statuses</option>
-                            <option value="Online">Online</option>
+                            <option value="Active">Active</option>
                             <option value="Busy">Busy</option>
                             <option value="Offline">Offline</option>
                         </select>
                     </div>
 
                     {/* Agent Cards Grid */}
-                    {filteredAgents.length > 0 ? (
+                    {loading ? (
+                        <LoadingSpinner text="Loading agents..." />
+                    ) : filteredAgents.length > 0 ? (
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 pb-8">
                             {filteredAgents.map((agent: Agent, index: number) => (
                                 <AgentCard key={agent.id || `agent-${index}`} agent={agent} />

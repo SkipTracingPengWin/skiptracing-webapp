@@ -1,7 +1,7 @@
 
 "use client";
 
-import { useMemo, useState, useEffect } from "react";
+import { useMemo, useState, useEffect, Suspense } from "react";
 import Link from "next/link";
 import { useSearchParams, useRouter } from "next/navigation";
 import { useBorrowerStore } from "@/store/borrowers.store";
@@ -10,6 +10,7 @@ import { useAssignmentStore } from "@/store/assignments.store";
 import { useAgentStore } from "@/store/agents.store";
 import { borrowerService } from "@/services/borrowers.services";
 import { Borrower } from "@/types/borrower.types";
+import LoadingSpinner from "@/components/ui/LoadingSpinner";
 
 import {
   ArrowLeft,
@@ -43,7 +44,20 @@ import Sidebar from "@/components/layout/Sidebar";
 import Header from "@/components/layout/Header";
 
 // MAIN PAGE
-export default function BorrowerProfile() {
+// WRAPPER COMPONENT WITH SUSPENSE
+export default function BorrowerProfilePage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen flex items-center justify-center bg-slate-50">
+        <LoadingSpinner text="Initializing profile..." />
+      </div>
+    }>
+      <BorrowerProfile />
+    </Suspense>
+  );
+}
+
+function BorrowerProfile() {
   const params = useSearchParams();
   const borrowerId = params.get("id") ?? "";
   const router = useRouter();

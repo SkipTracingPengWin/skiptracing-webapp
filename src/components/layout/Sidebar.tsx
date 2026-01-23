@@ -109,6 +109,7 @@ export default function Sidebar() {
           allMenuItems.assignments,
           allMenuItems.socialmedia,
           allMenuItems.recovery,
+          allMenuItems.agents,
         ];
       default:
         return [dashboardItem];

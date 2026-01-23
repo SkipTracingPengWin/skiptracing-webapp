@@ -12,6 +12,7 @@ import FindBySocialMediaModal from "@/components/socialmedia/findbysocialmedia.m
 import SocialMediaResultsModal from "@/components/socialmedia/socialmediaresult.modal";
 import { useBorrowerStore } from "@/store/borrowers.store";
 import { useSocialProfilesStore } from "@/store/socialmedia.store";
+import LoadingSpinner from "@/components/ui/LoadingSpinner";
 import type { Borrower } from "@/types";
 
 // Helper to generate social buttons based on selectedAccounts, relatedLinks and searchResults
@@ -113,7 +114,7 @@ export default function SocialMediaPage() {
   const [openMenuId, setOpenMenuId] = useState<string | null>(null);
 
   const { borrowers, getBorrowerById } = useBorrowerStore();
-  const { selectedBorrowerIds, addSelectedBorrower, removeSelectedBorrower, deleteBorrower, searchResults, selectedAccounts } = useSocialProfilesStore();
+  const { selectedBorrowerIds, addSelectedBorrower, removeSelectedBorrower, deleteBorrower, searchResults, selectedAccounts, loading } = useSocialProfilesStore();
 
   // Load selected borrowers data
   useEffect(() => {
@@ -275,6 +276,11 @@ export default function SocialMediaPage() {
 
           {/* Borrower Cards Grid */}
           <div className="relative">
+            {loading && (
+              <div className="absolute inset-0 z-50 bg-white/50 flex items-center justify-center rounded-3xl">
+                <LoadingSpinner text="Searching social profiles..." />
+              </div>
+            )}
             {/* Decorative Navigation Arrows (Visual only based on screenshot) */}
             <button className="absolute -left-12 top-1/2 -translate-y-1/2 p-2 rounded-full bg-slate-200 text-slate-500 hover:bg-slate-300 hidden xl:block">
               <ArrowLeft className="h-5 w-5" />

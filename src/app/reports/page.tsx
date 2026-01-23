@@ -18,6 +18,8 @@ import {
 } from "lucide-react";
 import { useDashboardStore } from '@/store/reoport.store';
 
+import LoadingSpinner from "@/components/ui/LoadingSpinner";
+
 // Map the icon names from the store to the imported Lucide icons
 const IconMap = {
   TrendingUp: TrendingUp,
@@ -47,7 +49,15 @@ const Button: React.FC<SlotProps & { variant?: 'outline' | 'primary' }> = ({ chi
 
 
 const ReportsPage = () => {
-  const { period, months, agentPerformance, reportTypes, totalRecovered, totalVerifications, casesClosed, avgSuccessRate } = useDashboardStore();
+  const { period, months, agentPerformance, reportTypes, totalRecovered, totalVerifications, casesClosed, avgSuccessRate, loading } = useDashboardStore();
+
+  if (loading) {
+    return (
+      <div className="flex h-screen items-center justify-center bg-gray-50">
+        <LoadingSpinner text="Loading reports..." />
+      </div>
+    );
+  }
 
   return (
     // Changed overall background color slightly
@@ -105,8 +115,8 @@ const ReportsPage = () => {
                 <div
                   key={tab.id}
                   className={`rounded-xl border p-5 flex items-center gap-4 shadow-md transition cursor-pointer hover:shadow-lg ${isActive
-                      ? "border-sky-500 bg-sky-50"
-                      : "border-slate-200 bg-white hover:border-sky-300"
+                    ? "border-sky-500 bg-sky-50"
+                    : "border-slate-200 bg-white hover:border-sky-300"
                     }`}
                 >
                   <div className="h-11 w-11 rounded-xl bg-sky-100 flex items-center justify-center shadow-inner">
@@ -316,16 +326,16 @@ const ReportsPage = () => {
                         <div className="w-32 h-2 bg-slate-200 rounded-full overflow-hidden">
                           <div
                             className={`h-full rounded-full ${agent.rate >= 85 ? 'bg-[#0F9D58]' :
-                                agent.rate >= 75 ? 'bg-[#F57C00]' :
-                                  'bg-red-500'
+                              agent.rate >= 75 ? 'bg-[#F57C00]' :
+                                'bg-red-500'
                               }`}
                             style={{ width: `${agent.rate}%` }}
                           />
                         </div>
                         <div className="w-16 text-right">
                           <p className={`text-xl font-bold ${agent.rate >= 85 ? 'text-[#0F9D58]' :
-                              agent.rate >= 75 ? 'text-[#F57C00]' :
-                                'text-red-500'
+                            agent.rate >= 75 ? 'text-[#F57C00]' :
+                              'text-red-500'
                             }`}>
                             {agent.rate}%
                           </p>

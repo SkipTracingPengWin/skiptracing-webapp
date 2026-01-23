@@ -192,10 +192,10 @@ const AddNewAgentModal: React.FC = () => {
     <div className="fixed inset-0 z-50 flex items-center justify-center  bg-black/50 backdrop-blur-sm bg-opacity-40 p-4">
 
       {/* Form Card/Content */}
-      <div className="w-full max-w-lg rounded-xl bg-white shadow-2xl" role="dialog" aria-modal="true" aria-labelledby="add-agent-title">
+      <div className="w-full max-w-lg rounded-xl bg-white shadow-2xl max-h-[90vh] flex flex-col" role="dialog" aria-modal="true" aria-labelledby="add-agent-title">
 
         {/* Header */}
-        <div className="flex items-center justify-between p-6 border-b border-slate-100">
+        <div className="flex items-center justify-between p-6 border-b border-slate-100 flex-shrink-0">
           <h2 id="add-agent-title" className={`text-xl font-semibold ${isDeleteMode ? 'text-red-600' : 'text-slate-800'}`}>
             {title}
           </h2>
@@ -209,7 +209,7 @@ const AddNewAgentModal: React.FC = () => {
         </div>
 
         {/* Form Body */}
-        <form onSubmit={handleSubmit} className="p-6 space-y-5">
+        <form onSubmit={handleSubmit} className="p-6 space-y-5 overflow-y-auto">
 
           {isDeleteMode ? (
             <div className="text-center py-4">
@@ -314,7 +314,7 @@ const AddNewAgentModal: React.FC = () => {
                   <option value="ONLINE">Online</option>
                   <option value="OFFLINE">Offline</option>
                   <option value="BUSY">Busy</option>
-                  <option value="ON_BREAK">On Break</option>
+                  <option value="LEAVE">On Leave</option>
                 </select>
               </div>
             </>
