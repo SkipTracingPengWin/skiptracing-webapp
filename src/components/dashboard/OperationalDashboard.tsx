@@ -4,7 +4,16 @@ import VerificationStatusWidget from "@/components/dashboard/VerificationStatusW
 import StatsCard from "@/components/dashboard/StatsCard";
 import AlertItem from "@/components/dashboard/AlertItem";
 import AgentItem from "@/components/dashboard/AgentItem";
-import LocationMap from "@/components/maps/LocationMap";
+import dynamic from "next/dynamic";
+// import LocationMap from "@/components/maps/LocationMap";
+
+const LocationMap = dynamic(
+    () => import('@/components/maps/LocationMap'),
+    {
+        ssr: false,
+        loading: () => <div className="h-full w-full bg-slate-100 animate-pulse rounded-lg flex items-center justify-center text-slate-400">Loading Map...</div>
+    }
+);
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
@@ -246,20 +255,20 @@ export default function OperationalDashboard() {
                     <div className="flex items-center justify-between mb-4">
                         <h3 className="text-lg font-bold text-slate-900">Skip Trace Hotspots</h3>
                         <Link href="/skip-trace-map" className="text-blue-600 text-sm font-medium hover:underline flex items-center gap-1">
-                            View Map <ArrowRight className="h-4 w-4" />
+                            View Map <ArrowRight className="h-5 w-5" />
                         </Link>
                     </div>
-                    <div className="h-48 bg-slate-100 rounded-lg relative overflow-hidden mb-4 z-0">
+                    <div className="h-80 bg-slate-100 rounded-lg relative overflow-hidden mb-4 z-0">
                         <LocationMap
-                            latitude={19.0760}
-                            longitude={72.8777}
-                            displayName="Mumbai Hotspot"
+                            latitude={17.0448111}
+                            longitude={81.8437224}
+                            displayName="Diwancheruvu Hotspot"
                         />
                     </div>
-                    <div className="flex items-center justify-between text-sm">
+                    {/* <div className="flex items-center justify-between text-sm">
                         <span className="text-slate-600">Total Signals</span>
                         <span className="font-semibold text-slate-900">254 cases</span>
-                    </div>
+                    </div> */}
                 </div>
             </div>
         </div>
