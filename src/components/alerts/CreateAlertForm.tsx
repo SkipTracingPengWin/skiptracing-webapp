@@ -159,20 +159,20 @@ export default function CreateAlertForm() {
                 {/* Type Selection */}
                 <div>
                     <label className="block text-sm font-medium text-slate-700 mb-2">Alert Type</label>
-                    <div className="flex gap-4">
-                        <label className="flex items-center gap-2 cursor-pointer">
+                    <div className="flex flex-wrap gap-x-4 gap-y-3">
+                        <label className="flex items-center gap-2 cursor-pointer bg-slate-50 md:bg-transparent p-2 md:p-0 rounded-lg md:rounded-none border border-slate-100 md:border-none">
                             <input {...register('type')} type="radio" value="info" className="text-blue-600 focus:ring-blue-500" />
                             <span className="text-sm text-slate-600 flex items-center gap-1"><Info className="h-4 w-4 text-blue-500" /> Info</span>
                         </label>
-                        <label className="flex items-center gap-2 cursor-pointer">
+                        <label className="flex items-center gap-2 cursor-pointer bg-slate-50 md:bg-transparent p-2 md:p-0 rounded-lg md:rounded-none border border-slate-100 md:border-none">
                             <input {...register('type')} type="radio" value="warning" className="text-orange-600 focus:ring-orange-500" />
                             <span className="text-sm text-slate-600 flex items-center gap-1"><AlertCircle className="h-4 w-4 text-orange-500" /> Warning</span>
                         </label>
-                        <label className="flex items-center gap-2 cursor-pointer">
+                        <label className="flex items-center gap-2 cursor-pointer bg-slate-50 md:bg-transparent p-2 md:p-0 rounded-lg md:rounded-none border border-slate-100 md:border-none">
                             <input {...register('type')} type="radio" value="danger" className="text-red-600 focus:ring-red-500" />
                             <span className="text-sm text-slate-600 flex items-center gap-1"><AlertCircle className="h-4 w-4 text-red-500" /> Urgent</span>
                         </label>
-                        <label className="flex items-center gap-2 cursor-pointer">
+                        <label className="flex items-center gap-2 cursor-pointer bg-slate-50 md:bg-transparent p-2 md:p-0 rounded-lg md:rounded-none border border-slate-100 md:border-none">
                             <input {...register('type')} type="radio" value="success" className="text-green-600 focus:ring-green-500" />
                             <span className="text-sm text-slate-600 flex items-center gap-1"><CheckCircle className="h-4 w-4 text-green-500" /> Success</span>
                         </label>

@@ -90,7 +90,7 @@ export default function LoginPage() {
     };
 
     return (
-        <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100 flex flex-col md:flex-row font-sans overflow-hidden">
+        <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100 flex flex-col lg:flex-row font-sans overflow-hidden">
             {/* Animated Background */}
             <div className="absolute inset-0 overflow-hidden pointer-events-none">
                 <div className="absolute -top-40 -right-40 w-80 h-80 bg-gradient-to-r from-blue-400/30 to-purple-500/30 rounded-full blur-3xl animate-pulse"></div>
@@ -99,7 +99,7 @@ export default function LoginPage() {
             </div>
 
             {/* Left Panel - Enhanced Promotional */}
-            <div className="md:w-1/2 bg-gradient-to-br from-blue-600 via-blue-700 to-indigo-800 text-white p-12 md:p-20 flex flex-col justify-between relative z-10">
+            <div className="lg:w-1/2 bg-gradient-to-br from-blue-600 via-blue-700 to-indigo-800 text-white p-8 md:p-12 lg:p-20 flex flex-col justify-between relative z-10">
                 {/* Floating Geometric Shapes */}
                 <div className="absolute top-20 right-10 w-20 h-20 bg-white/10 rounded-2xl rotate-12 animate-float"></div>
                 <div className="absolute bottom-32 left-12 w-24 h-24 bg-white/5 rounded-full -rotate-6 animate-float delay-500"></div>
@@ -120,10 +120,10 @@ export default function LoginPage() {
 
                         <div className="space-y-6 max-w-lg">
                             <div>
-                                <h2 className="text-5xl md:text-6xl font-black leading-tight bg-gradient-to-r from-white via-blue-50 to-transparent bg-clip-text text-transparent drop-shadow-2xl">
+                                <h2 className="text-4xl md:text-5xl lg:text-6xl font-black leading-tight bg-gradient-to-r from-white via-blue-50 to-transparent bg-clip-text text-transparent drop-shadow-2xl">
                                     Welcome Back
                                 </h2>
-                                <div className="h-1 w-24 bg-gradient-to-r from-emerald-400 to-green-500 rounded-full mt-4 shadow-lg"></div>
+                                <div className="h-1 w-20 md:w-24 bg-gradient-to-r from-emerald-400 to-green-500 rounded-full mt-4 shadow-lg"></div>
                             </div>
                             <p className="text-xl text-blue-100 leading-relaxed opacity-90">
                                 Access your intelligent dashboard and streamline your recovery operations with AI-powered insights.
@@ -132,31 +132,31 @@ export default function LoginPage() {
                     </div>
 
                     {/* Features Cards */}
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div className="group bg-white/10 backdrop-blur-xl rounded-3xl p-8 border border-white/20 hover:bg-white/20 transition-all duration-500 hover:scale-[1.02] hover:shadow-2xl">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-1 xl:grid-cols-2 gap-4">
+                        <div className="group bg-white/10 backdrop-blur-xl rounded-3xl p-6 md:p-8 border border-white/20 hover:bg-white/20 transition-all duration-500 hover:scale-[1.02] hover:shadow-2xl">
                             <div className="flex items-center gap-4 mb-4">
-                                <div className="h-12 w-12 bg-gradient-to-br from-emerald-400 to-green-500 rounded-2xl flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform">
-                                    <Sparkles className="h-6 w-6 text-white" />
+                                <div className="h-10 w-10 md:h-12 md:w-12 bg-gradient-to-br from-emerald-400 to-green-500 rounded-2xl flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform">
+                                    <Sparkles className="h-5 w-5 md:h-6 md:w-6 text-white" />
                                 </div>
-                                <h4 className="text-xl font-bold">AI Analytics</h4>
+                                <h4 className="text-lg md:text-xl font-bold">AI Analytics</h4>
                             </div>
-                            <p className="text-blue-100 leading-relaxed">Real-time recovery predictions with 95% accuracy</p>
+                            <p className="text-blue-100 text-sm md:text-base leading-relaxed">Real-time recovery predictions with 95% accuracy</p>
                         </div>
-                        <div className="group bg-white/10 backdrop-blur-xl rounded-3xl p-8 border border-white/20 hover:bg-white/20 transition-all duration-500 hover:scale-[1.02] hover:shadow-2xl">
+                        <div className="group bg-white/10 backdrop-blur-xl rounded-3xl p-6 md:p-8 border border-white/20 hover:bg-white/20 transition-all duration-500 hover:scale-[1.02] hover:shadow-2xl">
                             <div className="flex items-center gap-4 mb-4">
-                                <div className="h-12 w-12 bg-gradient-to-br from-purple-400 to-pink-500 rounded-2xl flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform">
-                                    <Lock className="h-6 w-6 text-white" />
+                                <div className="h-10 w-10 md:h-12 md:w-12 bg-gradient-to-br from-purple-400 to-pink-500 rounded-2xl flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform">
+                                    <Lock className="h-5 w-5 md:h-6 md:w-6 text-white" />
                                 </div>
-                                <h4 className="text-xl font-bold">SOC 2 Secure</h4>
+                                <h4 className="text-lg md:text-xl font-bold">SOC 2 Secure</h4>
                             </div>
-                            <p className="text-blue-100 leading-relaxed">Enterprise-grade encryption & compliance certified</p>
+                            <p className="text-blue-100 text-sm md:text-base leading-relaxed">Enterprise-grade encryption & compliance certified</p>
                         </div>
                     </div>
                 </div>
             </div>
 
             {/* Right Panel - Enhanced Glassmorphism Form */}
-            <div className="md:w-1/2 bg-white/80 backdrop-blur-xl p-8 md:p-16 flex items-center justify-center relative z-20">
+            <div className="lg:w-1/2 bg-white/80 backdrop-blur-xl p-6 md:p-12 lg:p-16 flex items-center justify-center relative z-20">
                 <div className="w-full max-w-lg">
                     {/* Floating Particles */}
                     <div className="absolute top-10 right-10 w-2 h-2 bg-blue-400 rounded-full animate-bounce" style={{ animationDelay: '0s' }}></div>

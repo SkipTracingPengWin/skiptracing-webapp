@@ -9,6 +9,14 @@ const api = axios.create({
 
 api.interceptors.request.use(
     (config) => {
+        // Skip token for login and register routes
+        const isAuthRoute = config.url?.includes("/auth/login") || config.url?.includes("/auth/register");
+
+        if (isAuthRoute) {
+            console.log(`🔓 [API Request] ${config.method?.toUpperCase()} ${config.url} - Skipping Token`);
+            return config;
+        }
+
         let token = localStorage.getItem("token");
 
         // Try getting from auth-store if not found directly
@@ -37,16 +45,16 @@ api.interceptors.request.use(
     },
     (error) => {
         if (error.response && error.response.status === 401) {
-            console.error("🔒 Unauthorized access - redirecting to login");
+                console.error("🔒 Unauthorized access - redirecting to login");
             // Clear headers to prevent loops
-            delete api.defaults.headers.common["Authorization"];
+                delete api.defaults.headers.common["Authorization"];
             // Optional: Clear storage
-            localStorage.removeItem("token");
-            localStorage.removeItem("user");
-            localStorage.removeItem("auth-store");
-            // Redirect using window.location to ensure full refresh
+                localStorage.removeItem("token");
+                localStorage.removeItem("user");
+                localStorage.removeItem("auth-store");
+                // Redirect using window.location to ensure full refresh
             if (typeof window !== "undefined" && !window.location.pathname.includes("/auth/login")) {
-                window.location.href = "/auth/login";
+                    window.location.href = "/auth/login";
             }
         }
         return Promise.reject(error);

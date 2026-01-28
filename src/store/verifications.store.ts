@@ -11,8 +11,8 @@ interface VerificationState {
     fetchVerifications: () => Promise<void>;
     addVerification: (data: any) => Promise<void>;
     // Future actions
-    // updateVerification: (id: string, updates: Partial<Verification>) => Promise<void>;
-    // deleteVerification: (id: string) => Promise<void>;
+    updateVerification: (id: string, updates: Partial<Verification>) => Promise<void>;
+    deleteVerification: (id: string) => Promise<void>;
 }
 
 export const useVerificationStore = create<VerificationState>()(
@@ -55,3 +55,6 @@ export const useVerificationStore = create<VerificationState>()(
         { name: 'VerificationStore' }
     )
 );
+
+
+

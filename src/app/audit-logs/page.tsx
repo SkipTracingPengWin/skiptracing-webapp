@@ -112,11 +112,21 @@ export default function AuditLogsPage() {
         return colors[module] || 'bg-slate-100 text-slate-800';
     };
 
+    // Dynamic Stats calculated from filtered table data
+    const dynamicStats = useMemo(() => {
+        return {
+            total: filteredLogs.length,
+            verifications: filteredLogs.filter(log => String(log.module).toUpperCase().includes("VERIF")).length,
+            dataChanges: filteredLogs.filter(log => ["CREATE", "UPDATE", "DELETE", "PATCH"].some(a => log.action.toUpperCase().includes(a))).length,
+            exports: filteredLogs.filter(log => log.action.toLowerCase().includes("export") || log.action.toLowerCase().includes("download")).length
+        };
+    }, [filteredLogs]);
+
     const statCards = [
-        { icon: FileText, label: "Total Logs", value: stats.totalLogs, color: "bg-slate-500" },
-        { icon: CheckCircle, label: "Verifications", value: stats.verifications, color: "bg-green-500" },
-        { icon: Database, label: "Data Changes", value: stats.dataChanges, color: "bg-orange-500" },
-        { icon: Download, label: "Exports", value: stats.exports, color: "bg-blue-500" },
+        { icon: FileText, label: "Total Logs", value: dynamicStats.total, color: "bg-slate-500" },
+        { icon: CheckCircle, label: "Verifications", value: dynamicStats.verifications, color: "bg-green-500" },
+        { icon: Database, label: "Data Changes", value: dynamicStats.dataChanges, color: "bg-orange-500" },
+        { icon: Download, label: "Exports", value: dynamicStats.exports, color: "bg-blue-500" },
     ];
 
     return (

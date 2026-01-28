@@ -11,6 +11,8 @@ import { useAgentStore } from "@/store/agents.store";
 import { borrowerService } from "@/services/borrowers.services";
 import { Borrower } from "@/types/borrower.types";
 import LoadingSpinner from "@/components/ui/LoadingSpinner";
+import Sidebar from "@/components/layout/Sidebar";
+import Header from "@/components/layout/Header";
 
 import {
   ArrowLeft,
@@ -40,20 +42,25 @@ import {
   Badge
 } from "@/components/borrower profile/cards.modal";
 
-import Sidebar from "@/components/layout/Sidebar";
-import Header from "@/components/layout/Header";
+
 
 // MAIN PAGE
 // WRAPPER COMPONENT WITH SUSPENSE
 export default function BorrowerProfilePage() {
   return (
-    <Suspense fallback={
-      <div className="min-h-screen flex items-center justify-center bg-slate-50">
-        <LoadingSpinner text="Initializing profile..." />
+    <div className="flex h-screen bg-slate-50">
+      <Sidebar />
+      <div className="flex-1 md:ml-64 flex flex-col overflow-hidden">
+        <Header title="Borrower Profile" />
+        <Suspense fallback={
+          <div className="flex-1 flex items-center justify-center">
+            <LoadingSpinner text="Initializing profile..." />
+          </div>
+        }>
+          <BorrowerProfile />
+        </Suspense>
       </div>
-    }>
-      <BorrowerProfile />
-    </Suspense>
+    </div>
   );
 }
 
@@ -142,7 +149,7 @@ function BorrowerProfile() {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-slate-50">
+      <div className="flex-1 flex items-center justify-center">
         <div className="flex flex-col items-center gap-4">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
           <p className="text-slate-600 font-medium">Loading borrower profile...</p>
@@ -153,7 +160,7 @@ function BorrowerProfile() {
 
   if (!borrower) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-slate-50 p-8">
+      <div className="flex-1 flex items-center justify-center p-8">
         <div className="text-center max-w-md">
           <div className="w-20 h-20 mx-auto bg-red-100 rounded-full flex items-center justify-center mb-6">
             <MapPin className="w-10 h-10 text-red-500" />
@@ -175,76 +182,68 @@ function BorrowerProfile() {
   const verificationScore = 75;
 
   return (
-    <div className="flex min-h-screen bg-slate-50">
-      <Sidebar />
+    <main className="flex-1 overflow-y-auto p-6 lg:p-8">
+      <div className="max-w-7xl mx-auto space-y-8">
+        {/* ---------- HEADER ---------- */}
+        <div className="flex items-center gap-4">
+          <Link href={backPath}>
+            <Button variant="ghost" size="icon">
+              <ArrowLeft className="w-5 h-5" />
+            </Button>
+          </Link>
 
-      <div className="flex-1 md:ml-64 flex flex-col overflow-hidden">
-        <Header />
-
-        <main className="flex-1 overflow-y-auto p-6 lg:p-8">
-          <div className="max-w-7xl mx-auto space-y-8">
-            {/* ---------- HEADER ---------- */}
-            <div className="flex items-center gap-4">
-              <Link href={backPath}>
-                <Button variant="ghost" size="icon">
-                  <ArrowLeft className="w-5 h-5" />
-                </Button>
-              </Link>
-
-              <div className="flex-1 min-w-0">
-                <h1 className="text-3xl font-bold text-slate-900 truncate">{borrower.name}</h1>
-                <p className="text-lg text-slate-500 mt-1">Loan ID: {borrower.loanId}</p>
-              </div>
-
-              <div className="flex items-center gap-3">
-                <Button variant="outline" className="gap-2" onClick={() => setIsModalOpen(true)}>
-                  <Edit className="w-4 h-4" />
-                  Edit
-                </Button>
-                {user?.role === "ADMIN" && (
-                  <Button
-                    variant="outline"
-                    className="gap-2 text-red-600 border-red-200 hover:bg-red-50 hover:border-red-300"
-                    onClick={handleDelete}
-                  >
-                    <Trash2 className="w-4 h-4" />
-                    Delete
-                  </Button>
-                )}
-                <Button className="bg-orange-600 hover:bg-orange-700 gap-2 text-white">
-                  <PhoneCall className="w-4 h-4" />
-                  Call Now
-                </Button>
-              </div>
-            </div>
-
-            <AddBorrowerModal
-              isOpen={isModalOpen}
-              onClose={() => setIsModalOpen(false)}
-              borrowerId={borrowerId}
-            />
-
-            {/* ---------- FINAL LAYOUT ---------- */}
-            <div className="space-y-8">
-              {/* 1. TOP: Basic Information (Full Width) */}
-              <BasicInfoCard borrower={borrower} assignedAgentName={assignedAgentName} />
-
-              {/* 2. Loan Details (Full Width) */}
-              <LoanDetailsCard borrower={borrower} />
-
-              {/* 3. Verification Score + Borrower Details (Side by Side) */}
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                <ScoreCard score={verificationScore} />
-                <SkipTraceCard borrower={borrower} />
-              </div>
-
-              {/* 4. Quick Actions (Horizontal Layout) */}
-              <QuickActions />
-            </div>
+          <div className="flex-1 min-w-0">
+            <h1 className="text-3xl font-bold text-slate-900 truncate">{borrower.name}</h1>
+            <p className="text-lg text-slate-500 mt-1">Loan ID: {borrower.loanId}</p>
           </div>
-        </main>
+
+          <div className="flex items-center gap-3">
+            <Button variant="outline" className="gap-2" onClick={() => setIsModalOpen(true)}>
+              <Edit className="w-4 h-4" />
+              Edit
+            </Button>
+            {user?.role === "ADMIN" && (
+              <Button
+                variant="outline"
+                className="gap-2 text-red-600 border-red-200 hover:bg-red-50 hover:border-red-300"
+                onClick={handleDelete}
+              >
+                <Trash2 className="w-4 h-4" />
+                Delete
+              </Button>
+            )}
+            <Button className="bg-orange-600 hover:bg-orange-700 gap-2 text-white">
+              <PhoneCall className="w-4 h-4" />
+              Call Now
+            </Button>
+          </div>
+        </div>
+
+        <AddBorrowerModal
+          isOpen={isModalOpen}
+          onClose={() => setIsModalOpen(false)}
+          borrowerId={borrowerId}
+        />
+
+        {/* ---------- FINAL LAYOUT ---------- */}
+        <div className="space-y-8">
+          {/* 1. TOP: Basic Information (Full Width) */}
+          <BasicInfoCard borrower={borrower} assignedAgentName={assignedAgentName} />
+
+          {/* 2. Loan Details (Full Width) */}
+          <LoanDetailsCard borrower={borrower} />
+
+          {/* 3. Verification Score + Borrower Details (Side by Side) */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <ScoreCard score={verificationScore} />
+            <SkipTraceCard borrower={borrower} />
+          </div>
+
+          {/* 4. Quick Actions (Horizontal Layout) */}
+          <QuickActions />
+        </div>
       </div>
-    </div>
+    </main>
   );
 }
 

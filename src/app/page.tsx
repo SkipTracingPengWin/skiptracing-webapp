@@ -4,12 +4,12 @@ import { useEffect } from "react";
 import Sidebar from "@/components/layout/Sidebar";
 import Header from "@/components/layout/Header";
 import { useDashboardStatsStore } from "@/store/dashboardStats.store";
-import { 
-  Users, 
-  CheckCircle, 
-  Clock, 
-  AlertTriangle, 
-  TrendingUp, 
+import {
+  Users,
+  CheckCircle,
+  Clock,
+  AlertTriangle,
+  TrendingUp,
   DollarSign,
   Activity
 } from "lucide-react";
@@ -29,7 +29,7 @@ export default function DashboardPage() {
   ];
 
   return (
-    <div className="flex min-h-screen bg-slate-50">
+    <div className="flex h-screen bg-slate-50">
       <Sidebar />
       <div className="flex-1 md:ml-64 flex flex-col overflow-hidden">
         <Header />
@@ -42,58 +42,58 @@ export default function DashboardPage() {
           {/* Stats Grid */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
             {statCards.map((stat, index) => {
-                const Icon = stat.icon;
-                return (
-                    <div key={index} className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm">
-                        <div className="flex items-center justify-between">
-                            <div>
-                                <p className="text-sm font-medium text-slate-500">{stat.label}</p>
-                                <p className="text-2xl font-bold text-slate-900 mt-1">{stat.value}</p>
-                            </div>
-                            <div className={`p-3 rounded-lg ${stat.color} bg-opacity-10`}>
-                                <Icon className={`h-6 w-6 ${stat.color.replace('bg-', 'text-')}`} />
-                            </div>
-                        </div>
+              const Icon = stat.icon;
+              return (
+                <div key={index} className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-sm font-medium text-slate-500">{stat.label}</p>
+                      <p className="text-2xl font-bold text-slate-900 mt-1">{stat.value}</p>
                     </div>
-                );
+                    <div className={`p-3 rounded-lg ${stat.color} bg-opacity-10`}>
+                      <Icon className={`h-6 w-6 ${stat.color.replace('bg-', 'text-')}`} />
+                    </div>
+                  </div>
+                </div>
+              );
             })}
           </div>
 
           {/* Secondary Stats */}
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
-             <div className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm">
-                <div className="flex items-center gap-4">
-                    <div className="p-3 bg-red-50 rounded-lg">
-                        <AlertTriangle className="h-6 w-6 text-red-600" />
-                    </div>
-                    <div>
-                        <p className="text-sm font-medium text-slate-500">SLA Alerts</p>
-                        <p className="text-2xl font-bold text-slate-900">{dashboardStats?.slaAlerts || 0}</p>
-                    </div>
+            <div className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm">
+              <div className="flex items-center gap-4">
+                <div className="p-3 bg-red-50 rounded-lg">
+                  <AlertTriangle className="h-6 w-6 text-red-600" />
                 </div>
-             </div>
-             <div className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm">
-                <div className="flex items-center gap-4">
-                    <div className="p-3 bg-emerald-50 rounded-lg">
-                        <DollarSign className="h-6 w-6 text-emerald-600" />
-                    </div>
-                    <div>
-                        <p className="text-sm font-medium text-slate-500">Total Recovered</p>
-                        <p className="text-2xl font-bold text-slate-900">{dashboardStats?.totalRecovered || "₹0"}</p>
-                    </div>
+                <div>
+                  <p className="text-sm font-medium text-slate-500">SLA Alerts</p>
+                  <p className="text-2xl font-bold text-slate-900">{dashboardStats?.slaAlerts || 0}</p>
                 </div>
-             </div>
-             <div className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm">
-                <div className="flex items-center gap-4">
-                    <div className="p-3 bg-blue-50 rounded-lg">
-                        <TrendingUp className="h-6 w-6 text-blue-600" />
-                    </div>
-                    <div>
-                        <p className="text-sm font-medium text-slate-500">Recovery Rate</p>
-                        <p className="text-2xl font-bold text-slate-900">{dashboardStats?.recoveryRate || 0}%</p>
-                    </div>
+              </div>
+            </div>
+            <div className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm">
+              <div className="flex items-center gap-4">
+                <div className="p-3 bg-emerald-50 rounded-lg">
+                  <DollarSign className="h-6 w-6 text-emerald-600" />
                 </div>
-             </div>
+                <div>
+                  <p className="text-sm font-medium text-slate-500">Total Recovered</p>
+                  <p className="text-2xl font-bold text-slate-900">{dashboardStats?.totalRecovered || "₹0"}</p>
+                </div>
+              </div>
+            </div>
+            <div className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm">
+              <div className="flex items-center gap-4">
+                <div className="p-3 bg-blue-50 rounded-lg">
+                  <TrendingUp className="h-6 w-6 text-blue-600" />
+                </div>
+                <div>
+                  <p className="text-sm font-medium text-slate-500">Recovery Rate</p>
+                  <p className="text-2xl font-bold text-slate-900">{dashboardStats?.recoveryRate || 0}%</p>
+                </div>
+              </div>
+            </div>
           </div>
         </main>
       </div>

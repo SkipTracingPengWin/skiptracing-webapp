@@ -96,15 +96,6 @@ export default function RecoveryActionsPage() {
                                 Manage SMS, calls, visits, and legal notices
                             </p>
                         </div>
-                        {!isAgent && (
-                            <button
-                                onClick={() => setModalOpen(true)}
-                                className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors flex items-center gap-2 shadow-md"
-                            >
-                                <Plus className="h-5 w-5" />
-                                New Action
-                            </button>
-                        )}
                     </div>
 
                     {/* ACTION TYPES */}
@@ -206,8 +197,8 @@ export default function RecoveryActionsPage() {
                                                     <td className="px-6 py-4 text-sm">{action.borrowerName || "Unknown"}</td>
                                                     <td className="px-6 py-4">
                                                         <span className={`px-2 py-1 rounded-full text-xs font-semibold ${action.priority === "HIGH" ? "bg-red-100 text-red-700" :
-                                                                action.priority === "MEDIUM" ? "bg-yellow-100 text-yellow-700" :
-                                                                    "bg-blue-100 text-blue-700"
+                                                            action.priority === "MEDIUM" ? "bg-yellow-100 text-yellow-700" :
+                                                                "bg-blue-100 text-blue-700"
                                                             }`}>
                                                             {action.priority || "MEDIUM"}
                                                         </span>

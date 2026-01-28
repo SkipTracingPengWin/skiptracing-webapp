@@ -6,18 +6,15 @@ import AlertItem from "@/components/dashboard/AlertItem";
 import AgentItem from "@/components/dashboard/AgentItem";
 import LocationMap from "@/components/maps/LocationMap";
 
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import Link from "next/link";
-import { authService } from "@/services/auth";
 import {
     Users,
     CheckCircle,
     TrendingUp,
     UserCheck,
     Clock,
-    AlertTriangle,
     ArrowRight,
-    MapPin
 } from "lucide-react";
 import { useDashboardStatsStore } from "@/store/dashboardStats.store";
 import { useAlertStore } from "@/store/alerts.store";
@@ -25,7 +22,6 @@ import { useAgentStore } from "@/store/agents.store";
 import { useRecoveryTrendStore } from "@/store/recoveryTrend.store";
 import { useAuthStore } from "@/store/auth.store";
 import {
-    AreaChart,
     Area,
     XAxis,
     YAxis,
@@ -33,20 +29,13 @@ import {
     Tooltip,
     ResponsiveContainer,
     Line,
-    LineChart,
     ComposedChart
 } from 'recharts';
-
-
-
-
-
-
 
 export default function OperationalDashboard() {
     // Using modular Zustand stores
     const { dashboardStats, fetchStats } = useDashboardStatsStore();
-    const { alerts, fetchAlerts, markAlertAsRead } = useAlertStore();
+    const { alerts, fetchAlerts } = useAlertStore();
     const { agents, fetchAgents } = useAgentStore();
     const { recoveryTrend, fetchTrends } = useRecoveryTrendStore();
 
@@ -69,7 +58,14 @@ export default function OperationalDashboard() {
 
     // Render a loading state if the primary data isn't available yet.
     if (!dashboardStats) {
-        return <div>Loading dashboard...</div>; // Or a more sophisticated skeleton loader
+        return (
+            <div className="flex items-center justify-center min-h-[400px]">
+                <div className="flex flex-col items-center gap-2">
+                    <div className="w-8 h-8 border-4 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
+                    <p className="text-slate-500 font-medium">Loading dashboard...</p>
+                </div>
+            </div>
+        );
     }
 
     const stats = [
@@ -108,8 +104,7 @@ export default function OperationalDashboard() {
             trend: null,
             color: "bg-purple-600",
         },
-
-    ]
+    ];
 
     // Get only the first 3 alerts for display
     const displayAlerts = alerts.slice(0, 3);
@@ -118,19 +113,19 @@ export default function OperationalDashboard() {
     const activeAgents = agents.filter(agent => agent.status === "ONLINE" || agent.status === "BUSY").slice(0, 5);
 
     return (
-        <div>
+        <div className="space-y-6">
             {/* Stats Grid */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4 mb-6">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4">
                 {stats.map((stat, i) => (
                     <StatsCard key={i} {...stat} />
                 ))}
             </div>
 
             {/* Main Content Grid */}
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
                 {/* Recovery Trend Chart */}
-                <div className="lg:col-span-2 bg-white p-6 rounded-xl border border-slate-200 min-w-0">
-                    <div className="flex items-center justify-between mb-6">
+                <div className="lg:col-span-2 bg-white p-6 rounded-xl border border-slate-200 min-w-0 shadow-sm transition-shadow hover:shadow-md">
+                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
                         <h3 className="text-lg font-bold text-slate-900">Recovery Trend (₹ Lakhs)</h3>
                         <div className="flex items-center gap-4 text-sm">
                             <div className="flex items-center gap-2">
@@ -143,14 +138,14 @@ export default function OperationalDashboard() {
                             </div>
                         </div>
                     </div>
-                    <div className="h-64 w-full min-w-0">
-                        <ResponsiveContainer width="100%" height={256} minWidth={0}>
+                    <div className="h-[300px] w-full min-w-0">
+                        <ResponsiveContainer width="100%" height="100%">
                             <ComposedChart
                                 data={recoveryTrend}
                                 margin={{
                                     top: 10,
-                                    right: 30,
-                                    left: 0,
+                                    right: 10,
+                                    left: -20,
                                     bottom: 0,
                                 }}
                             >
@@ -160,7 +155,7 @@ export default function OperationalDashboard() {
                                         <stop offset="95%" stopColor="#3b82f6" stopOpacity={0} />
                                     </linearGradient>
                                 </defs>
-                                <CartesianGrid strokeDasharray="3 3" vertical={true} horizontal={true} stroke="#e2e8f0" />
+                                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
                                 <XAxis
                                     dataKey="month"
                                     axisLine={false}
@@ -177,8 +172,8 @@ export default function OperationalDashboard() {
                                     contentStyle={{
                                         backgroundColor: '#fff',
                                         borderRadius: '12px',
-                                        border: 'none',
-                                        boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1)'
+                                        border: '1px solid #e2e8f0',
+                                        boxShadow: '0 10px 15px -3px rgb(0 0 0 / 0.1)'
                                     }}
                                     itemStyle={{ fontSize: '14px', fontWeight: 600 }}
                                     labelStyle={{ color: '#64748b', marginBottom: '8px' }}
@@ -208,29 +203,36 @@ export default function OperationalDashboard() {
 
                 {/* Field Agents - Only visible to ADMIN and MANAGER */}
                 {(user?.role === "ADMIN" || user?.role === "MANAGER") ? (
-                    <div className="bg-white p-6 rounded-xl border border-slate-200 h-full">
-                        <div className="flex items-center justify-between mb-4">
+                    <div className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm flex flex-col transition-shadow hover:shadow-md">
+                        <div className="flex items-center justify-between mb-6">
                             <h3 className="text-lg font-bold text-slate-900">Field Agents</h3>
-                            <Link href="/agents" className="text-blue-600 text-sm font-medium hover:underline flex items-center gap-1">
-                                View All <ArrowRight className="h-4 w-4" />
+                            <Link href="/agents" className="text-blue-600 text-sm font-semibold hover:text-blue-700 transition-colors flex items-center gap-1 group">
+                                View All
+                                <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
                             </Link>
                         </div>
-                        <div className="space-y-3">
+                        <div className="space-y-4 flex-1">
                             {activeAgents.length > 0 ? (
                                 activeAgents.map((agent, i) => (
                                     <AgentItem key={i} {...agent} />
                                 ))
                             ) : (
-                                <div className="text-sm text-slate-500 text-center py-8">No active agents</div>
+                                <div className="flex flex-col items-center justify-center h-full text-slate-400 py-10">
+                                    <Users className="h-10 w-10 mb-2 opacity-20" />
+                                    <p className="text-sm">No active agents</p>
+                                </div>
                             )}
                         </div>
                     </div>
                 ) : (
-                    // Placeholder or alternative content for non-admins if needed, 
-                    // or we could make the chart full width. 
-                    // For now, keeping the grid structure.
-                    <div className="bg-slate-50 rounded-xl border border-slate-100 h-full flex items-center justify-center text-slate-400">
-                        <span className="text-sm">Restricted Access</span>
+                    <div className="bg-slate-50 rounded-xl border border-slate-200 p-8 flex flex-col items-center justify-center text-center gap-3">
+                        <div className="bg-white p-3 rounded-full shadow-sm">
+                            <Clock className="h-6 w-6 text-slate-400" />
+                        </div>
+                        <div>
+                            <p className="text-slate-900 font-bold">Restricted View</p>
+                            <p className="text-sm text-slate-500">Only ADMIN and MANAGER roles can see field agent activity.</p>
+                        </div>
                     </div>
                 )}
             </div>
@@ -238,30 +240,42 @@ export default function OperationalDashboard() {
             {/* Bottom Grid */}
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
                 {/* Verification Status */}
-                <VerificationStatusWidget />
+                <div className="lg:col-span-1">
+                    <VerificationStatusWidget />
+                </div>
 
                 {/* Skip Trace Hotspots */}
-                {/* Skip Trace Hotspots */}
-                <div className="bg-white p-6 rounded-xl border border-slate-200 lg:col-span-2">
-                    <div className="flex items-center justify-between mb-4">
-                        <h3 className="text-lg font-bold text-slate-900">Skip Trace Hotspots</h3>
-                        <Link href="/skip-trace-map" className="text-blue-600 text-sm font-medium hover:underline flex items-center gap-1">
-                            View Map <ArrowRight className="h-4 w-4" />
+                <div className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm lg:col-span-2 transition-shadow hover:shadow-md flex flex-col">
+                    <div className="flex items-center justify-between mb-6">
+                        <div className="flex items-center gap-2">
+                            <h3 className="text-lg font-bold text-slate-900">Skip Trace Hotspots</h3>
+                            <span className="px-2 py-0.5 bg-blue-100 text-blue-700 text-xs font-bold rounded-full">Live</span>
+                        </div>
+                        <Link href="/skip-trace-map" className="text-blue-600 text-sm font-semibold hover:text-blue-700 transition-colors flex items-center gap-1 group">
+                            View Map
+                            <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
                         </Link>
                     </div>
-                    <div className="h-48 bg-slate-100 rounded-lg relative overflow-hidden mb-4 z-0">
+                    <div className="h-[350px] bg-slate-50 rounded-xl relative overflow-hidden mb-6 z-0 border border-slate-100">
                         <LocationMap
                             latitude={19.0760}
                             longitude={72.8777}
                             displayName="Mumbai Hotspot"
                         />
                     </div>
-                    <div className="flex items-center justify-between text-sm">
-                        <span className="text-slate-600">Total Signals</span>
-                        <span className="font-semibold text-slate-900">254 cases</span>
+                    <div className="flex items-center justify-between p-4 bg-slate-50 rounded-lg mt-auto">
+                        <div className="flex flex-col">
+                            <span className="text-xs text-slate-500 font-medium uppercase tracking-wider">Total Active Signals</span>
+                            <span className="text-xl font-bold text-slate-900">254 cases</span>
+                        </div>
+                        <div className="flex items-center gap-1 text-green-600 text-sm font-bold">
+                            <TrendingUp className="h-4 w-4" />
+                            +12% vs last week
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
     );
 }
+

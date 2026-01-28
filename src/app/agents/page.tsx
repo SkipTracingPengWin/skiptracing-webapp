@@ -170,7 +170,7 @@ function AgentCard({ agent }: AgentCardProps) {
                 </div>
                 <div>
                     <div className="text-xs text-slate-500 mb-1">Success Rate</div>
-                    <div className="text-lg font-bold text-blue-600">{agent.successRate || 0}%</div>
+                    <div className="text-lg font-bold text-blue-600">{Number(agent.successRate || 0).toFixed(2)}%</div>
                 </div>
             </div>
 

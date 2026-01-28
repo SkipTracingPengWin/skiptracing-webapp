@@ -121,17 +121,15 @@ export default function Sidebar() {
   return (
     <>
       {/* Mobile Menu Button - Fixed at top left */}
-      <button
-        onClick={() => setIsOpen(!isOpen)}
-        className="md:hidden fixed top-4 left-4 z-50 p-2 bg-white rounded-lg shadow-md border border-slate-200"
-        aria-label="Toggle menu"
-      >
-        {isOpen ? (
-          <X className="h-6 w-6 text-slate-600" />
-        ) : (
+      {!isOpen && (
+        <button
+          onClick={() => setIsOpen(true)}
+          className="md:hidden fixed top-4 left-4 z-50 p-2 bg-white rounded-lg shadow-md border border-slate-200 animate-in fade-in duration-300"
+          aria-label="Open menu"
+        >
           <Menu className="h-6 w-6 text-slate-600" />
-        )}
-      </button>
+        </button>
+      )}
 
       {/* Mobile Overlay */}
       {isOpen && (
@@ -150,8 +148,8 @@ export default function Sidebar() {
           md:translate-x-0
         `}
       >
-        {/* Logo */}
-        <div className="p-4 border-b border-slate-200">
+        {/* Logo & Mobile Close */}
+        <div className="p-4 border-b border-slate-200 flex items-center justify-between">
           <Link href={getDashboardLink()} className="flex items-center gap-2">
             <div className="h-8 w-8 bg-blue-600 rounded-lg flex items-center justify-center">
               <Shield className="h-5 w-5 text-white" />
@@ -160,6 +158,15 @@ export default function Sidebar() {
               SkipTrace<span className="text-blue-600">AI</span>
             </span>
           </Link>
+
+          {/* Mobile Close Button */}
+          <button
+            onClick={() => setIsOpen(false)}
+            className="md:hidden p-2 hover:bg-slate-50 rounded-lg transition-colors"
+            aria-label="Close menu"
+          >
+            <X className="h-6 w-6 text-slate-600" />
+          </button>
         </div>
 
         {/* Menu Items */}
