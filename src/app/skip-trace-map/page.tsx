@@ -3,7 +3,8 @@
 import Sidebar from "@/components/layout/Sidebar";
 import Header from "@/components/layout/Header";
 import { MapPin, Download, Users, TrendingUp, AlertCircle, RefreshCw } from "lucide-react";
-import LocationMap from "@/components/maps/LocationMap";
+import dynamic from "next/dynamic";
+const LocationMap = dynamic(() => import("@/components/maps/LocationMap"), { ssr: false });
 import { useState, useEffect } from "react";
 import { borrowerService } from "@/services/borrowers.services";
 import { Borrower } from "@/types/borrower.types";
