@@ -4,7 +4,16 @@ import VerificationStatusWidget from "@/components/dashboard/VerificationStatusW
 import StatsCard from "@/components/dashboard/StatsCard";
 import AlertItem from "@/components/dashboard/AlertItem";
 import AgentItem from "@/components/dashboard/AgentItem";
-import LocationMap from "@/components/maps/LocationMap";
+import dynamic from "next/dynamic";
+// import LocationMap from "@/components/maps/LocationMap";
+
+const LocationMap = dynamic(
+    () => import('@/components/maps/LocationMap'),
+    {
+        ssr: false,
+        loading: () => <div className="h-full w-full bg-slate-100 animate-pulse rounded-lg flex items-center justify-center text-slate-400">Loading Map...</div>
+    }
+);
 
 import { useEffect } from "react";
 import Link from "next/link";
@@ -258,9 +267,9 @@ export default function OperationalDashboard() {
                     </div>
                     <div className="h-[350px] bg-slate-50 rounded-xl relative overflow-hidden mb-6 z-0 border border-slate-100">
                         <LocationMap
-                            latitude={19.0760}
-                            longitude={72.8777}
-                            displayName="Mumbai Hotspot"
+                            latitude={17.0448111}
+                            longitude={81.8437224}
+                            displayName="Diwancheruvu Hotspot"
                         />
                     </div>
                     <div className="flex items-center justify-between p-4 bg-slate-50 rounded-lg mt-auto">

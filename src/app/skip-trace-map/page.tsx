@@ -2,15 +2,79 @@
 
 import Sidebar from "@/components/layout/Sidebar";
 import Header from "@/components/layout/Header";
-import { MapPin, Download, Users, TrendingUp, AlertCircle } from "lucide-react";
+import { MapPin, Download, Users, TrendingUp, AlertCircle, RefreshCw } from "lucide-react";
+import LocationMap from "@/components/maps/LocationMap";
+import { useState, useEffect } from "react";
+import { borrowerService } from "@/services/borrowers.services";
+import { Borrower } from "@/types/borrower.types";
 
 export default function SkipTraceMapPage() {
-    const stats = [
-        { icon: Users, label: "Total Borrowers", value: borrowers.length.toString(), color: "bg-blue-500" },
-        { icon: TrendingUp, label: "Active Traces", value: "2", color: "bg-green-500" },
-        { icon: AlertCircle, label: "High Risk", value: borrowers.filter(b => b.risk === 'high').length.toString(), color: "bg-red-500" },
-        { icon: MapPin, label: "Located", value: "12", color: "bg-orange-500" },
-    ];
+    const [borrowers, setBorrowers] = useState<Borrower[]>([]);
+    const [selectedBorrowerId, setSelectedBorrowerId] = useState<string | null>(null);
+    const [locationData, setLocationData] = useState<{ lat: number; lon: number; display_name?: string } | null>(null);
+    const [isLoading, setIsLoading] = useState(false);
+    const [isLocating, setIsLocating] = useState(false);
+    const [errorMsg, setErrorMsg] = useState<string | null>(null);
+
+    const fetchBorrowers = async () => {
+        setIsLoading(true);
+        try {
+            const data = await borrowerService.getAll();
+            // Normalize IDs to string for consistency
+            const normalized = Array.isArray(data) ? data.map((b: any) => ({ ...b, id: String(b.id || b._id) })) : [];
+            setBorrowers(normalized);
+        } catch (error) {
+            console.error("Failed to fetch borrowers", error);
+        } finally {
+            setIsLoading(false);
+        }
+    };
+
+    useEffect(() => {
+        fetchBorrowers();
+    }, []);
+
+    const handleSelectBorrower = async (id: string, name: string) => {
+        setSelectedBorrowerId(id);
+        setIsLocating(true);
+        setErrorMsg(null);
+        setLocationData(null); // Reset previous location
+
+        try {
+            const data = await borrowerService.fetchOsmLocation(id);
+            console.log("Location fetched:", data);
+
+            let loc = data;
+            if (Array.isArray(data) && data.length > 0) {
+                loc = data[0];
+            }
+
+            if (loc && (loc.lat || loc.latitude) && (loc.lon || loc.longitude)) {
+                setLocationData({
+                    lat: parseFloat(loc.lat || loc.latitude),
+                    lon: parseFloat(loc.lon || loc.longitude),
+                    display_name: loc.display_name || loc.address || `Location for ${name}`
+                });
+            } else {
+                setErrorMsg("Could not determine coordinates for this borrower.");
+            }
+        } catch (error: any) {
+            console.error("Failed to fetch location:", error);
+            if (error.response?.status === 404) {
+                setErrorMsg("Location data not found for this borrower (404).");
+            } else {
+                setErrorMsg("Failed to fetch location from server.");
+            }
+        } finally {
+            setIsLocating(false);
+        }
+    };
+    // const stats = [
+    //     { icon: Users, label: "Total Borrowers", value: borrowers.length.toString(), color: "bg-blue-500" },
+    //     { icon: TrendingUp, label: "Active Traces", value: "2", color: "bg-green-500" },
+    //     // { icon: AlertCircle, label: "High Risk", value: borrowers.filter(b => b.risk === 'high').length.toString(), color: "bg-red-500" },
+    //     { icon: MapPin, label: "Located", value: "12", color: "bg-orange-500" },
+    // ];
 
     const hotspots = [
         { city: "Mumbai", count: 124, percentage: 30 },
@@ -58,7 +122,7 @@ export default function SkipTraceMapPage() {
                     </div>
 
                     {/* Stats Cards */}
-                    <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+                    {/* <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
                         {stats.map((stat, i) => {
                             const Icon = stat.icon;
                             return (
@@ -75,7 +139,7 @@ export default function SkipTraceMapPage() {
                                 </div>
                             );
                         })}
-                    </div>
+                    </div> */}
 
                     {/* Main Content Grid */}
                     <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">

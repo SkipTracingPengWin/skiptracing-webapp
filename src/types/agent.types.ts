@@ -16,3 +16,4 @@ export interface Agent {
 }
     export type AgentStatus = "ONLINE" | "BUSY" | "OFFLINE" | "LEAVE";
 
+export type AgentStatus = "Active" | "Busy" | "Offline" | "On Leave";
