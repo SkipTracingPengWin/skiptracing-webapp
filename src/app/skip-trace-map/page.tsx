@@ -35,11 +35,20 @@ export default function SkipTraceMapPage() {
         fetchBorrowers();
     }, []);
 
-    const handleSelectBorrower = async (id: string, name: string) => {
+    const handleSelectBorrower = async (borrower: Borrower) => {
+        const id = String(borrower.id);
+        const name = borrower.name;
         setSelectedBorrowerId(id);
         setIsLocating(true);
         setErrorMsg(null);
         setLocationData(null); // Reset previous location
+
+        // Quick check before calling API
+        if (!borrower.address && (!borrower.location || borrower.location === "Unknown")) {
+            setErrorMsg("No address or location available for this borrower.");
+            setIsLocating(false);
+            return;
+        }
 
         try {
             const data = await borrowerService.fetchOsmLocation(id);
@@ -61,8 +70,12 @@ export default function SkipTraceMapPage() {
             }
         } catch (error: any) {
             console.error("Failed to fetch location:", error);
+            const errorMsg = error.response?.data?.message || error.response?.data?.error || error.message;
+
             if (error.response?.status === 404) {
                 setErrorMsg("Location data not found for this borrower (404).");
+            } else if (error.response?.status === 400) {
+                setErrorMsg(`Server could not process location request: ${errorMsg}`);
             } else {
                 setErrorMsg("Failed to fetch location from server.");
             }
@@ -157,7 +170,7 @@ export default function SkipTraceMapPage() {
                                     borrowers.map((b) => (
                                         <div
                                             key={b.id}
-                                            onClick={() => handleSelectBorrower(String(b.id), b.name)}
+                                            onClick={() => handleSelectBorrower(b)}
                                             className={`p-3 rounded-lg border cursor-pointer transition-colors ${selectedBorrowerId === String(b.id)
                                                 ? "bg-blue-50 border-blue-500"
                                                 : "border-slate-100 hover:bg-slate-50"

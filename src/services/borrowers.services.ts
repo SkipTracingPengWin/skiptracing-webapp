@@ -133,10 +133,19 @@ Message: ${errorMsg}
 
     fetchOsmLocation: async (id: string | number) => {
         try {
-            const response = await api.post(`/borrowers/${id}/fetch-osm-location`);
+            // Some backends require a body for POST requests, even if empty.
+            // Also ensure the ID is explicitly converted to string if needed.
+            const response = await api.post(`/borrowers/${id}/fetch-osm-location`, {});
             return response.data;
         } catch (error: any) {
-            console.error(`❌ Error fetching OSM location for ID ${id}:`, error.message);
+            const errorData = error.response?.data;
+            const status = error.response?.status;
+            const message = errorData?.message || errorData?.error || error.message;
+
+            console.error(`❌ OSM Location Error [ID: ${id}] [Status: ${status}]:`, message);
+            if (errorData) {
+                console.error("Diagnostic data:", errorData);
+            }
             throw error;
         }
     }
