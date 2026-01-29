@@ -2,11 +2,11 @@ import React from 'react';
 
 interface AgentWorkloadProps {
     name: string;
-    location: string;
+    address: string;
     cases: number;
 }
 
-export default function AgentWorkload({ name, location, cases }: AgentWorkloadProps) {
+export default function AgentWorkload({ name, address, cases }: AgentWorkloadProps) {
     const maxCases = 10;
     const percentage = Math.min((cases / maxCases) * 100, 100);
 
@@ -20,7 +20,7 @@ export default function AgentWorkload({ name, location, cases }: AgentWorkloadPr
                 </div>
                 <div>
                     <div className="font-semibold text-sm text-slate-900">{name}</div>
-                    <div className="text-xs text-slate-500">{location}</div>
+                    <div className="text-xs text-slate-500">{address}</div>
                 </div>
             </div>
             <div className="text-right">

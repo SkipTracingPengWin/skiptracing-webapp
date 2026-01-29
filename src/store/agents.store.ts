@@ -48,7 +48,7 @@ const unwrapData = (data: any, fieldName: string): any => {
 
 export const useAgentStore = create<AgentState>()(
     devtools(
-        (set) => ({
+        (set, get) => ({
             agents: [],
             loading: false,
             error: null,
@@ -126,31 +126,31 @@ export const useAgentStore = create<AgentState>()(
 
             // 🔹 UPDATE AGENT
             updateAgent: async (id, data) => {
-                // Optimistic Update: Update the local state immediately
+                // Determine the actual database ID before optimistic update
+                const agents = get().agents;
+                const agentToUpdate = agents.find(a =>
+                    String(a.id) === String(id) ||
+                    (a.userId && String(a.userId) === String(id))
+                );
+
+                if (!agentToUpdate) {
+                    console.error(`❌ Store: Agent not found for update [ID: ${id}]`);
+                }
+
+                const targetId = agentToUpdate ? agentToUpdate.id : id;
+
+                // Optimistic Update
                 set((state) => {
-                    const existing = state.agents.find(a =>
-                        String(a.id) === String(id) ||
-                        (a.userId && String(a.userId) === String(id))
-                    );
-
-                    if (!existing) return state;
-
-                    const optimisticAgent = normalizeAgent({
-                        ...existing,
-                        ...data // Overwrite with new fields
-                    });
-
                     return {
                         agents: state.agents.map((agent) =>
-                            (String(agent.id) === String(existing.id)) ? optimisticAgent : agent
+                            (String(agent.id) === String(targetId)) ? normalizeAgent({ ...agent, ...data }) : agent
                         ),
                     };
                 });
 
                 try {
-                    console.log(`📡 Store: Updating Agent ${id}`, data);
-                    // No global loading: true here to prevent flickering the entire page
-                    const result = await agentServices.update(id, data);
+                    console.log(`📡 Store: Updating Agent ${targetId} (original input: ${id})`, data);
+                    const result = await agentServices.update(targetId, data);
                     console.log("✅ Store: Update result:", result);
                     const updatedData = unwrapData(result, 'agent');
 

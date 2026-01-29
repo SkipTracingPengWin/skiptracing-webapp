@@ -54,7 +54,7 @@ export default function BorrowersPage() {
         return (borrowers || []).filter((borrower) => {
             const name = borrower.name || "";
             const loanId = borrower.loanId || "";
-            const location = borrower.location || "";
+            const location = borrower.address || "";
             const risk = (borrower.risk || "").toUpperCase();
             const status = (borrower.status || "").toLowerCase();
 
@@ -365,7 +365,7 @@ export default function BorrowersPage() {
 
                                         <div className="mt-4 flex items-center gap-1.5 text-slate-500 text-xs bg-slate-50 p-2 rounded-lg">
                                             <MapPin className="h-3.5 w-3.5 text-slate-400" />
-                                            <span className="truncate">{borrower.location}</span>
+                                            <span className="truncate">{borrower.address}</span>
                                         </div>
                                     </div>
                                 ))}
@@ -382,7 +382,7 @@ export default function BorrowersPage() {
                                             <TableHead className="px-6 py-4 font-bold text-slate-900">Status</TableHead>
                                             <TableHead className="px-6 py-4 font-bold text-slate-900">Risk</TableHead>
                                             <TableHead className="px-6 py-4 font-bold text-slate-900">Verification</TableHead>
-                                            <TableHead className="px-6 py-4 font-bold text-slate-900">Location</TableHead>
+                                            <TableHead className="px-6 py-4 font-bold text-slate-900">Address</TableHead>
                                             <TableHead className="px-6 py-4 font-bold text-slate-900 text-right">Actions</TableHead>
                                         </TableRow>
                                     </TableHeader>
@@ -440,7 +440,7 @@ export default function BorrowersPage() {
                                                 <TableCell className="px-6 py-4">
                                                     <div className="flex items-center gap-1.5 text-slate-600 text-sm max-w-[180px]">
                                                         <MapPin className="h-4 w-4 text-slate-400 flex-shrink-0" />
-                                                        <span className="truncate font-medium">{borrower.location}</span>
+                                                        <span className="truncate font-medium">{borrower.address}</span>
                                                     </div>
                                                 </TableCell>
 

@@ -124,13 +124,13 @@ export default function CaseItem({ assignment, onEdit, onDelete }: CaseItemProps
                         </span>
                     </div>
 
-                    {/* Location */}
+                    {/* Address */}
                     <div className="flex flex-col justify-center px-2 py-1.5 rounded bg-slate-50 border border-slate-100">
                         <span className="text-[10px] text-slate-400 uppercase font-bold tracking-wider flex items-center gap-1">
-                            <MapPin className="h-3 w-3" /> Location
+                            <MapPin className="h-3 w-3" /> Address
                         </span>
-                        <span className="text-xs font-semibold text-slate-700 truncate" title={assignment.location}>
-                            {assignment.location || "N/A"}
+                        <span className="text-xs font-semibold text-slate-700 truncate" title={assignment.address}>
+                            {assignment.address || "N/A"}
                         </span>
                     </div>
                 </div>

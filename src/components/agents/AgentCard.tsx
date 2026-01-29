@@ -27,11 +27,11 @@ export default function AgentCard({ agent }: AgentCardProps) {
     // Show actions if admin/manager OR if it's the agent themselves
     const showActions = isAdminOrManager || isAgent;
 
-    const statusStyles: Record<string, { bg: string; text: string; dot: string; hover: string }> = {
-        ONLINE: { bg: "bg-green-50", text: "text-green-700", dot: "bg-green-500", hover: "hover:bg-green-100" },
-        OFFLINE: { bg: "bg-slate-50", text: "text-slate-600", dot: "bg-slate-400", hover: "hover:bg-slate-100" },
-        BUSY: { bg: "bg-orange-50", text: "text-orange-700", dot: "bg-orange-500", hover: "hover:bg-orange-100" },
-        LEAVE: { bg: "bg-red-50", text: "text-red-700", dot: "bg-red-500", hover: "hover:bg-red-100" },
+    const statusStyles: Record<string, { bg: string; text: string; dot: string; hover: string; label: string }> = {
+        ONLINE: { bg: "bg-green-50", text: "text-green-700", dot: "bg-green-500", hover: "hover:bg-green-100", label: "Online" },
+        OFFLINE: { bg: "bg-slate-50", text: "text-slate-600", dot: "bg-slate-400", hover: "hover:bg-slate-100", label: "Offline" },
+        BUSY: { bg: "bg-orange-50", text: "text-orange-700", dot: "bg-orange-500", hover: "hover:bg-orange-100", label: "Busy" },
+        LEAVE: { bg: "bg-red-50", text: "text-red-700", dot: "bg-red-500", hover: "hover:bg-red-100", label: "On Leave" },
     };
 
     const currentStatus = (agent.status || "OFFLINE").toUpperCase();
@@ -144,7 +144,7 @@ export default function AgentCard({ agent }: AgentCardProps) {
                             ></div>
                         </div>
                         <span className="text-xs font-bold uppercase tracking-wider">
-                            {String(agent.status || "offline").replace("_", " ")}
+                            {style.label}
                         </span>
                     </button>
                 </div>

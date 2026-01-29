@@ -15,51 +15,13 @@ export const agentServices = {
      * Maps frontend terminology to backend terminology
      */
     _mapToBackend: (data: any) => {
-        const mapped = { ...data };
-        if (mapped.status === 'LEAVE') {
-            mapped.status = 'ON_BREAK';
-        }
-        return mapped;
+        return { ...data };
     },
 
     /**
      * Maps backend terminology back to frontend terminology
      */
     _mapFromBackend: (data: any) => {
-        if (!data) return data;
-
-        // Handle array of agents
-        if (data.agents && Array.isArray(data.agents)) {
-            return {
-                ...data,
-                agents: data.agents.map((a: any) => ({
-                    ...a,
-                    status: a.status === 'ON_BREAK' ? 'LEAVE' : a.status
-                }))
-            };
-        }
-
-        // Handle single agent (might be nested under 'agent' or in the root)
-        const processAgent = (a: any) => {
-            if (!a) return a;
-            return {
-                ...a,
-                status: a.status === 'ON_BREAK' ? 'LEAVE' : a.status
-            };
-        };
-
-        if (data.agent) {
-            return {
-                ...data,
-                agent: processAgent(data.agent)
-            };
-        }
-
-        // If it's the agent object itself
-        if (data.id || data._id) {
-            return processAgent(data);
-        }
-
         return data;
     },
 

@@ -111,7 +111,7 @@ export default function AssignmentsPage() {
       ...a,
       borrowerName: borrower?.name || a.borrowerName || "Unknown Borrower",
       agentName: agent?.name || a.agentName,
-      location: borrower?.location || a.location || "Location not specified",
+      address: borrower?.address || a.address || "Address not specified",
       loanId: borrower?.loanId || a.loanId || "N/A"
     };
   });
@@ -123,7 +123,7 @@ export default function AssignmentsPage() {
       a.borrowerName.toLowerCase().includes(searchQuery.toLowerCase()) ||
       (a.agentName || "").toLowerCase().includes(searchQuery.toLowerCase()) ||
       a.loanId.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      a.location.toLowerCase().includes(searchQuery.toLowerCase());
+      (a.address || "").toLowerCase().includes(searchQuery.toLowerCase());
 
     const matchesStatus =
       filterStatus === "All Cases" ||
@@ -142,7 +142,7 @@ export default function AssignmentsPage() {
   );
 
   // Calculate Agent Workload based on filtered results
-  const agentMap: Record<string, { name: string; location: string; cases: number }> = {};
+  const agentMap: Record<string, { name: string; address: string; cases: number }> = {};
   filteredAssignments.forEach((a: any) => {
     if (a.agentName) {
       const agentMatchesAgentSearch = agentSearchQuery === "" ||
@@ -152,7 +152,7 @@ export default function AssignmentsPage() {
         if (!agentMap[a.agentName]) {
           agentMap[a.agentName] = {
             name: a.agentName,
-            location: a.location || "Various Locations",
+            address: a.address || "Various Locations",
             cases: 0
           };
         }
@@ -224,7 +224,7 @@ export default function AssignmentsPage() {
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
               <input
                 type="text"
-                placeholder="Search borrowers, agents, or locations..."
+                placeholder="Search borrowers, agents, or addresses..."
                 className="w-full pl-10 pr-4 py-2 bg-white border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}

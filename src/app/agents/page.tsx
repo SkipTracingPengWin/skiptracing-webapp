@@ -48,7 +48,10 @@ export default function AgentsPage() {
 
         const matchesStatus =
             statusFilter === "All" ||
-            status.toLowerCase() === statusFilter.toLowerCase();
+            (statusFilter === "Active" && status.toUpperCase() === "ONLINE") ||
+            (statusFilter === "On Leave" && status.toUpperCase() === "LEAVE") ||
+            (statusFilter === "Offline" && status.toUpperCase() === "OFFLINE") ||
+            (statusFilter !== "Active" && statusFilter !== "On Leave" && statusFilter !== "Offline" && status.toLowerCase() === statusFilter.toLowerCase());
 
         // Return only the logged-in agent's card if doing restricted view
         if (user?.role === "AGENT") {
@@ -68,19 +71,25 @@ export default function AgentsPage() {
         {
             icon: UserCheck,
             label: "Active",
-            value: agents.filter((a: Agent) => (a.status || "").toLowerCase() === "active").length,
+            value: agents.filter((a: Agent) => (a.status || "").toUpperCase() === "ONLINE").length,
             color: "bg-green-500",
         },
         {
             icon: Clock,
+            label: "On Leave",
+            value: agents.filter((a: Agent) => (a.status || "").toUpperCase() === "LEAVE").length,
+            color: "bg-red-500",
+        },
+        {
+            icon: Clock,
             label: "Busy",
-            value: agents.filter((a: Agent) => (a.status || "").toLowerCase() === "busy").length,
+            value: agents.filter((a: Agent) => (a.status || "").toUpperCase() === "BUSY").length,
             color: "bg-orange-500",
         },
         {
             icon: UserX,
             label: "Offline",
-            value: agents.filter((a: Agent) => (a.status || "").toLowerCase() === "offline").length,
+            value: agents.filter((a: Agent) => (a.status || "").toUpperCase() === "OFFLINE").length,
             color: "bg-slate-400",
         },
     ];
@@ -111,7 +120,7 @@ export default function AgentsPage() {
                     </div>
 
                     {/* Stats Grid */}
-                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4 mb-6">
                         {stats.map((stat, i) => (
                             <div key={i} className="bg-white p-6 rounded-xl border border-slate-200 flex items-center gap-4">
                                 <div className={`h-12 w-12 rounded-xl flex items-center justify-center ${stat.color} text-white`}>
@@ -143,6 +152,7 @@ export default function AgentsPage() {
                         >
                             <option value="All">All Statuses</option>
                             <option value="Active">Active</option>
+                            <option value="On Leave">On Leave</option>
                             <option value="Busy">Busy</option>
                             <option value="Offline">Offline</option>
                         </select>
@@ -169,8 +179,8 @@ export default function AgentsPage() {
                         </div>
                     )}
                 </main>
-            </div>
+            </div >
             <AddNewAgentModal />
-        </div>
+        </div >
     );
 }
