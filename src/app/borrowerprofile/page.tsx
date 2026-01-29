@@ -16,19 +16,10 @@ import Header from "@/components/layout/Header";
 
 import {
   ArrowLeft,
-  Phone,
-  Mail,
-  MapPin,
-  CreditCard,
-  FileText,
-  Briefcase,
-  Landmark,
   Edit,
-  MessageSquare,
   PhoneCall,
-  Download,
-  Plus,
-  Trash2
+  Trash2,
+  MapPin
 } from "lucide-react";
 
 import AddBorrowerModal from "@/components/borrowers/AddBorrowerModal";
@@ -41,6 +32,12 @@ import {
   CardContent,
   Badge
 } from "@/components/borrower profile/cards.modal";
+
+import BasicInfoCard from "@/components/borrower profile/BasicInfoCard";
+import LoanDetailsCard from "@/components/borrower profile/LoanDetailsCard";
+import ScoreCard from "@/components/borrower profile/ScoreCard";
+import SkipTraceCard from "@/components/borrower profile/SkipTraceCard";
+import QuickActions from "@/components/borrower profile/QuickActions";
 
 
 
@@ -247,159 +244,4 @@ function BorrowerProfile() {
   );
 }
 
-/* ------------------------------------------------------------------
-   REUSABLE COMPONENTS
--------------------------------------------------------------------*/
 
-const InfoItem = ({ icon, label, value, extra }: any) => (
-  <div className="flex items-start gap-4">
-    <div className="w-12 h-12 rounded-xl bg-blue-50 flex items-center justify-center shrink-0">
-      {icon}
-    </div>
-    <div className="min-w-0 flex-1">
-      <p className="text-sm font-medium text-slate-500 mb-1">{label}</p>
-      <p className="font-semibold text-slate-900 truncate">{value || "N/A"}</p>
-      {extra && <p className="text-sm text-slate-500 mt-1">{extra}</p>}
-    </div>
-  </div>
-);
-
-/* ---------------- BASIC INFO ---------------- */
-const BasicInfoCard = ({ borrower, assignedAgentName }: any) => (
-  <Card className="shadow-lg border-0 bg- from-slate-50 to-white">
-    <CardHeader className="pb-4">
-      <CardTitle>Basic Information</CardTitle>
-    </CardHeader>
-    <CardContent>
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <InfoItem icon={<Phone className="w-6 h-6 text-blue-600" />} label="Phone" value={borrower.phone} />
-        <InfoItem icon={<Mail className="w-6 h-6 text-blue-600" />} label="Email" value={borrower.email} />
-        <InfoItem icon={<MapPin className="w-6 h-6 text-blue-600" />} label="Location" value={borrower.location} />
-        <InfoItem icon={<CreditCard className="w-6 h-6 text-blue-600" />} label="Loan ID" value={borrower.loanId} />
-        <InfoItem icon={<Briefcase className="w-6 h-6 text-blue-600" />} label="Assigned Agent" value={assignedAgentName} />
-        <InfoItem icon={<Landmark className="w-6 h-6 text-blue-600" />} label="Last Contact" value={borrower.lastContact} />
-      </div>
-    </CardContent>
-  </Card>
-);
-
-/* ---------------- LOAN DETAILS ---------------- */
-const LoanItem = ({ label, value, highlight = false }: any) => (
-  <div>
-    <p className="text-sm text-slate-500 mb-1">{label}</p>
-    <p className={`font-bold text-lg ${highlight ? "text-orange-600" : "text-slate-900"}`}>{value}</p>
-  </div>
-);
-
-const LoanStatus = ({ borrower }: any) => {
-  const status = String(borrower.status || "UNKNOWN").toUpperCase();
-  const getStatusStyles = (s: string) => {
-    switch (s) {
-      case "ACTIVE": return "bg-green-100 text-green-800 border-green-200";
-      case "SKIPPED": return "bg-purple-100 text-purple-800 border-purple-200";
-      case "CLOSED": return "bg-rose-100 text-rose-800 border-rose-200";
-      case "INACTIVE": return "bg-slate-100 text-slate-800 border-slate-200";
-      default: return "bg-slate-50 text-slate-600 border-slate-100";
-    }
-  };
-
-  return (
-    <div>
-      <p className="text-sm text-slate-500 mb-2">Status</p>
-      <Badge className={`${getStatusStyles(status)} border`}>
-        {status}
-      </Badge>
-    </div>
-  );
-};
-
-const LoanDetailsCard = ({ borrower }: any) => (
-  <Card className="shadow-lg border-0">
-    <CardHeader>
-      <CardTitle>Loan Details</CardTitle>
-    </CardHeader>
-    <CardContent>
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
-        <LoanItem label="Loan Type" value={borrower.loanType} />
-        <LoanItem label="Loan Amount" value={borrower.amount} />
-        <LoanItem label="Overdue" value={borrower.overdue} highlight />
-        <LoanStatus borrower={borrower} />
-      </div>
-    </CardContent>
-  </Card>
-);
-
-/* ---------------- SCORE CARD ---------------- */
-const ScoreCard = ({ score }: any) => {
-  const getColor = (score: number) =>
-    score >= 75 ? "#10B981" : score >= 50 ? "#F59E0B" : "#EF4444";
-
-  return (
-    <Card className="shadow-xl border-0 bg- from-indigo-50 to-blue-50">
-      <CardHeader>
-        <CardTitle>Verification Score</CardTitle>
-      </CardHeader>
-      <CardContent className="text-center">
-        <div className="relative w-32 h-32 mx-auto mb-4">
-          <svg className="w-32 h-32 transform -rotate-90" viewBox="0 0 160 160">
-            <circle cx="80" cy="80" r="70" stroke="#E5E7EB" strokeWidth="12" fill="none" />
-            <circle
-              cx="80"
-              cy="80"
-              r="70"
-              stroke={getColor(score)}
-              strokeWidth="12"
-              strokeLinecap="round"
-              strokeDasharray={`${(score / 100) * 439.6} 439.6`}
-              fill="none"
-            />
-          </svg>
-          <div className="absolute inset-0 flex flex-col items-center justify-center">
-            <span className="text-3xl font-bold text-slate-900">{score}</span>
-            <span className="text-sm text-slate-500">/ 100</span>
-          </div>
-        </div>
-      </CardContent>
-    </Card>
-  );
-};
-
-/* ---------------- SKIP TRACE CARD ---------------- */
-const SkipTraceCard = ({ borrower }: any) => (
-  <Card className="shadow-lg border-0 border-l-4 border-orange-500">
-    <CardHeader>
-      <CardTitle>Risk Level</CardTitle>
-    </CardHeader>
-    <CardContent>
-      <p className="text-sm font-medium">Risk Level</p>
-      <Badge className={borrower.risk === "high" ? "bg-red-100 text-red-800" : borrower.risk === "medium" ? "bg-amber-100 text-amber-800" : "bg-green-100 text-green-800"}>
-        {String(borrower.risk || "N/A").toUpperCase()}
-      </Badge>
-    </CardContent>
-  </Card>
-);
-
-/* ---------------- QUICK ACTIONS (Horizontal) ---------------- */
-const QuickActions = () => (
-  <Card className="shadow-lg border-0">
-    <CardHeader>
-      <CardTitle>Quick Actions</CardTitle>
-    </CardHeader>
-    <CardContent>
-      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3">
-        {[
-          { icon: PhoneCall, label: "Call Borrower", className: "bg-blue-600 text-white hover:bg-blue-700" },
-          { icon: MessageSquare, label: "Send SMS", className: "hover:bg-gray-50" },
-          { icon: MapPin, label: "Schedule Visit", className: "hover:bg-gray-50" },
-          { icon: FileText, label: "Legal Notice", className: "hover:bg-gray-50" },
-          { icon: Download, label: "Download", className: "text-blue-600 border-blue-200 hover:bg-blue-50" }
-        ].map(({ icon: Icon, label, className }, i) => (
-          <Button key={i} variant="outline" className={`h-14 justify-start ${className || ""}`}>
-            <Icon className="w-4 h-4 mr-2" />
-            <span className="text-sm">{label}</span>
-          </Button>
-        ))}
-      </div>
-    </CardContent>
-  </Card>
-);

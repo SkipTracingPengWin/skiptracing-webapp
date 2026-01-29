@@ -20,55 +20,14 @@ import {
     CheckCircle,
     Clock,
     XCircle,
-    ChevronRight,
     Loader2,
     RefreshCcw,
     Search
 } from "lucide-react";
 import { format } from "date-fns";
 
-// Stats Card Component
-function StatsCard({ icon: Icon, label, value, color, loading }: any) {
-    return (
-        <div className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm">
-            <div className="flex items-center gap-4">
-                <div className={cn("h-12 w-12 rounded-xl flex items-center justify-center shadow-inner", color)}>
-                    <Icon className="h-6 w-6 text-white" />
-                </div>
-                <div>
-                    {loading ? (
-                        <div className="h-8 w-16 bg-slate-100 rounded animate-pulse mb-1" />
-                    ) : (
-                        <div className="text-2xl font-bold text-slate-900">{value}</div>
-                    )}
-                    <div className="text-sm font-medium text-slate-500">{label}</div>
-                </div>
-            </div>
-        </div>
-    );
-}
-
-// Service Card Component
-function ServiceCard({ icon: Icon, title, description, color, onClick }: any) {
-    return (
-        <button
-            onClick={onClick}
-            className="group bg-white p-6 rounded-xl border border-slate-200 hover:shadow-lg hover:border-blue-200 transition-all text-left relative overflow-hidden"
-        >
-            <div className="absolute top-0 right-0 p-4 opacity-0 group-hover:opacity-100 transition-opacity -translate-y-2 group-hover:translate-y-0">
-                <ChevronRight className="h-5 w-5 text-blue-500" />
-            </div>
-
-            <div className="flex items-start justify-between mb-4">
-                <div className={cn("h-12 w-12 rounded-xl flex items-center justify-center shadow-sm transition-transform group-hover:scale-110 duration-300", color)}>
-                    <Icon className="h-6 w-6 text-white" />
-                </div>
-            </div>
-            <h3 className="font-bold text-slate-900 mb-1 group-hover:text-blue-600 transition-colors">{title}</h3>
-            <p className="text-sm text-slate-500 line-clamp-2">{description}</p>
-        </button>
-    );
-}
+import StatsCard from "@/components/verifications/StatsCard";
+import ServiceCard from "@/components/verifications/ServiceCard";
 
 export default function VerificationsPage() {
     const [selectedService, setSelectedService] = useState<any>(null);
