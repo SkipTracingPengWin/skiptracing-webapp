@@ -110,6 +110,7 @@ export default function Sidebar() {
           allMenuItems.socialmedia,
           allMenuItems.recovery,
           allMenuItems.agents,
+          allMenuItems.map,
         ];
       default:
         return [dashboardItem];

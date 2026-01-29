@@ -161,7 +161,7 @@ export default function AgentDashboard() {
             {/* Bottom Grid */}
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                 {/* Verification Status */}
-                <VerificationStatusWidget title="Verification Status"/>
+                <VerificationStatusWidget title="Verification Status" />
 
                 {/* My Assignments */}
                 <div className="bg-white p-6 rounded-xl border border-slate-200">
