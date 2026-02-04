@@ -47,7 +47,25 @@ export const useSocialProfilesStore = create<SocialProfilesState>()(
       removeSelectedBorrower: (id: string) => set((state) => ({
         selectedBorrowerIds: state.selectedBorrowerIds.filter(bid => bid !== id)
       })),
-      deleteBorrower: (id: string) => get().removeSelectedBorrower(id),
+      deleteBorrower: (id: string) => {
+        // Remove borrower ID from selected list
+        get().removeSelectedBorrower(id);
+
+        // Clear search results for this borrower
+        set((state) => {
+          const newSearchResults = { ...state.searchResults };
+          delete newSearchResults[id];
+
+          // Clear selected accounts for this borrower
+          const newSelectedAccounts = { ...state.selectedAccounts };
+          delete newSelectedAccounts[id];
+
+          return {
+            searchResults: newSearchResults,
+            selectedAccounts: newSelectedAccounts
+          };
+        });
+      },
       setSelectedAccounts: (borrowerId: string, accounts: any[]) => set((state) => ({
         selectedAccounts: {
           ...state.selectedAccounts,

@@ -25,9 +25,14 @@ export const assignmentService = {
     },
 
     getByAgentId: async (agentId: string | number) => {
-        const response = await api.get(`/agents/${agentId}`);
-        // The assignments are nested in the agent object
-        return response.data.assignedCases || [];
+        try {
+            const response = await api.get(`/assignments/agent/${agentId}`);
+            // Response structure: { success: true, count: number, data: Assignment[] }
+            return response.data.data || response.data || [];
+        } catch (error: any) {
+            console.error(`❌ Error fetching assignments for agent ${agentId}:`, error.message);
+            throw error;
+        }
     },
 
     _sanitizeData: (data: any) => {

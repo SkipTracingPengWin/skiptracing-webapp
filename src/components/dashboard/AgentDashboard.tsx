@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import VerificationStatusWidget from "@/components/dashboard/VerificationStatusWidget";
 import StatsCard from "@/components/dashboard/StatsCard";
 import AlertItem from "@/components/dashboard/AlertItem";
@@ -15,6 +15,9 @@ import {
 import { useDashboardStatsStore } from "@/store/dashboardStats.store";
 import { useAlertStore } from "@/store/alerts.store";
 import { useRecoveryTrendStore } from "@/store/recoveryTrend.store";
+import { useAuthStore } from "@/store/auth.store";
+import { assignmentService } from "@/services/assignment.services";
+import type { Assignment } from "@/types/assignment.types";
 import {
     Area,
     XAxis,
@@ -34,6 +37,9 @@ export default function AgentDashboard() {
     const { dashboardStats, fetchStats } = useDashboardStatsStore();
     const { alerts, fetchAlerts } = useAlertStore();
     const { recoveryTrend, fetchTrends } = useRecoveryTrendStore();
+    const { user } = useAuthStore();
+    const [assignments, setAssignments] = useState<Assignment[]>([]);
+    const [loadingAssignments, setLoadingAssignments] = useState(false);
 
     useEffect(() => {
         fetchStats();
@@ -41,10 +47,61 @@ export default function AgentDashboard() {
         fetchTrends();
     }, [fetchStats, fetchAlerts, fetchTrends]);
 
+    // Fetch agent's assignments
+    useEffect(() => {
+        const fetchAgentAssignments = async () => {
+            if (!user?.id) return;
+
+            setLoadingAssignments(true);
+            try {
+                // Import agent store to get all agents
+                const { useAgentStore } = await import('@/store/agents.store');
+                const agentStore = useAgentStore.getState();
+
+                // Fetch all agents if not already loaded
+                if (agentStore.agents.length === 0) {
+                    await agentStore.fetchAgents();
+                }
+
+                // Find the agent matching the current user's ID
+                const agent = agentStore.agents.find(a =>
+                    String(a.userId) === String(user.id)
+                );
+
+                if (!agent?.id) {
+                    console.warn(`No agent found for user ${user.id}`);
+                    setAssignments([]);
+                    return;
+                }
+
+                // Now fetch assignments using the agentId
+                const data = await assignmentService.getByAgentId(agent.id);
+                setAssignments(data);
+            } catch (error) {
+                console.error("Failed to fetch agent assignments:", error);
+                setAssignments([]);
+            } finally {
+                setLoadingAssignments(false);
+            }
+        };
+
+        fetchAgentAssignments();
+    }, [user?.id]);
+
     // Add loading check
     if (!dashboardStats) {
         return <div>Loading dashboard...</div>;
     }
+
+    // Calculate assignment statistics based on user requirements
+    // Active = OPEN status only
+    const activeAssignments = assignments.filter(a => a.status === 'OPEN').length;
+
+    // Completed = CLOSED status (all time, not just today)
+    const completedAssignments = assignments.filter(a => a.status === 'CLOSED').length;
+
+    // Pending = PENDING status only
+    const pendingAssignments = assignments.filter(a => a.status === 'PENDING').length;
 
     // Agent-specific stats (removed: Active Agents, SLA Alerts)
     const stats = [
@@ -166,29 +223,33 @@ export default function AgentDashboard() {
                 {/* My Assignments */}
                 <div className="bg-white p-6 rounded-xl border border-slate-200">
                     <h3 className="text-lg font-bold text-slate-900 mb-4">My Assignments</h3>
-                    <div className="space-y-3">
-                        <div className="p-4 bg-blue-50 rounded-lg border border-blue-100">
-                            <div className="flex items-center justify-between mb-2">
-                                <span className="font-semibold text-slate-900">Active Cases</span>
-                                <span className="text-2xl font-bold text-blue-600">12</span>
+                    {loadingAssignments ? (
+                        <div className="text-center py-8 text-slate-500">Loading assignments...</div>
+                    ) : (
+                        <div className="space-y-3">
+                            <div className="p-4 bg-blue-50 rounded-lg border border-blue-100">
+                                <div className="flex items-center justify-between mb-2">
+                                    <span className="font-semibold text-slate-900">Active Cases</span>
+                                    <span className="text-2xl font-bold text-blue-600">{activeAssignments}</span>
+                                </div>
+                                <p className="text-xs text-slate-600">Currently assigned to you</p>
                             </div>
-                            <p className="text-xs text-slate-600">Currently assigned to you</p>
-                        </div>
-                        <div className="p-4 bg-green-50 rounded-lg border border-green-100">
-                            <div className="flex items-center justify-between mb-2">
-                                <span className="font-semibold text-slate-900">Completed Today</span>
-                                <span className="text-2xl font-bold text-green-600">3</span>
+                            <div className="p-4 bg-green-50 rounded-lg border border-green-100">
+                                <div className="flex items-center justify-between mb-2">
+                                    <span className="font-semibold text-slate-900">Completed</span>
+                                    <span className="text-2xl font-bold text-green-600">{completedAssignments}</span>
+                                </div>
+                                <p className="text-xs text-slate-600">Total cases completed</p>
                             </div>
-                            <p className="text-xs text-slate-600">Cases resolved today</p>
-                        </div>
-                        <div className="p-4 bg-orange-50 rounded-lg border border-orange-100">
-                            <div className="flex items-center justify-between mb-2">
-                                <span className="font-semibold text-slate-900">Pending Review</span>
-                                <span className="text-2xl font-bold text-orange-600">5</span>
+                            <div className="p-4 bg-orange-50 rounded-lg border border-orange-100">
+                                <div className="flex items-center justify-between mb-2">
+                                    <span className="font-semibold text-slate-900">Pending Review</span>
+                                    <span className="text-2xl font-bold text-orange-600">{pendingAssignments}</span>
+                                </div>
+                                <p className="text-xs text-slate-600">Pending assignments</p>
                             </div>
-                            <p className="text-xs text-slate-600">Awaiting manager approval</p>
                         </div>
-                    </div>
+                    )}
                 </div>
             </div>
         </div>

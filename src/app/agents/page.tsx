@@ -49,7 +49,7 @@ export default function AgentsPage() {
         const matchesStatus =
             statusFilter === "All" ||
             (statusFilter === "Active" && status.toUpperCase() === "ONLINE") ||
-            (statusFilter === "On Leave" && status.toUpperCase() === "LEAVE") ||
+            (statusFilter === "Leave" && status.toUpperCase() === "LEAVE") ||
             (statusFilter === "Offline" && status.toUpperCase() === "OFFLINE") ||
             (statusFilter !== "Active" && statusFilter !== "On Leave" && statusFilter !== "Offline" && status.toLowerCase() === statusFilter.toLowerCase());
 
@@ -76,7 +76,7 @@ export default function AgentsPage() {
         },
         {
             icon: Clock,
-            label: "On Leave",
+            label: "Leave",
             value: agents.filter((a: Agent) => (a.status || "").toUpperCase() === "LEAVE").length,
             color: "bg-red-500",
         },
