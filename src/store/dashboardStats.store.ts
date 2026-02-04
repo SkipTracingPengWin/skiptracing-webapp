@@ -4,12 +4,12 @@ import type { DashboardStats } from '@/types/dashboard.types';
 import { dashboardService } from '@/services/dashboard.services';
 
 const initialDashboardStats: DashboardStats = {
-    totalBorrowers: 6,
-    verified: 2,
-    inRecovery: 4,
-    activeAgents: 5,
-    pendingVerifications: 4,
-    slaAlerts: 6,
+    totalBorrowers: 0,
+    verified: 0,
+    inRecovery: 0,
+    activeAgents: 0,
+    pendingVerifications: 0,
+    slaAlerts: 0,
     totalRecovered: "0",
     recoveryRate: 0
 };
