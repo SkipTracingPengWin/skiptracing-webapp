@@ -7,7 +7,7 @@ import Header from "@/components/layout/Header";
 import { Card, CardContent } from "@/components/ui/card";
 import {
   Search, Facebook, Instagram, Twitter, Linkedin, Users, TrendingUp,
-  ArrowRight, ArrowLeft
+
 } from "lucide-react";
 import FindBySocialMediaModal from "@/components/socialmedia/findbysocialmedia.modal";
 import SocialMediaResultsModal from "@/components/socialmedia/socialmediaresult.modal";
@@ -283,13 +283,7 @@ export default function SocialMediaPage() {
               </div>
             )}
             {/* Decorative Navigation Arrows (Visual only based on screenshot) */}
-            <button className="absolute -left-12 top-1/2 -translate-y-1/2 p-2 rounded-full bg-slate-200 text-slate-500 hover:bg-slate-300 hidden xl:block">
-              <ArrowLeft className="h-5 w-5" />
-            </button>
-            <button className="absolute -right-12 top-1/2 -translate-y-1/2 p-2 rounded-full bg-slate-200 text-slate-500 hover:bg-slate-300 hidden xl:block">
-              <ArrowRight className="h-5 w-5" />
-            </button>
-
+            
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3 gap-6">
               {profiles.length === 0 ? (
                 <div className="col-span-full text-center py-20">
