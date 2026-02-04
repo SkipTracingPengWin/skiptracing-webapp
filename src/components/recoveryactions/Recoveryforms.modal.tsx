@@ -92,12 +92,14 @@ function TextAreaField({ label, isRequired = false, ...props }: any) {
 export default function ActionModal({
     isOpen,
     onClose,
+    initialData = null,
 }: {
     isOpen: boolean;
     onClose: () => void;
+    initialData?: any;
 }) {
     const { borrowers, fetchBorrowers } = useBorrowerStore();
-    const { addAction, isLoading } = useRecoveryActionsStore();
+    const { addAction, updateAction, isLoading } = useRecoveryActionsStore();
 
     const [formData, setFormData] = useState({
         borrowerId: "",
@@ -116,19 +118,32 @@ export default function ActionModal({
     }, [isOpen, borrowers.length, fetchBorrowers]);
 
     useEffect(() => {
-        if (!isOpen) {
-            // Reset form when modal closes
-            setFormData({
-                borrowerId: "",
-                type: "",
-                status: "PENDING",
-                priority: "MEDIUM",
-                executedAt: "",
-                executedBy: "",
-                notes: "",
-            });
+        if (isOpen) {
+            if (initialData) {
+                // Populate form for editing
+                setFormData({
+                    borrowerId: initialData.borrowerId || "",
+                    type: initialData.type || "",
+                    status: initialData.status || "PENDING",
+                    priority: initialData.priority || "MEDIUM",
+                    executedAt: initialData.executedAt ? new Date(initialData.executedAt).toISOString().slice(0, 16) : "",
+                    executedBy: initialData.executedBy || "",
+                    notes: initialData.notes || "",
+                });
+            } else {
+                // Reset form for creation
+                setFormData({
+                    borrowerId: "",
+                    type: "",
+                    status: "PENDING",
+                    priority: "MEDIUM",
+                    executedAt: "",
+                    executedBy: "",
+                    notes: "",
+                });
+            }
         }
-    }, [isOpen]);
+    }, [isOpen, initialData]);
 
     if (!isOpen) return null;
 
@@ -163,16 +178,20 @@ export default function ActionModal({
 
             console.log("🎬 Modal - Submitting action data:", JSON.stringify(actionData, null, 2));
 
-            await addAction(actionData);
+            if (initialData && initialData.id) {
+                await updateAction(initialData.id, actionData);
+            } else {
+                await addAction(actionData);
+            }
             onClose();
         } catch (error: any) {
-            console.error("❌ Modal - Failed to create action:", error);
+            console.error("❌ Modal - Failed to save action:", error);
             console.error("Error details:", {
                 message: error.message,
                 response: error.response?.data,
                 status: error.response?.status
             });
-            alert(`Failed to create action: ${error.response?.data?.message || error.message}`);
+            alert(`Failed to save action: ${error.response?.data?.message || error.message}`);
         }
     };
 
@@ -197,6 +216,8 @@ export default function ActionModal({
         { value: "LOW", name: "Low" },
     ];
 
+    const isEditing = !!initialData;
+
     return (
         <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50">
             <div className="bg-white rounded-2xl shadow-2xl w-full max-w-lg mx-auto transform transition-all duration-300 scale-100 opacity-100">
@@ -208,7 +229,9 @@ export default function ActionModal({
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
                         </svg>
                     </div>
-                    <h2 className="text-xl font-extrabold text-slate-900 flex-1">Create Recovery Action</h2>
+                    <h2 className="text-xl font-extrabold text-slate-900 flex-1">
+                        {isEditing ? "Edit Recovery Action" : "Create Recovery Action"}
+                    </h2>
                     <button
                         onClick={onClose}
                         className="p-2 text-slate-400 rounded-full hover:bg-slate-100 hover:text-slate-700 transition-colors"
@@ -302,7 +325,7 @@ export default function ActionModal({
                             className="px-5 py-2.5 text-sm font-semibold text-white bg-blue-600 rounded-lg shadow-md hover:bg-blue-700 transition-colors transform hover:scale-[1.01] disabled:opacity-50 disabled:cursor-not-allowed"
                             disabled={isLoading}
                         >
-                            {isLoading ? "Creating..." : "Create Action"}
+                            {isLoading ? (isEditing ? "Updating..." : "Creating...") : (isEditing ? "Update Action" : "Create Action")}
                         </button>
                     </div>
                 </form>

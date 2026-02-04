@@ -272,16 +272,7 @@ export default function OperationalDashboard() {
                             displayName="Diwancheruvu Hotspot"
                         />
                     </div>
-                    <div className="flex items-center justify-between p-4 bg-slate-50 rounded-lg mt-auto">
-                        <div className="flex flex-col">
-                            <span className="text-xs text-slate-500 font-medium uppercase tracking-wider">Total Active Signals</span>
-                            <span className="text-xl font-bold text-slate-900">254 cases</span>
-                        </div>
-                        <div className="flex items-center gap-1 text-green-600 text-sm font-bold">
-                            <TrendingUp className="h-4 w-4" />
-                            +12% vs last week
-                        </div>
-                    </div>
+
                 </div>
             </div>
         </div>
