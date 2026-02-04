@@ -37,7 +37,7 @@ import BasicInfoCard from "@/components/borrower profile/BasicInfoCard";
 import LoanDetailsCard from "@/components/borrower profile/LoanDetailsCard";
 import ScoreCard from "@/components/borrower profile/ScoreCard";
 import SkipTraceCard from "@/components/borrower profile/SkipTraceCard";
-import QuickActions from "@/components/borrower profile/QuickActions";
+
 
 
 
@@ -235,9 +235,6 @@ function BorrowerProfile() {
             <ScoreCard score={verificationScore} />
             <SkipTraceCard borrower={borrower} />
           </div>
-
-          {/* 4. Quick Actions (Horizontal Layout) */}
-          <QuickActions />
         </div>
       </div>
     </main>
