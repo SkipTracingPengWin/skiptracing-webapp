@@ -122,6 +122,39 @@ export default function AuditLogsPage() {
         };
     }, [filteredLogs]);
 
+    const handleExportCSV = () => {
+        if (!filteredLogs.length) return;
+
+        const headers = ["Timestamp", "Action", "Module", "User", "Details", "Status"];
+        const csvContent = [
+            headers.join(","),
+            ...filteredLogs.map(log => {
+                const userName = String(log.actorName ||
+                    (typeof log.user === 'object' && log.user ? log.user.name : (log.user || "Unknown")));
+
+                const row = [
+                    `"${format(new Date(log.timestamp), 'PPpp')}"`,
+                    `"${log.action.replace(/"/g, '""')}"`,
+                    `"${log.module}"`,
+                    `"${userName.replace(/"/g, '""')}"`,
+                    `"${log.details.replace(/"/g, '""')}"`,
+                    `"${log.status}"`
+                ];
+                return row.join(",");
+            })
+        ].join("\n");
+
+        const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement("a");
+        link.setAttribute("href", url);
+        link.setAttribute("download", `audit_logs_${format(new Date(), 'yyyy-MM-dd_HH-mm')}.csv`);
+        link.style.visibility = "hidden";
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+    };
+
     const statCards = [
         { icon: FileText, label: "Total Logs", value: dynamicStats.total, color: "bg-slate-500" },
         { icon: CheckCircle, label: "Verifications", value: dynamicStats.verifications, color: "bg-green-500" },
@@ -145,14 +178,14 @@ export default function AuditLogsPage() {
                                 <p className="text-sm text-slate-600 mt-1">Real-time immutable audit trail for all system activities</p>
                             </div>
                             <div className="flex items-center gap-3">
-                                <button className="flex items-center gap-2 px-4 py-2 border border-slate-200 rounded-lg hover:bg-slate-50 transition-colors bg-white shadow-sm">
+                                <button
+                                    onClick={handleExportCSV}
+                                    className="flex items-center gap-2 px-4 py-2 border border-slate-200 rounded-lg hover:bg-slate-50 transition-colors bg-white shadow-sm"
+                                >
                                     <Download className="h-4 w-4" />
                                     <span className="text-sm font-medium">Export CSV</span>
                                 </button>
-                                <button className="flex items-center gap-2 px-4 py-2 border border-slate-200 rounded-lg hover:bg-slate-50 transition-colors bg-white shadow-sm">
-                                    <FileDown className="h-4 w-4" />
-                                    <span className="text-sm font-medium">Export PDF</span>
-                                </button>
+
                             </div>
                         </div>
                     </div>

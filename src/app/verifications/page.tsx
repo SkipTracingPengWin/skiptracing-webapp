@@ -22,7 +22,8 @@ import {
     XCircle,
     Loader2,
     RefreshCcw,
-    Search
+    Search,
+    Download
 } from "lucide-react";
 import { format } from "date-fns";
 
@@ -112,6 +113,36 @@ export default function VerificationsPage() {
         }
     };
 
+    const handleExportCSV = () => {
+        if (filteredVerifications.length === 0) return;
+
+        const headers = ["Borrower Name", "Borrower Phone", "Service Type", "Requested At", "Status", "Verification ID"];
+
+        const csvRows = [
+            headers.join(","), // header row
+            ...filteredVerifications.map(v => {
+                const row = [
+                    `"${v.borrower?.name || "Unknown"}"`,
+                    `"${v.borrower?.phone || ""}"`,
+                    `"${v.type}"`,
+                    `"${v.createdAt ? format(new Date(v.createdAt), "yyyy-MM-dd HH:mm:ss") : ""}"`,
+                    `"${v.status}"`,
+                    `"${v.id}"`
+                ];
+                return row.join(",");
+            })
+        ];
+
+        const csvContent = "data:text/csv;charset=utf-8," + csvRows.join("\n");
+        const encodedUri = encodeURI(csvContent);
+        const link = document.createElement("a");
+        link.setAttribute("href", encodedUri);
+        link.setAttribute("download", `verifications_export_${format(new Date(), "yyyy-MM-dd")}.csv`);
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+    };
+
     return (
         <div className="flex h-screen bg-slate-50">
             <Sidebar />
@@ -126,13 +157,23 @@ export default function VerificationsPage() {
                             <h1 className="text-2xl font-bold text-slate-900 tracking-tight">One-Click Verification</h1>
                             <p className="text-sm text-slate-500 mt-1">Instant KYC & fraud detection powered by advanced APIs</p>
                         </div>
-                        <button
-                            onClick={() => fetchVerifications()}
-                            className="flex items-center gap-2 px-4 py-2 bg-white border border-slate-200 rounded-lg text-sm font-medium text-slate-600 hover:bg-slate-50 hover:text-blue-600 transition-colors shadow-sm"
-                        >
-                            <RefreshCcw className={cn("h-4 w-4", isLoading && "animate-spin")} />
-                            Refresh Data
-                        </button>
+                        <div className="flex items-center gap-2">
+                            <button
+                                onClick={() => fetchVerifications()}
+                                className="flex items-center gap-2 px-4 py-2 bg-white border border-slate-200 rounded-lg text-sm font-medium text-slate-600 hover:bg-slate-50 hover:text-blue-600 transition-colors shadow-sm"
+                            >
+                                <RefreshCcw className={cn("h-4 w-4", isLoading && "animate-spin")} />
+                                Refresh Data
+                            </button>
+                            <button
+                                onClick={handleExportCSV}
+                                disabled={filteredVerifications.length === 0}
+                                className="flex items-center gap-2 px-4 py-2 bg-blue-600 border border-blue-600 rounded-lg text-sm font-medium text-white hover:bg-blue-700 transition-colors shadow-sm disabled:opacity-50 disabled:cursor-not-allowed"
+                            >
+                                <Download className="h-4 w-4" />
+                                Export Data
+                            </button>
+                        </div>
                     </div>
 
                     {/* Stats Grid */}

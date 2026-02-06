@@ -1,3 +1,5 @@
+
+
 import Link from "next/link";
 import { ArrowRight, Shield, MapPin, Users, FileText, BarChart, Zap, ChevronRight, Play, Lock, CheckCircle2 } from "lucide-react";
 
@@ -28,7 +30,7 @@ export default function LandingPage() {
             </header>
 
             {/* Hero Section */}
-            <section className="pt-20 pb-32 bg- from-blue-50/50 to-white overflow-hidden">
+            <section className="pt-20 pb-32 bg-gradient-to-b from-blue-50/50 to-white overflow-hidden">
                 <div className="container mx-auto px-4">
                     <div className="flex flex-col lg:flex-row items-center gap-16">
                         <div className="flex-1 space-y-8">
@@ -124,7 +126,7 @@ export default function LandingPage() {
                 </div>
             </section>
 
-            <section className="py-16 bg- from-white via-white to-orange-50/60 relative">
+            <section className="py-16 bg-gradient-to-br from-white via-white to-orange-50/60 relative">
                 {/* soft top-right bubble */}
                 <div className="pointer-events-none absolute -top-32 right-0 h-64 w-64 rounded-full bg-orange-100/70 blur-3xl opacity-70" />
                 <div className="container mx-auto px-4 relative z-10">
@@ -234,13 +236,13 @@ export default function LandingPage() {
                                 {/* bubble background in top-right */}
                                 <div className="pointer-events-none absolute -top-10 -right-10 h-40 w-40">
                                     <div
-                                        className={`h-full w-full rounded-full bg- ${feature.bubble}`}
+                                        className={`h-full w-full rounded-full bg-gradient-to-bl ${feature.bubble}`}
                                     />
                                 </div>
 
                                 {/* icon with solid rounded square */}
                                 <div
-                                    className={`relative mb-6 flex h-14 w-14 items-center justify-center rounded-2xl bg- ${feature.iconBg} shadow-lg`}
+                                    className={`relative mb-6 flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-to-br ${feature.iconBg} shadow-lg`}
                                 >
                                     <feature.icon className="h-7 w-7 text-white" />
                                 </div>
@@ -370,6 +372,9 @@ export default function LandingPage() {
         </div>
     );
 }
+
+
+
 
 
 

@@ -2,7 +2,7 @@ import api from "@/lib/axios";
 
 export const authService = {
     register: async (data: { name: string; email: string; password: string; role: string }) => {
-        try {
+        try {   
             const response = await api.post("/auth/register", {
                 name: data.name,
                 email: data.email,
@@ -39,10 +39,25 @@ export const authService = {
             const response = await api.post("/auth/login", credentials);
             let result = response.data;
 
-            // Handle case where token is present but user is missing
+            // Handle case where token is present but user is missing (flat structure)
             const token = result.token || result.access_token;
 
-            if (token && !result.user) {
+            // Checks if we have user info at the root level typical of the flat response
+            // e.g. { "_id": "...", "email": "...", "role": "...", "token": "..." }
+            const hasRootUserInfo = result._id && result.email && result.role;
+
+            if (token && hasRootUserInfo) {
+                // Construct user object from root properties
+                result.user = {
+                    id: result._id,
+                    email: result.email,
+                    name: result.name,
+                    role: result.role,
+                    ...result // spread the rest just in case
+                };
+                result.token = token;
+            } else if (token && !result.user) {
+                // ONLY if we really don't have user info, try to fetch it
                 try {
                     // Fetch user profile using the new token
                     const userResponse = await api.get("/auth/profile", {
@@ -62,7 +77,7 @@ export const authService = {
                 return {
                     token: result.token,
                     user: {
-                        id: result.user.id,
+                        id: result.user.id || result.user._id, // Handle both id formats
                         email: result.user.email,
                         name: result.user.name,
                         role: result.user.role, // Should be ADMIN, MANAGER, or AGENT

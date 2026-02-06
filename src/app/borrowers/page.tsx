@@ -20,6 +20,7 @@ import { useAuthStore } from "@/store/auth.store";
 import AddBorrowerModal from "@/components/borrowers/AddBorrowerModal";
 import DeleteBorrowerModal from "@/components/borrowers/DeleteBorrowerModal";
 import ActionMenu from "@/components/borrowers/Boroweractionmodal";
+import ImportBorrowersModal from "@/components/borrowers/ImportBorrowersModal"; 
 import { RiskBadge, StatusBadge, VerificationStatus } from "@/components/borrowers/badges";
 import LoadingSpinner from "@/components/ui/LoadingSpinner";
 import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from "@/components/ui/table";
@@ -29,6 +30,7 @@ export default function BorrowersPage() {
     const { user } = useAuthStore();
     const router = useRouter();
     const [isModalOpen, setIsModalOpen] = useState(false);
+    const [isImportModalOpen, setIsImportModalOpen] = useState(false); // [NEW]
     const [editingBorrowerId, setEditingBorrowerId] = useState<string | number | undefined>(undefined);
 
     // Delete Modal State
@@ -69,6 +71,45 @@ export default function BorrowersPage() {
             return matchesSearch && matchesRisk && matchesStatus;
         });
     }, [borrowers, searchQuery, riskFilter, statusFilter]);
+
+    // ----------------------
+    // EXPORT LOGIC [NEW]
+    // ----------------------
+    const handleExport = () => {
+        if (borrowers.length === 0) {
+            toast.error("No data to export");
+            return;
+        }
+
+        const headers = ["ID", "Name", "Phone", "Email", "Loan ID", "Amount", "Status", "Risk", "Verification", "Address", "Location"];
+        const csvContent = [
+            headers.join(","),
+            ...borrowers.map(b => [
+                b.id,
+                `"${b.name}"`,
+                `"${b.phone}"`,
+                `"${b.email || ''}"`,
+                b.loanId,
+                b.amount,
+                b.status,
+                b.risk,
+                b.verified ? "Yes" : "No",
+                `"${b.address || ''}"`,
+                `"${b.location || ''}"`
+            ].join(","))
+        ].join("\n");
+
+        const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement("a");
+        link.setAttribute("href", url);
+        link.setAttribute("download", `borrowers_export_${new Date().toISOString().slice(0, 10)}.csv`);
+        link.style.visibility = "hidden";
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        toast.success("Borrowers exported successfully");
+    };
 
     // ----------------------
     // ACTION MENU STATE
@@ -166,21 +207,26 @@ export default function BorrowersPage() {
 
                             {user?.role !== "AGENT" && (
                                 <div className="flex flex-wrap items-center gap-3">
-                                    <div className="flex items-center bg-white border border-slate-200 rounded-xl p-1 shadow-sm">
-                                        <button className="flex items-center gap-2 px-3 py-1.5 hover:bg-slate-50 text-slate-600 rounded-lg transition-colors text-sm font-medium">
-                                            <Download className="h-4 w-4" />
-                                            <span>Import</span>
-                                        </button>
-                                        <div className="w-[1px] h-4 bg-slate-200 mx-1"></div>
-                                        <button className="flex items-center gap-2 px-3 py-1.5 hover:bg-slate-50 text-slate-600 rounded-lg transition-colors text-sm font-medium">
-                                            <Upload className="h-4 w-4" />
-                                            <span>Export</span>
-                                        </button>
-                                    </div>
+                                    {/* SEPARATE IMPORT/EXPORT BUTTONS [MODIFIED] */}
+                                    <button
+                                        onClick={() => setIsImportModalOpen(true)}
+                                        className="flex items-center gap-2 px-4 py-2.5 bg-white hover:bg-slate-50 border border-slate-200 text-slate-700 rounded-xl transition-all shadow-sm hover:shadow text-sm font-bold active:scale-[0.98]"
+                                    >
+                                        <Download className="h-4 w-4 text-blue-600" />
+                                        <span>Import</span>
+                                    </button>
+
+                                    <button
+                                        onClick={handleExport}
+                                        className="flex items-center gap-2 px-4 py-2.5 bg-white hover:bg-slate-50 border border-slate-200 text-slate-700 rounded-xl transition-all shadow-sm hover:shadow text-sm font-bold active:scale-[0.98]"
+                                    >
+                                        <Upload className="h-4 w-4 text-blue-600" />
+                                        <span>Export</span>
+                                    </button>
 
                                     <button
                                         onClick={() => setIsModalOpen(true)}
-                                        className="flex items-center justify-center gap-2 px-5 py-2.5 bg-blue-600 text-white rounded-xl hover:bg-blue-700 active:scale-95 transition-all text-sm font-bold shadow-lg shadow-blue-500/20"
+                                        className="flex items-center justify-center gap-2 px-5 py-2.5 bg-blue-600 text-white rounded-xl hover:bg-blue-700 active:scale-95 transition-all text-sm font-bold shadow-lg shadow-blue-500/20 ml-2"
                                     >
                                         <Plus className="h-5 w-5" />
                                         <span>Add Borrower</span>
@@ -277,6 +323,11 @@ export default function BorrowersPage() {
                         borrowerId={editingBorrowerId}
                     />
 
+                    {/* [NEW] IMPORT MODAL */}
+                     <ImportBorrowersModal
+                        isOpen={isImportModalOpen}
+                        onClose={() => setIsImportModalOpen(false)}
+                    /> 
                     <DeleteBorrowerModal
                         isOpen={isDeleteModalOpen}
                         onClose={() => {
