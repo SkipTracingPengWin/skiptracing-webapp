@@ -1,6 +1,4 @@
 
-
-// // ReportsPage.tsx
 "use client";
 
 import React from 'react';
@@ -17,6 +15,20 @@ import {
   ChevronDown,
 } from "lucide-react";
 import { useDashboardStore } from '@/store/reoport.store';
+import { useRecoveryTrendStore } from '@/store/recoveryTrend.store';
+import { useAgentStore } from '@/store/agents.store';
+import { useVerificationStore } from '@/store/verifications.store';
+import { useAssignmentStore } from '@/store/assignments.store';
+import { VerificationType } from '@/types/verification.types';
+import { useEffect, useMemo } from 'react';
+
+import {
+  PieChart,
+  Pie,
+  Cell,
+  ResponsiveContainer,
+  Tooltip,
+} from 'recharts';
 
 import LoadingSpinner from "@/components/ui/LoadingSpinner";
 
@@ -49,12 +61,99 @@ const Button: React.FC<SlotProps & { variant?: 'outline' | 'primary' }> = ({ chi
 
 
 const ReportsPage = () => {
-  const { period, months, agentPerformance, reportTypes, totalRecovered, totalVerifications, casesClosed, avgSuccessRate, loading } = useDashboardStore();
+  const { period, months, reportTypes, totalRecovered, totalVerifications, casesClosed, avgSuccessRate, loading } = useDashboardStore();
+  const { recoveryTrend, fetchTrends, loading: trendLoading } = useRecoveryTrendStore();
+  const { agents, fetchAgents, loading: agentsLoading } = useAgentStore();
+  const { verifications, fetchVerifications } = useVerificationStore();
+  const { assignments, fetchAssignments } = useAssignmentStore();
+
+  useEffect(() => {
+    fetchTrends();
+    fetchAgents();
+    fetchVerifications();
+    fetchAssignments();
+  }, [fetchTrends, fetchAgents, fetchVerifications, fetchAssignments]);
+
+  // --- Calculate Verification Breakdown ---
+  const { verificationBreakdown, totalCount, failedCount } = useMemo(() => {
+    const counts = {
+      [VerificationType.AADHAAR]: 0,
+      [VerificationType.PAN]: 0,
+      [VerificationType.BANK]: 0,
+      [VerificationType.VOTER]: 0,
+      [VerificationType.EMPLOYMENT]: 0,
+      [VerificationType.DL]: 0,
+      [VerificationType.RC]: 0,
+      [VerificationType.PASSPORT]: 0,
+      [VerificationType.ADDRESS]: 0,
+      [VerificationType.PHONE]: 0,
+      [VerificationType.EMAIL]: 0,
+      [VerificationType.LIVENESS]: 0,
+    };
+
+    let failed = 0;
+
+    verifications.forEach((v) => {
+      if (counts[v.type] !== undefined) {
+        counts[v.type]++;
+      }
+      if (v.status === 'FAILED') {
+        failed++;
+      }
+    });
+
+    // Define colors for the chart
+    const colors: Record<string, string> = {
+      [VerificationType.AADHAAR]: "#06B6D4", // Sky
+      [VerificationType.PAN]: "#22C55E",    // Green
+      [VerificationType.PHONE]: "#F97316",  // Orange (labeled Mobile in UI)
+      [VerificationType.BANK]: "#8B5CF6",   // Purple
+      [VerificationType.EMPLOYMENT]: "#EC4899", // Pink
+      [VerificationType.VOTER]: "#3B82F6",  // Blue
+      // Defaults for others
+    };
+
+    const breakdown = Object.entries(counts)
+      .filter(([_, value]) => value > 0)
+      .map(([key, value]) => ({
+        name: key,
+        value,
+        color: colors[key] || "#94A3B8", // Default slate
+      }));
+
+    return {
+      verificationBreakdown: breakdown,
+      totalCount: verifications.length,
+      failedCount: failed,
+    };
+  }, [verifications]);
+
+  // --- Calculate Cases Closed (Dynamic) ---
+  const dynamicCasesClosed = useMemo(() => {
+    return assignments.filter(a => a.status === 'CLOSED').length;
+  }, [assignments]);
+
+  // --- Formatting Helper ---
+  const formatAbsoluteCurrency = (val: number) => {
+    // Assuming val is in Lakhs
+    const absoluteValue = val
+    return new Intl.NumberFormat('en-IN', {
+      style: 'currency',
+      currency: 'INR',
+      maximumFractionDigits: 0
+    }).format(absoluteValue);
+  };
+
+  // --- Calculate Total Recovered (Dynamic) ---
+  const formattedTotalRecovered = useMemo(() => {
+    const total = recoveryTrend.reduce((sum, item) => sum + (item.recovered || 0), 0);
+    return formatAbsoluteCurrency(total);
+  }, [recoveryTrend]);
 
   if (loading) {
     return (
       <div className="flex h-screen items-center justify-center bg-gray-50">
-        <LoadingSpinner text="Loading reports..."/>
+        <LoadingSpinner text="Loading reports..." />
       </div>
     );
   }
@@ -144,7 +243,7 @@ const ReportsPage = () => {
                 <div>
                   <CardTitle>Recovery Trend</CardTitle>
                   <CardDescription>
-                    Monthly recovery vs target (₹ Lakhs)
+                    Monthly recovery vs target
                   </CardDescription>
                 </div>
                 <Button className="gap-1">
@@ -155,67 +254,86 @@ const ReportsPage = () => {
 
               {/* Bar Chart Container */}
               <div className="mt-5 flex h-64 items-end gap-3 md:gap-7 border-t border-slate-100 pt-6">
-                {months.map((m) => {
-                  const max = 35; // Maximum value for scaling (based on max value in image, 36)
-                  const recHeight = (m.recovered / max) * 100;
-                  const tgtHeight = (m.target / max) * 100;
+                {(() => {
+                  const data = recoveryTrend.length > 0 ? recoveryTrend : months;
 
-                  // Y-axis labels for Recovery Trend chart (Jan, Feb, etc.)
-                  // These labels are hardcoded in the original code's store, but we add simulated y-axis marks for better visualization
-                  const yAxisMarks = [9, 18, 27, 36];
+                  // Calculate dynamic max value for scaling
+                  const maxVal = Math.max(...data.flatMap((d: any) => [d.recovered, d.target]), 0);
+                  // Round up to nearest 5, or default to 35 if maxVal is low/0
+                  const max = maxVal > 0 ? Math.ceil(maxVal / 5) * 5 : 35;
 
-                  return (
-                    <div
-                      key={m.month}
-                      className="flex flex-1 h-full flex-col items-center justify-end gap-2 text-xs group relative"
-                    >
-                      {/* Simulated Y-Axis Marks (Only showing the marks on the first bar container for alignment) */}
-                      {m.month === 'Jan' && (
-                        <div className="absolute inset-y-0 left-[-30px] w-[30px] text-[10px] text-slate-500/70">
-                          {yAxisMarks.map((mark, index) => (
-                            <div
-                              key={index}
-                              className="absolute right-0 w-full text-right"
-                              style={{ bottom: `${(mark / max) * 100}%`, transform: 'translateY(50%)' }}
-                            >
-                              {mark}
-                            </div>
-                          ))}
-                          {/* 0 mark */}
-                          <div className="absolute right-0 w-full text-right bottom-0">0</div>
+                  // Generate Y-axis marks based on dynamic max
+                  const yAxisMarks = [
+                    Math.round(max * 0.25),
+                    Math.round(max * 0.5),
+                    Math.round(max * 0.75),
+                    max
+                  ];
+
+                  return data.map((m: any, index: number) => {
+                    const recHeight = (m.recovered / max) * 100;
+                    const tgtHeight = (m.target / max) * 100;
+
+                    // Use id if available, otherwise combine month + index to ensure uniqueness
+                    const uniqueKey = m.id || `${m.month}-${index}`;
+
+
+                    // Y-axis labels for Recovery Trend chart (Jan, Feb, etc.)
+                    // These labels are hardcoded in the original code's store, but we add simulated y-axis marks for better visualization
+
+                    return (
+                      <div
+                        key={uniqueKey}
+                        className="flex flex-1 h-full flex-col items-center justify-end gap-2 text-xs group relative"
+                      >
+                        {/* Simulated Y-Axis Marks (Only showing the marks on the first bar container for alignment) */}
+                        {m.month === 'Jan' && (
+                          <div className="absolute inset-y-0 left-[-30px] w-[30px] text-[10px] text-slate-500/70">
+                            {yAxisMarks.map((mark, index) => (
+                              <div
+                                key={index}
+                                className="absolute right-0 w-full text-right"
+                                style={{ bottom: `${(mark / max) * 100}%`, transform: 'translateY(50%)' }}
+                              >
+                                {mark}
+                              </div>
+                            ))}
+                            {/* 0 mark */}
+                            <div className="absolute right-0 w-full text-right bottom-0">0</div>
+                          </div>
+                        )}
+
+                        {/* Tooltips */}
+                        <div className="absolute bottom-full mb-2 flex flex-col items-center opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none z-10">
+                          <span className="bg-slate-800 text-white text-[10px] py-1 px-2 rounded-md whitespace-nowrap mb-1">
+                            Rec: {formatAbsoluteCurrency(m.recovered)}
+                          </span>
+                          <span className="bg-slate-800 text-white text-[10px] py-1 px-2 rounded-md whitespace-nowrap">
+                            Tgt: {formatAbsoluteCurrency(m.target)}
+                          </span>
                         </div>
-                      )}
 
-                      {/* Tooltips */}
-                      <div className="absolute bottom-full mb-2 flex flex-col items-center opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none z-10">
-                        <span className="bg-slate-800 text-white text-[10px] py-1 px-2 rounded-md whitespace-nowrap mb-1">
-                          Rec: ₹{m.recovered}L
-                        </span>
-                        <span className="bg-slate-800 text-white text-[10px] py-1 px-2 rounded-md whitespace-nowrap">
-                          Tgt: ₹{m.target}L
+                        {/* Bar and Bar Container */}
+                        <div className="flex flex-1 w-full items-end justify-center gap-2 md:gap-3">
+                          {/* Recovered Bar */}
+                          <div
+                            className="w-4 rounded-t-md bg-sky-600 shadow-md transition-all duration-300 hover:bg-sky-700"
+                            style={{ height: `${recHeight}%` }}
+                          ></div>
+                          {/* Target Bar */}
+                          <div
+                            className="w-4 rounded-t-md bg-orange-500 shadow-md transition-all duration-300 hover:bg-orange-600"
+                            style={{ height: `${tgtHeight}%` }}
+                          ></div>
+                        </div>
+
+                        <span className="text-[11px] text-slate-600 font-medium">
+                          {m.month}
                         </span>
                       </div>
-
-                      {/* Bar and Bar Container */}
-                      <div className="flex flex-1 w-full items-end justify-center gap-2 md:gap-3">
-                        {/* Recovered Bar */}
-                        <div
-                          className="w-4 rounded-t-md bg-sky-600 shadow-md transition-all duration-300 hover:bg-sky-700"
-                          style={{ height: `${recHeight}%` }}
-                        ></div>
-                        {/* Target Bar */}
-                        <div
-                          className="w-4 rounded-t-md bg-orange-500 shadow-md transition-all duration-300 hover:bg-orange-600"
-                          style={{ height: `${tgtHeight}%` }}
-                        ></div>
-                      </div>
-
-                      <span className="text-[11px] text-slate-600 font-medium">
-                        {m.month}
-                      </span>
-                    </div>
-                  );
-                })}
+                    );
+                  });
+                })()}
               </div>
 
               <div className="mt-5 flex justify-center gap-8 text-sm text-slate-700 font-medium">
@@ -245,44 +363,57 @@ const ReportsPage = () => {
                 </Button>
               </div>
 
-              {/* Donut - Using a simple component to render the ring */}
+              {/* Donut - Using Recharts */}
               <div className="flex flex-col items-center justify-center">
-                {/* Visual Donut Chart using a container and an inner cutout (for a cleaner look than just borders) */}
-                <div className="h-64 w-64 flex items-center justify-center">
-                  {/* Placeholder for Donut Chart (Simulating the visual from the image) */}
-                  <svg viewBox="0 0 100 100" className="w-full h-full">
-                    {/* The total circumference is 2 * pi * radius. For simplicity in SVG, we use a fixed size circle. 
-                            The percentages are simulated to match the visual breakdown in the image. 
-                            Aadhaar (30%), PAN (25%), Mobile (20%), Employment (15%), Bank (10%)
-                        */}
-                    <circle cx="50" cy="50" r="35" fill="none" stroke="#E2E8F0" strokeWidth="30" />
+                <div className="h-64 w-full flex items-center justify-center relative">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <PieChart>
+                      <Pie
+                        data={verificationBreakdown}
+                        cx="50%"
+                        cy="50%"
+                        innerRadius={60}
+                        outerRadius={90}
+                        paddingAngle={5}
+                        dataKey="value"
+                      >
+                        {verificationBreakdown.map((entry, index) => (
+                          <Cell key={`cell-${index}`} fill={entry.color} />
+                        ))}
+                      </Pie>
+                      <Tooltip
+                        contentStyle={{
+                          borderRadius: '12px',
+                          border: 'none',
+                          boxShadow: '0 10px 15px -3px rgb(0 0 0 / 0.1)'
+                        }}
+                      />
+                    </PieChart>
+                  </ResponsiveContainer>
 
-                    {/* Segments - Simplified simulation with actual colors from the image */}
-                    <circle cx="50" cy="50" r="35" fill="none" stroke="#06B6D4" strokeWidth="15" strokeDasharray="90 10" transform="rotate(-90 50 50)" /> {/* Blue/Sky-600 (Aadhaar 30%) */}
-                    <circle cx="50" cy="50" r="35" fill="none" stroke="#22C55E" strokeWidth="15" strokeDasharray="90 100 10" transform="rotate(-90 50 50)" /> {/* Green/Emerald-500 (PAN 25%) */}
-                    <circle cx="50" cy="50" r="35" fill="none" stroke="#F97316" strokeWidth="15" strokeDasharray="90 100 70 10" transform="rotate(-90 50 50)" /> {/* Orange/Orange-500 (Mobile 20%) */}
-                    <circle cx="50" cy="50" r="35" fill="none" stroke="#EC4899" strokeWidth="15" strokeDasharray="90 100 70 45 10" transform="rotate(-90 50 50)" /> {/* Pink/Pink-500 (Employment 15%) */}
-                    <circle cx="50" cy="50" r="35" fill="none" stroke="#8B5CF6" strokeWidth="15" strokeDasharray="90 100 70 45 30 10" transform="rotate(-90 50 50)" /> {/* Purple/Violet-600 (Bank 10%) */}
-
-                    <text x="50" y="50" textAnchor="middle" dominantBaseline="middle" className="text-xl font-bold fill-slate-800">1,259</text>
-                    <text x="50" y="60" textAnchor="middle" dominantBaseline="middle" className="text-xs fill-slate-500">Total</text>
-
-                  </svg>
+                  {/* Center Text */}
+                  <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
+                    <p className="text-2xl font-bold text-slate-800">{totalCount.toLocaleString()}</p>
+                    <p className="text-xs text-slate-500 font-medium tracking-wide">TOTAL</p>
+                    {failedCount > 0 && (
+                      <p className="text-[10px] text-red-500 font-semibold mt-1">
+                        {failedCount} FAILED
+                      </p>
+                    )}
+                  </div>
                 </div>
 
                 <div className="mt-6 flex flex-wrap justify-center gap-x-6 gap-y-3 text-sm font-medium">
-                  {[
-                    { c: "bg-sky-600", label: "Aadhaar" },
-                    { c: "bg-green-600", label: "PAN" },
-                    { c: "bg-orange-500", label: "Mobile" },
-                    { c: "bg-purple-600", label: "Bank" },
-                    { c: "bg-pink-500", label: "Employment" },
-                  ].map((i) => (
-                    <div key={i.label} className="flex items-center gap-2 text-slate-700">
-                      <span className={`h-3 w-3 rounded-sm ${i.c}`}></span>
-                      {i.label}
+                  {verificationBreakdown.map((item) => (
+                    <div key={item.name} className="flex items-center gap-2 text-slate-700">
+                      <span className={`h-3 w-3 rounded-sm`} style={{ backgroundColor: item.color }}></span>
+                      <span className="capitalize">{item.name.toLowerCase()}</span>
+                      <span className="text-slate-400 font-normal">({item.value})</span>
                     </div>
                   ))}
+                  {verificationBreakdown.length === 0 && (
+                    <p className="text-slate-400 font-normal italic">No verification data available</p>
+                  )}
                 </div>
               </div>
             </Card>
@@ -306,44 +437,76 @@ const ReportsPage = () => {
                   </Button>
                 </div>
               </CardHeader>
+
               <CardContent>
                 <div className="space-y-4">
-                  {agentPerformance.map((agent, i) => (
-                    <div key={i} className="flex items-center gap-4 p-4 bg-slate-50 rounded-xl hover:bg-slate-100 transition">
-                      <div className="w-10 h-10 rounded-full bg- from-[#1A73E8] to-[#0D47A1] flex items-center justify-center">
-                        <span className="text-white font-medium text-sm">
-                          {agent.name.split(' ')[0][0]}{agent.name.split(' ')[1]?.[0] || ''}
-                        </span>
-                      </div>
-                      <div className="flex-1">
-                        <p className="font-medium text-slate-900">{agent.name}</p>
-                        <div className="flex items-center gap-4 text-sm text-slate-500">
-                          <span>{agent.completed} cases</span>
-                          <span>{agent.success} successful</span>
+                  {(agents.length > 0 ? agents : []).slice(0, 5).map((agent, i) => {
+                    const completed = agent.cases || 0;
+                    const rawSuccessRate = agent.successRate || 0;
+                    const successRate = Number(rawSuccessRate.toFixed(2));
+                    const successCount = Math.round(completed * (successRate / 100));
+
+                    return (
+                      <div
+                        key={agent.id || i}
+                        className="flex items-center justify-between gap-6 p-4 bg-slate-50 rounded-xl hover:bg-slate-100 transition"
+                      >
+                        {/* Avatar */}
+                        <div className="flex items-center gap-4 min-w-[220px]">
+                          <div className="w-10 h-10 rounded-full bg-gradient-to-br from-[#1A73E8] to-[#0D47A1] flex items-center justify-center shadow-sm">
+                            <span className="text-white font-medium text-sm">
+                              {agent.name.split(' ')[0][0]}
+                              {agent.name.split(' ')[1]?.[0] || ''}
+                            </span>
+                          </div>
+
+                          {/* Name + Stats (HORIZONTAL) */}
+                          <div>
+                            <p className="font-medium text-slate-900">{agent.name}</p>
+                            <div className="flex items-center gap-6 text-sm text-slate-500">
+                              <span>{completed} cases</span>
+                              <span>{successCount} successful</span>
+                            </div>
+                          </div>
+                        </div>
+
+                        {/* Progress + Percentage */}
+                        <div className="flex items-center gap-6">
+                          <div className="w-32 h-2 bg-slate-200 rounded-full overflow-hidden">
+                            <div
+                              className={`h-full rounded-full ${successRate >= 85
+                                ? 'bg-[#0F9D58]'
+                                : successRate >= 75
+                                  ? 'bg-[#F57C00]'
+                                  : 'bg-red-500'
+                                }`}
+                              style={{ width: `${successRate}%` }}
+                            />
+                          </div>
+
+                          <div className="w-20 text-right">
+                            <p
+                              className={`text-lg font-bold ${successRate >= 85
+                                ? 'text-[#0F9D58]'
+                                : successRate >= 75
+                                  ? 'text-[#F57C00]'
+                                  : 'text-red-500'
+                                }`}
+                            >
+                              {successRate.toFixed(2)}%
+                            </p>
+                            <p className="text-xs text-slate-500">Success Rate</p>
+                          </div>
                         </div>
                       </div>
-                      <div className="text-right flex items-center gap-6">
-                        <div className="w-32 h-2 bg-slate-200 rounded-full overflow-hidden">
-                          <div
-                            className={`h-full rounded-full ${agent.rate >= 85 ? 'bg-[#0F9D58]' :
-                              agent.rate >= 75 ? 'bg-[#F57C00]' :
-                                'bg-red-500'
-                              }`}
-                            style={{ width: `${agent.rate}%` }}
-                          />
-                        </div>
-                        <div className="w-16 text-right">
-                          <p className={`text-xl font-bold ${agent.rate >= 85 ? 'text-[#0F9D58]' :
-                            agent.rate >= 75 ? 'text-[#F57C00]' :
-                              'text-red-500'
-                            }`}>
-                            {agent.rate}%
-                          </p>
-                          <p className="text-xs text-slate-500">Success Rate</p>
-                        </div>
-                      </div>
+                    );
+                  })}
+
+                  {agents.length === 0 && !agentsLoading && (
+                    <div className="text-center py-6 text-slate-500">
+                      No agent performance data available.
                     </div>
-                  ))}
+                  )}
                 </div>
               </CardContent>
             </Card>
@@ -353,19 +516,19 @@ const ReportsPage = () => {
               <Card className="shadow-lg hover:shadow-xl transition col-span-1">
                 <CardContent className="p-6 text-center">
                   {/* Changed font size and color to match the image precisely */}
-                  <p className="text-3xl font-extrabold text-slate-800">₹1.2Cr</p>
+                  <p className="text-3xl font-extrabold text-slate-800">{formattedTotalRecovered}</p>
                   <p className="text-sm text-slate-500 mt-1">Total Recovered</p>
                 </CardContent>
               </Card>
               <Card className="shadow-lg hover:shadow-xl transition col-span-1">
                 <CardContent className="p-6 text-center">
-                  <p className="text-3xl font-extrabold text-slate-800">{totalVerifications.toLocaleString()}</p>
+                  <p className="text-3xl font-extrabold text-slate-800">{totalCount.toLocaleString()}</p>
                   <p className="text-sm text-slate-500 mt-1">Verifications</p>
                 </CardContent>
               </Card>
               <Card className="shadow-lg hover:shadow-xl transition col-span-1">
                 <CardContent className="p-6 text-center">
-                  <p className="text-3xl font-extrabold text-slate-800">{casesClosed}</p>
+                  <p className="text-3xl font-extrabold text-slate-800">{dynamicCasesClosed}</p>
                   <p className="text-sm text-slate-500 mt-1">Cases Closed</p>
                 </CardContent>
               </Card>
@@ -382,8 +545,11 @@ const ReportsPage = () => {
     </div>
   );
 };
-// Export the main component
+// Export the main component  
 export default ReportsPage;
+
+
+
 
 
 

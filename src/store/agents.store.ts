@@ -9,7 +9,6 @@ interface AgentState {
     agents: Agent[];
     loading: boolean;
     error: string | null;
-
     isAddAgentModalOpen: boolean;
     selectedAgent: Agent | null;
     modalMode: 'add' | 'edit' | 'delete';

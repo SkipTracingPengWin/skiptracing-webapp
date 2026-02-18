@@ -180,10 +180,10 @@ export default function AuditLogsPage() {
                             <div className="flex items-center gap-3">
                                 <button
                                     onClick={handleExportCSV}
-                                    className="flex items-center gap-2 px-4 py-2 border border-slate-200 rounded-lg hover:bg-slate-50 transition-colors bg-white shadow-sm"
+                                    className="flex items-center gap-2 px-4 py-2 border border-slate-200 rounded-lg hover:bg-slate-50 transition-colors bg-white shadow-sm "
                                 >
                                     <Download className="h-4 w-4" />
-                                    <span className="text-sm font-medium">Export CSV</span>
+                                    <span className="text-sm font-medium  ">Export CSV</span>
                                 </button>
 
                             </div>

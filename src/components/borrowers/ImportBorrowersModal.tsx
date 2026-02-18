@@ -9,15 +9,13 @@ interface ImportBorrowersModalProps {
     onClose: () => void;
 }
 
-export default function ImportBorrowersModal({ isOpen, onClose }: ImportBorrowersModalProps) {
+export default function ImportBorrowersModal({ isOpen, onClose }: ImportBorrowersModalProps){ 
     const { addBorrower } = useBorrowerStore();
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [dragActive, setDragActive] = useState(false);
     const [file, setFile] = useState<File | null>(null);
     const inputRef = useRef<HTMLInputElement>(null);
-
     if (!isOpen) return null;
-
     const handleDrag = (e: React.DragEvent) => {
         e.preventDefault();
         e.stopPropagation();
@@ -77,7 +75,6 @@ export default function ImportBorrowersModal({ isOpen, onClose }: ImportBorrower
             
             // Actually, let's implement a very simple parser that assumes standard check
             const values = lines[i].split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/).map(val => val.trim().replace(/^"|"$/g, ''));
-
             if (values.length < headers.length) continue;
 
             const entry: any = {};
